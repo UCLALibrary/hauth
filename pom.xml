@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>edu.ucla.library</groupId>
+  <artifactId>bouncer</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Bouncer</name>
+  <description>A IIIF authentication layer for IIIF image servers</description>
+  <url>https://github.com/uclalibrary/bouncer</url>
+
+  <licenses>
+    <license>
+      <name>The 3-Clause BSD License</name>
+      <url>https://opensource.org/licenses/BSD-3-clause</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:uclalibrary/bouncer.git</connection>
+    <developerConnection>scm:git:git@github.com:uclalibrary/bouncer.git</developerConnection>
+    <url>git@github.com:uclalibrary/bouncer.git</url>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/uclalibrary/bouncer/issues</url>
+  </issueManagement>
+
+  <properties>
+    <!-- Code build properties -->
+    <vertx.version>4.1.0</vertx.version>
+    <graalvm.version>21.0.0</graalvm.version>
+
+    <!-- Docker build properties -->
+    <alpine.version>3.13.1</alpine.version>
+    <builder.version>0.0.3</builder.version>
+
+    <!-- Whether UPX should be used to compress the application -->
+    <use.upx>true</use.upx>
+
+    <!-- Whether the output image should contain a native binary -->
+    <native.compile>false</native.compile>
+
+    <!-- Application dependencies -->
+    <freelib.utils.version>2.4.0</freelib.utils.version>
+    <slf4j.ext.version>1.7.30</slf4j.ext.version>
+
+    <!-- Build plugin versions -->
+    <jar.plugin.version>3.2.0</jar.plugin.version>
+    <vertx.plugin.version>1.0.24</vertx.plugin.version>
+    <freelib.maven.version>0.2.0</freelib.maven.version>
+    <deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
+    <docker.maven.plugin.version>0.36.0</docker.maven.plugin.version>
+
+    <!-- Name of the main Vert.x verticle -->
+    <main.verticle>edu.ucla.library.iiif.auth.verticles.MainVerticle</main.verticle>
+
+    <!-- Maven build properties -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- A test port to use for exposing the database -->
+    <pgsql.test.port>5432</pgsql.test.port>
+
+    <!-- The default logging level for the application -->
+    <logLevel>ERROR</logLevel>
+
+    <!-- The Docker registry user and password used for publishing images -->
+    <docker.registry.username />
+    <docker.registry.password />
+    <!-- The Docker registry account, if supplied, must end with a slash (e.g. "account/") -->
+    <docker.registry.account />
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-stack-depchain</artifactId>
+        <version>${vertx.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>info.freelibrary</groupId>
+      <artifactId>freelib-utils</artifactId>
+      <version>${freelib.utils.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-openapi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-pg-client</artifactId>
+    </dependency>
+
+    <!-- Below is a dependency that needs updating due to security issue (may be able to remove in future) -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-ext</artifactId>
+      <version>${slf4j.ext.version}</version>
+    </dependency>
+
+    <!-- A Vert.x plug-in for more flexible configuration control -->
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-config</artifactId>
+    </dependency>
+
+    <!-- Below dependencies only used for testing -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-unit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>info.freelibrary</groupId>
+        <artifactId>freelib-maven-plugins</artifactId>
+        <executions>
+          <!-- generate I18n codes execution runs by default -->
+          <execution>
+            <id>generate-media-types</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate-mediatype</goal>
+            </goals>
+            <configuration>
+              <mediaTypePackage>edu.ucla.library.iiif.auth.utils</mediaTypePackage>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-pgsql-password</id>
+            <goals>
+              <goal>set-uuid-property</goal>
+            </goals>
+            <configuration>
+              <name>pgsql.password</name>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <additionalJOptions>
+            <additionalJOption>-J-Dhttp.agent=maven-javadoc-plugin-${project.name}</additionalJOption>
+          </additionalJOptions>
+          <links>
+            <link>https://vertx.io/docs/apidocs/</link>
+          </links>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>${docker.maven.plugin.version}</version>
+        <configuration>
+          <imagesMap>
+            <bouncer_pgsql>
+              <name>postgres:12.7-alpine</name>
+              <run>
+                <containerNamePattern>bouncer_pgsql</containerNamePattern>
+                <ports>
+                  <port>${pgsql.test.port}:5432</port>
+                </ports>
+                <volumes>
+                  <bind>
+                    <volume>${project.basedir}/src/test/resources/db/:/docker-entrypoint-initdb.d/</volume>
+                  </bind>
+                </volumes>
+                <env>
+                  <POSTGRES_PASSWORD>${pgsql.password}</POSTGRES_PASSWORD>
+                </env>
+                <wait>
+                  <log>database system is ready to accept connections</log>
+                </wait>
+              </run>
+            </bouncer_pgsql>
+            <bouncer>
+              <!-- Registry account, if supplied, must end in a slash (e.g. "account/") -->
+              <!-- The %l at the end translates to "latest" if version ends in "-SNAPSHOT" -->
+              <name>${docker.registry.account}${project.artifactId}:%l</name>
+              <build>
+                <args>
+                  <ALPINE_TAG>${alpine.version}</ALPINE_TAG>
+                  <BUILDER_TAG>${builder.version}</BUILDER_TAG>
+                  <APP_VERSION>${project.version}</APP_VERSION>
+                  <NATIVE_COMPILE>${native.compile}</NATIVE_COMPILE>
+                  <USE_UPX>${use.upx}</USE_UPX>
+                </args>
+                <dockerFile>${project.basedir}/src/main/docker/Dockerfile</dockerFile>
+                <assembly>
+                  <inline xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+                      http://maven.apache.org/xsd/assembly-1.1.2.xsd"
+                    xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2">
+                    <id>bouncer-artifact-copy</id>
+                    <fileSets>
+                      <fileSet>
+                        <directory>.</directory>
+                        <includes>
+                          <include>pom.xml</include>
+                          <include>target/</include>
+                          <include>src/main/docker/scripts/bouncer</include>
+                        </includes>
+                      </fileSet>
+                    </fileSets>
+                  </inline>
+                </assembly>
+              </build>
+              <run>
+                <containerNamePattern>bouncer</containerNamePattern>
+                <ports>
+                  <!-- Start test container on an available host port -->
+                  <port>${http.port}:8888</port>
+                </ports>
+                <volumes>
+                  <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
+                </volumes>
+                <env>
+                </env>
+                <!-- Test to make sure the server started as expected -->
+                <wait>
+                  <http>
+                    <url>http://localhost:${http.port}/status</url>
+                    <method>GET</method>
+                    <status>200</status>
+                  </http>
+                </wait>
+              </run>
+            </bouncer>
+          </imagesMap>
+        </configuration>
+        <executions>
+
+          <!-- Builds the Docker image -->
+          <execution>
+            <id>docker-build</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+
+          <!-- Starts the Docker container for integration testing -->
+          <execution>
+            <id>docker-start</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>start</goal>
+            </goals>
+          </execution>
+
+          <!-- Stops the integration tests' Docker container -->
+          <execution>
+            <id>docker-stop</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+            <configuration>
+              <allContainers>true</allContainers>
+              <stopNamePattern>bounce*</stopNamePattern>
+            </configuration>
+          </execution>
+
+          <!-- Deploys the Docker image -->
+          <execution>
+            <id>docker-deploy</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>push</goal>
+            </goals>
+            <configuration>
+              <images>
+                <image>
+                  <!-- Registry account, if supplied, must end in a slash (e.g. "account/") -->
+                  <!-- The %l at the end translates to "latest" if version ends in "-SNAPSHOT" -->
+                  <name>${docker.registry.account}${project.artifactId}:%l</name>
+                </image>
+              </images>
+              <authConfig>
+                <username>${docker.registry.username}</username>
+                <password>${docker.registry.password}</password>
+              </authConfig>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- A plugin for running unit tests -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
+          <argLine>${jacoco.agent.arg}</argLine>
+          <systemPropertyVariables>
+            <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.SLF4JLogDelegateFactory</vertx.logger-delegate-factory-class-name>
+            <vertx-config-path>${project.basedir}/target/test-classes/test-config.properties</vertx-config-path>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <!-- Vertx's unit framework doesn't like Failsafe, so just use Surefire for integration tests too -->
+          <execution>
+            <id>integration-tests</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <systemPropertyVariables>
+                <http.port>${http.port}</http.port>
+              </systemPropertyVariables>
+              <includes>
+                <include>**/*IT.java</include>
+              </includes>
+              <excludes>
+                <exclude>**/*Test.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Disable standard deploy; we publish a Docker image, not Jar file -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>${deploy.plugin.version}</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- A profile to use to build an executable Jar file -->
+    <profile>
+      <id>uber-jar-compile</id>
+      <activation>
+        <property>
+          <name>native.compile</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.reactiverse</groupId>
+            <artifactId>vertx-maven-plugin</artifactId>
+            <version>${vertx.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>vertx-package</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>initialize</goal>
+                  <goal>package</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- A profile to use to do a native compile using GraalVM's native-image -->
+    <profile>
+      <id>native-compile</id>
+      <activation>
+        <property>
+          <name>native.compile</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <!-- This packages the code so the native-image plugin can access it -->
+          <plugin>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>${jar.plugin.version}</version>
+          </plugin>
+          <!-- This creates a native binary from the packaged jar and its dependencies -->
+          <plugin>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>native-image-maven-plugin</artifactId>
+            <version>${graalvm.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>native-image</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <imageName>${project.artifactId}</imageName>
+              <mainClass>io.vertx.core.Launcher</mainClass>
+              <buildArgs>
+                <buildArg>--static</buildArg>
+                <buildArg>--libc=musl</buildArg>
+                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>-H:+PrintClassInitialization</buildArg>
+                <buildArg>-H:TraceClassInitialization=com.sun.org.apache.xerces.internal.impl.XMLEntityScanner,io.netty.channel.socket.InternetProtocolFamily</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>linux-os</id>
+      <activation>
+        <os>
+          <family>unix</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-transport-native-epoll</artifactId>
+          <classifier>linux-x86_64</classifier>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <!-- A profile for running the server in a live test mode -->
+    <profile>
+      <id>live</id>
+      <properties>
+        <maven.test.skip>true</maven.test.skip>
+        <jacoco.skip>true</jacoco.skip>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-logging-config-for-testing</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/target/classes/</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${basedir}/src/main/resources</directory>
+                      <filtering>true</filtering>
+                      <includes>
+                        <include>fester.yaml</include>
+                      </includes>
+                    </resource>
+                    <resource>
+                      <directory>${basedir}</directory>
+                      <filtering>true</filtering>
+                      <includes>
+                        <include>logback-test.xml</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>copy-application-config-for-testing</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/target/test-classes/</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${basedir}/src/test/resources</directory>
+                      <filtering>true</filtering>
+                      <includes>
+                        <include>test-config.properties</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>io.reactiverse</groupId>
+            <artifactId>vertx-maven-plugin</artifactId>
+            <version>${vertx.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>test-vertx-startup</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <verticle>${main.verticle}</verticle>
+              <redeploy>${live.test.reloads}</redeploy>
+              <jvmArgs>
+                <jvmArg>-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory</jvmArg>
+                <jvmArg>-Dvertx-config-path=target/test-classes/test-config.properties</jvmArg>
+              </jvmArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <parent>
+    <artifactId>freelib-parent</artifactId>
+    <groupId>info.freelibrary</groupId>
+    <version>6.9.2</version>
+  </parent>
+
+</project>
