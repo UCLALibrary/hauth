@@ -14,7 +14,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * A handler that accepts requests to mint ARKs.
+ * A handler that accepts requests to find out the status of the application.
  */
 public class StatusHandler implements Handler<RoutingContext> {
 
@@ -24,7 +24,7 @@ public class StatusHandler implements Handler<RoutingContext> {
     private final Vertx myVertx;
 
     /**
-     * Creates a handler that mints ARKs.
+     * Creates a handler that returns the status of the application.
      *
      * @param aVertx
      */

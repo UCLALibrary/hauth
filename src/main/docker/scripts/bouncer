@@ -1,6 +1,5 @@
 #! /bin/sh
 
-CONFIG="-Dvertx-config-path=/etc/bouncer/config.properties"
 LOGGER="-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
 
 java $LOGGER -jar /opt/bouncer/bouncer.jar run edu.ucla.library.iiif.auth.verticles.MainVerticle
