@@ -43,4 +43,4 @@ jobs:
           maven_goals_phases: "clean verify"
           maven_profiles: default
           maven_args: >
-            -V -ntp -Dorg.slf4j.simpleLogger.log.net.sourceforge.pmd=error
+            -V -ntp -Dorg.slf4j.simpleLogger.log.net.sourceforge.pmd=error -Ddocker.showLogs=true
