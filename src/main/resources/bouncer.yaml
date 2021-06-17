@@ -1,0 +1,138 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Bouncer API
+  license:
+    name: The 3-Clause BSD License
+servers:
+- url: http://github.com/uclalibrary/bouncer
+paths:
+  /access/{id}:
+    get:
+      summary: Get Supplied ID's Access Control Level
+      description: Whether the supplied ID has open or restricted access
+      operationId: getAccessLevel
+      responses:
+        '200':
+          description: The information about the supplied ID's access control level
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: ark:/21198/zz002dvwr6
+                  restricted:
+                    type: boolean
+                    example: true
+
+        '404':
+          description: Notification that the supplied ID couldn't be found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: The requested ID (ark:/21198/zz002dvwr6) was not found
+        '500':
+          description: There was an internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: The service failed to connect to its access control database
+  /cookie:
+    get:
+      summary: Get Authentication Cookie
+      description: The authentication cookie service
+      operationId: getCookie
+      parameters:
+      - in: query
+        name: origin
+        description: The origin of the page, consisting of a protocol, hostname and, optionally, port number
+        schema:
+          type: string
+        required: true
+      responses:
+        '200':
+          description: The cookie gets set in the response that includes Javascript to close the open tab/window
+          headers:
+            Set-Cookie:
+              description: An encrypted cookie value that contains the supplied origin and level of allowed access
+              schema:
+                type: string
+                example: iiifauth=asrvaaDe43AAqw34QpOoPJR4j5b1; Path=/; HttpOnly
+          content:
+            text/html:
+              schema:
+                type: string
+        '400':
+          description: The request didn't contain an origin or contained one that wasn't valid
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: There was an internal server error
+          content:
+            text/html:
+              schema:
+                type: string
+                example: The service failed to encrypt its cookie value
+  /token:
+    get:
+      summary: Get Authentication Token
+      description: The authentication token service
+      operationId: getToken
+      parameters:
+      - in: cookie
+        name: iiifauth
+        schema:
+          type: string
+          example: iiifauth=asrvaaDe43AAqw34QpOoPJR4j5b1; Path=/; HttpOnly
+        required: true
+      responses:
+        '200':
+          description: The access token response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  expiresIn:
+                    type: integer
+        '400':
+          description: The request didn't contain a valid cookie
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: The request did not contain a valid cookie
+        '500':
+          description: There was an internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: The service failed to connect to its access control database
+  /status:
+    get:
+      summary: Get Application Status
+      description: Gets a response indicating the current status of the application. This may include information about
+        the health of the server, details about which configuration options are engaged, and other things.
+      operationId: getStatus
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+        '500':
+          description: There was an internal server error
