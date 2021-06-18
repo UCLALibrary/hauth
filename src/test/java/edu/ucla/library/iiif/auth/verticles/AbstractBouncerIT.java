@@ -95,7 +95,7 @@ public abstract class AbstractBouncerIT {
         final String dbPassword = myConfig.getString(Config.DB_PASSWORD);
 
         // It's okay to show this automatically-generated password
-        getLogger().debug(MessageCodes.BNCR_003, dbPassword);
+        getLogger().trace(MessageCodes.BNCR_003, dbPassword);
 
         return new PgConnectOptions().setPort(5432).setHost(TestConstants.INADDR_ANY).setDatabase(POSTGRES)
                 .setUser(POSTGRES).setPassword(dbPassword);

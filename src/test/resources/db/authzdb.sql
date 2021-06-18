@@ -37,71 +37,82 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.items (
-    uid text NOT NULL,
-    access_level smallint DEFAULT 0 NOT NULL
+    item_id text NOT NULL,
+    access_level smallint DEFAULT 0 NOT NULL,
+    cookie_id int NOT NULL
 );
 
-CREATE TABLE public.origins (
-    url text NOT NULL,
-    degraded_allowed boolean DEFAULT FALSE NOT NULL
+CREATE TABLE public.cookies (
+    cookie_id int GENERATED ALWAYS AS IDENTITY,
+    cookie_name text NOT NULL
 );
 
 ALTER TABLE public.items OWNER TO postgres;
-
-ALTER TABLE public.origins OWNER TO postgres;
+ALTER TABLE public.cookies OWNER TO postgres;
 
 --
--- Name: COLUMN items.uid; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN items.item_id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.items.uid IS 'The unique identifier of the requested object';
+COMMENT ON COLUMN public.items.item_id IS 'The identifier of the requested item';
 
 --
 -- Name: COLUMN items.access_level; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.items.access_level IS 'The access level of the requested item: 0 is open, 1 is restricted to UCLA affiliates';
+COMMENT ON COLUMN public.items.access_level IS 'The access level of the requested item: 0 is open access, 1 is restricted to UCLA affiliates, 2 is degraded access';
 
 --
--- Name: COLUMN origins.url; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN cookies.cookie_id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.origins.url IS 'The URL origin of an access request';
+COMMENT ON COLUMN public.cookies.cookie_id IS 'The ID of a cookie';
 
 --
--- Name: COLUMN origins.degraded_allowed; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN cookies.cookie_name; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.origins.degraded_allowed IS 'Whether this origin allows degraded access';
-
-
---
--- Data for Name: items; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.items (uid, access_level) FROM stdin;
-\.
-
---
--- Data for Name: origins; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.origins (url, degraded_allowed) FROM stdin;
-\.
+COMMENT ON COLUMN public.cookies.cookie_name IS 'The name of a cookie';
 
 --
 -- Name: items items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.items
-    ADD CONSTRAINT items_pkey PRIMARY KEY (uid);
+    ADD CONSTRAINT items_pkey PRIMARY KEY (item_id);
 
 --
--- Name: items origins_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: items cookies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.origins
-    ADD CONSTRAINT origins_pkey PRIMARY KEY (url);
+ALTER TABLE ONLY public.cookies
+    ADD CONSTRAINT cookies_pkey PRIMARY KEY (cookie_id);
+
+--
+-- Name: items fk_cookie; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.items
+    ADD CONSTRAINT fk_cookie FOREIGN KEY (cookie_id) REFERENCES public.cookies (cookie_id);
+
+--
+-- Data for Name: cookies; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.cookies (cookie_name) FROM stdin;
+acs_cookie
+sinai_authenticated_3day
+\.
+
+--
+-- Data for Name: items; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.items (item_id, access_level, cookie_id) FROM stdin with delimiter '|';
+ark:/21198/zz002dvwr6|0|1
+ark:/21198/zz112dvwr7|2|1
+ark:/21198/zz332dvwr8|1|2
+\.
 
 --
 -- Name: TABLE items; Type: ACL; Schema: public; Owner: postgres
@@ -111,8 +122,8 @@ GRANT SELECT ON TABLE public.items TO authz_reader;
 GRANT ALL ON TABLE public.items TO authz_writer;
 
 --
--- Name: TABLE origins; Type: ACL; Schema: public; Owner: postgres
+-- Name: TABLE cookies; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT ON TABLE public.origins TO authz_reader;
-GRANT ALL ON TABLE public.origins TO authz_writer;
+GRANT SELECT ON TABLE public.cookies TO authz_reader;
+GRANT ALL ON TABLE public.cookies TO authz_writer;

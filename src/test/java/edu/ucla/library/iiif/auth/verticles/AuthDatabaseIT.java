@@ -33,14 +33,43 @@ public class AuthDatabaseIT extends AbstractBouncerIT {
      */
     @Test
     public final void testDbUserCount(final TestContext aContext) {
+        runQuery(aContext, "select * from pg_catalog.pg_user;", 3);
+    }
+
+    /**
+     * Tests the number of cookies set up in the testing environment.
+     *
+     * @param aContext A test context
+     */
+    @Test
+    public final void testDbCookies(final TestContext aContext) {
+        runQuery(aContext, "select * from public.cookies;", 2);
+    }
+
+    /**
+     * Tests the number of items set up in the testing environment.
+     *
+     * @param aContext A test context
+     */
+    @Test
+    public final void testDbItems(final TestContext aContext) {
+        runQuery(aContext, "select * from public.items;", 3);
+    }
+
+    /**
+     * Runs a query and checks that the expected number of result are found.
+     *
+     * @param aQuery A SQL query
+     * @param aContext A testing context
+     * @param aExpectedResultCount The number of expected results
+     */
+    private final void runQuery(final TestContext aContext, final String aQuery, final int aExpectedResultCount) {
         final SqlClient client = PgPool.client(myContext.vertx(), getConnectionOpts(), getPoolOpts());
         final Async asyncTask = aContext.async();
 
-        // Check that the number of users is what we expect it to be
-        client.query("select * from pg_catalog.pg_user;").execute(query -> {
+        client.query(aQuery).execute(query -> {
             if (query.succeeded()) {
-                // Three users tells us our SQL load successfully completed
-                aContext.assertEquals(3, query.result().size());
+                aContext.assertEquals(aExpectedResultCount, query.result().size());
                 complete(asyncTask);
             } else {
                 aContext.fail(query.cause());
