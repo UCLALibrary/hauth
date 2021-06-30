@@ -54,14 +54,15 @@
     <deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
     <docker.maven.plugin.version>0.36.0</docker.maven.plugin.version>
 
+    <!-- Test dependency versions -->
+    <mockito.version>3.11.1</mockito.version>
+    <junit.version>5.8.0-M1</junit.version>
+
     <!-- Name of the main Vert.x verticle -->
     <main.verticle>edu.ucla.library.iiif.auth.verticles.MainVerticle</main.verticle>
 
     <!-- Maven build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <!-- A test port to use for exposing the database -->
-    <pgsql.test.port>5432</pgsql.test.port>
 
     <!-- The default logging level for the application -->
     <logLevel>ERROR</logLevel>
@@ -79,6 +80,13 @@
         <groupId>io.vertx</groupId>
         <artifactId>vertx-stack-depchain</artifactId>
         <version>${vertx.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -112,10 +120,6 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web-openapi</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-pg-client</artifactId>
-    </dependency>
 
     <!-- Below is a dependency that needs updating due to security issue (may be able to remove in future) -->
     <dependency>
@@ -132,13 +136,25 @@
 
     <!-- Below dependencies only used for testing -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-unit</artifactId>
+      <artifactId>vertx-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -148,6 +164,9 @@
       <testResource>
         <directory>src/test/resources</directory>
         <filtering>true</filtering>
+        <includes>
+          <include>logback-test.xml</include>
+        </includes>
       </testResource>
     </testResources>
     <plugins>
@@ -171,12 +190,12 @@
             </configuration>
           </execution>
           <execution>
-            <id>generate-pgsql-password</id>
+            <id>generate-db-password</id>
             <goals>
               <goal>set-uuid-property</goal>
             </goals>
             <configuration>
-              <name>pgsql.password</name>
+              <name>test.db.password</name>
             </configuration>
           </execution>
         </executions>
@@ -210,26 +229,6 @@
         <version>${docker.maven.plugin.version}</version>
         <configuration>
           <imagesMap>
-            <bouncer_pgsql>
-              <name>postgres:12.7-alpine</name>
-              <run>
-                <containerNamePattern>bouncer_pgsql</containerNamePattern>
-                <ports>
-                  <port>${pgsql.test.port}:5432</port>
-                </ports>
-                <volumes>
-                  <bind>
-                    <volume>${project.basedir}/src/test/resources/db/:/docker-entrypoint-initdb.d/</volume>
-                  </bind>
-                </volumes>
-                <env>
-                  <POSTGRES_PASSWORD>${pgsql.password}</POSTGRES_PASSWORD>
-                </env>
-                <wait>
-                  <log>database system is ready to accept connections</log>
-                </wait>
-              </run>
-            </bouncer_pgsql>
             <bouncer>
               <!-- Registry account, if supplied, must end in a slash (e.g. "account/") -->
               <!-- The %l at the end translates to "latest" if version ends in "-SNAPSHOT" -->
@@ -274,13 +273,13 @@
                 <env>
                 </env>
                 <!-- Test to make sure the server started as expected -->
-                <wait>
+                <!-- <wait>
                   <http>
                     <url>http://localhost:${http.port}/status</url>
                     <method>GET</method>
                     <status>200</status>
                   </http>
-                </wait>
+                </wait>-->
               </run>
             </bouncer>
           </imagesMap>
@@ -350,7 +349,6 @@
           <argLine>${jacoco.agent.arg}</argLine>
           <systemPropertyVariables>
             <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.SLF4JLogDelegateFactory</vertx.logger-delegate-factory-class-name>
-            <vertx-config-path>${project.basedir}/target/test-classes/test-config.properties</vertx-config-path>
           </systemPropertyVariables>
         </configuration>
         <executions>
@@ -362,9 +360,9 @@
               <goal>test</goal>
             </goals>
             <configuration>
-              <systemPropertyVariables>
-                <http.port>${http.port}</http.port>
-              </systemPropertyVariables>
+              <environmentVariables>
+                <HTTP_PORT>${http.port}</HTTP_PORT>
+              </environmentVariables>
               <includes>
                 <include>**/*IT.java</include>
               </includes>
@@ -421,12 +419,6 @@
     <!-- A profile to use to do a native compile using GraalVM's native-image -->
     <profile>
       <id>native-compile</id>
-      <activation>
-        <property>
-          <name>native.compile</name>
-          <value>true</value>
-        </property>
-      </activation>
       <build>
         <plugins>
           <!-- This packages the code so the native-image plugin can access it -->
@@ -517,25 +509,6 @@
                   </resources>
                 </configuration>
               </execution>
-              <execution>
-                <id>copy-application-config-for-testing</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${basedir}/target/test-classes/</outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>${basedir}/src/test/resources</directory>
-                      <filtering>true</filtering>
-                      <includes>
-                        <include>test-config.properties</include>
-                      </includes>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
             </executions>
           </plugin>
 
@@ -557,7 +530,6 @@
               <redeploy>${live.test.reloads}</redeploy>
               <jvmArgs>
                 <jvmArg>-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory</jvmArg>
-                <jvmArg>-Dvertx-config-path=target/test-classes/test-config.properties</jvmArg>
               </jvmArgs>
             </configuration>
           </plugin>

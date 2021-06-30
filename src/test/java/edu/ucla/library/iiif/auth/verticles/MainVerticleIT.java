@@ -1,8 +1,10 @@
 
 package edu.ucla.library.iiif.auth.verticles;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
@@ -11,15 +13,15 @@ import info.freelibrary.util.LoggerFactory;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.utils.TestConstants;
 
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 
 /**
  * An integration test that runs against a containerized version of the application.
  */
-@RunWith(VertxUnitRunner.class)
+@ExtendWith(VertxExtension.class)
 public class MainVerticleIT extends AbstractBouncerIT {
 
     /**
@@ -30,31 +32,21 @@ public class MainVerticleIT extends AbstractBouncerIT {
     /**
      * Tests the server was started successfully.
      *
+     * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
     @Test
-    public void testThatTheServerIsStarted(final TestContext aContext) {
-        final WebClient client = WebClient.create(myContext.vertx());
-        final Async asyncTask = aContext.async();
+    public void testThatTheServerIsStarted(final Vertx aVertx, final VertxTestContext aContext) {
+        final WebClient client = WebClient.create(aVertx);
 
         client.get(getPort(), TestConstants.INADDR_ANY, "/status").send(get -> {
             if (get.succeeded()) {
-                aContext.assertEquals(HTTP.OK, get.result().statusCode());
-                complete(asyncTask);
+                assertEquals(HTTP.OK, get.result().statusCode());
+                aContext.completeNow();
             } else {
-                aContext.fail(get.cause());
+                aContext.failNow(get.cause());
             }
         });
-    }
-
-    /**
-     * Returns the logger used by these tests.
-     *
-     * @return The logger used by these tests
-     */
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
     }
 
 }

@@ -3,9 +3,8 @@ package edu.ucla.library.iiif.auth.verticles;
 
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import info.freelibrary.util.Constants;
 import info.freelibrary.util.FileUtils;
@@ -20,26 +19,14 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.RunTestOnContext;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 
 /**
  * An abstract test that other tests can extend.
  */
+@ExtendWith(VertxExtension.class)
 public abstract class AbstractBouncerTest {
-
-    /**
-     * Rule that creates the test context.
-     */
-    @Rule
-    public RunTestOnContext myContext = new RunTestOnContext();
-
-    /**
-     * Rule that provides access to the test method name.
-     */
-    @Rule
-    public TestName myNames = new TestName();
 
     /**
      * The port at which our test instances listen.
@@ -49,21 +36,20 @@ public abstract class AbstractBouncerTest {
     /**
      * Sets up the test.
      *
+     * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
-    @Before
-    public void setUp(final TestContext aContext) {
+    @BeforeEach
+    public void setUp(final Vertx aVertx, final VertxTestContext aContext) {
         final DeploymentOptions options = new DeploymentOptions();
-        final Async asyncTask = aContext.async();
-        final Vertx vertx = myContext.vertx();
 
-        ConfigRetriever.create(vertx).getConfig().onSuccess(config -> {
+        ConfigRetriever.create(aVertx).getConfig().onSuccess(config -> {
             myPort = PortUtils.getPort();
             options.setConfig(config.put(Config.HTTP_PORT, myPort));
 
-            vertx.deployVerticle(MainVerticle.class.getName(), options).onSuccess(result -> complete(asyncTask))
-                    .onFailure(error -> aContext.fail(error));
-        }).onFailure(error -> aContext.fail(error));
+            aVertx.deployVerticle(MainVerticle.class.getName(), options).onSuccess(result -> aContext.completeNow())
+                    .onFailure(error -> aContext.failNow(error));
+        }).onFailure(error -> aContext.failNow(error));
     }
 
     /**
@@ -76,16 +62,16 @@ public abstract class AbstractBouncerTest {
     /**
      * Undeploy a verticle so that a test can swap in a mock.
      *
+     * @param aVertx A Vert.x instance
      * @param aVerticleName The name of the verticle to undeploy
      * @return A future removal of the verticle
      */
-    protected Future<Void> undeployVerticle(final String aVerticleName) {
+    protected Future<Void> undeployVerticle(final Vertx aVertx, final String aVerticleName) {
         final Promise<Void> promise = Promise.promise();
-        final Vertx vertx = myContext.vertx();
 
-        vertx.sharedData().getLocalAsyncMap(MainVerticle.VERTICLES_MAP).onSuccess(map -> {
+        aVertx.sharedData().getLocalAsyncMap(MainVerticle.VERTICLES_MAP).onSuccess(map -> {
             map.get(aVerticleName).onSuccess(deploymentID -> {
-                vertx.undeploy(deploymentID.toString()).onSuccess(result -> {
+                aVertx.undeploy(deploymentID.toString()).onSuccess(result -> {
                     getLogger().debug(MessageCodes.BNCR_002, aVerticleName, deploymentID);
                     promise.complete();
                 }).onFailure(error -> promise.fail(error));
@@ -93,17 +79,6 @@ public abstract class AbstractBouncerTest {
         }).onFailure(error -> promise.fail(error));
 
         return promise.future();
-    }
-
-    /**
-     * A convenience method to end asynchronous tasks.
-     *
-     * @param aAsyncTask A task to complete
-     */
-    protected void complete(final Async aAsyncTask) {
-        if (!aAsyncTask.isCompleted()) {
-            aAsyncTask.complete();
-        }
     }
 
     /**

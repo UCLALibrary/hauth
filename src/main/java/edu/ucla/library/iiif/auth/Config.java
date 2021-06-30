@@ -7,24 +7,24 @@ package edu.ucla.library.iiif.auth;
 public final class Config {
 
     /**
-     * The configuration property for the application's port.
+     * The ENV property for the application's port.
      */
-    public static final String HTTP_PORT = "http.port";
+    public static final String HTTP_PORT = "HTTP_PORT";
 
     /**
-     * The configuration property for the application's host.
+     * The ENV property for the application's host.
      */
-    public static final String HTTP_HOST = "http.host";
+    public static final String HTTP_HOST = "HTTP_HOST";
 
     /**
-     * The configuration property for the location of the application's OpenAPI specification.
+     * The ENV property for the location of the application's OpenAPI specification.
      */
-    public static final String API_SPEC = "api.spec";
+    public static final String API_SPEC = "API_SPEC";
 
     /**
-     * The configuration property for the database password.
+     * The ENV property for the database password.
      */
-    public static final String DB_PASSWORD = "pgsql.password";
+    public static final String DB_PASSWORD = "DB_PASSWORD";
 
     /**
      * Constant classes should have private constructors.

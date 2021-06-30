@@ -12,6 +12,13 @@ paths:
       summary: Get Supplied ID's Access Control Level
       description: Whether the supplied ID has open or restricted access
       operationId: getAccessLevel
+      parameters:
+        - in: path
+          name: id
+          description: The ID whose access level we want to check
+          schema:
+            type: string
+          required: true
       responses:
         '200':
           description: The information about the supplied ID's access control level
