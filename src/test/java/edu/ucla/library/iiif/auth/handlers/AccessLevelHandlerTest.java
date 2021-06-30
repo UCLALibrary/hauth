@@ -44,11 +44,11 @@ public class AccessLevelHandlerTest {
     @BeforeEach
     public void setup() {
         // Configure the routing event with request and response objects
-        doReturn(myRequest).when(myEvent).request();
+        // doReturn(myRequest).when(myEvent).request();
         doReturn(myResponse).when(myEvent).response();
 
         // Have our mock request use this ARK for its "id" parameter
-        doReturn("ark:/21198/zz002dvwr6").when(myRequest).getParam("id");
+        // doReturn("ark:/21198/zz002dvwr6").when(myRequest).getParam("id");
 
         // Support Vert.x's fluent design by returning the thing that had its headers set
         doReturn(myResponse).when(myResponse).putHeader(HttpHeaders.CONTENT_TYPE,

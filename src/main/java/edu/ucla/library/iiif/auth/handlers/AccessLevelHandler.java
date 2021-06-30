@@ -8,7 +8,6 @@ import edu.ucla.library.iiif.auth.utils.MediaType;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -36,7 +35,7 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
     @Override
     public void handle(final RoutingContext aContext) {
         final HttpServerResponse response = aContext.response();
-        final HttpServerRequest request = aContext.request();
+        // final HttpServerRequest request = aContext.request();
         final JsonObject info = new JsonObject();
         // final String id = request.getParam(Param.ID);
 
