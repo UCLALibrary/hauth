@@ -14,26 +14,29 @@ WORKDIR /opt/bouncer
 COPY /maven/ .
 
 # If we're doing a native-build, compile that; else, the uber jar has already been copied
-RUN if [ "${NATIVE_COMPILE}" = true ] ; then \
-      mvn -B -ntp -fn -Pnative-compile org.apache.maven.plugins:maven-jar-plugin:jar \
-      org.graalvm.nativeimage:native-image-maven-plugin:native-image 2>&1 > /tmp/maven.log \
+RUN if [ true = true ] ; then \
+#      mvn -B -ntp -Pnative-compile org.apache.maven.plugins:maven-jar-plugin:jar \
+#      org.graalvm.nativeimage:native-image-maven-plugin:native-image \
+      # 2>&1 > /tmp/maven.log \
       # Check output to make sure our native build succeeded
-      && if [ $(cat /tmp/maven.log |grep -c ERROR) -gt 0 ] ; then \
-        cat /tmp/maven.log ; \
-        exit 1 ; \
-      fi \
+      #&& if [ $(cat /tmp/maven.log |grep -c ERROR) -gt 0 ] ; then \
+      #  cat /tmp/maven.log ; \
+      #  exit 1 ; \
+      #fi \
       # Determine whether we're going to compress the native build artifact
-      && if [ "${USE_UPX}" = true ] ; then \
-        upx --best -q /opt/bouncer/target/bouncer ; \
-      fi \
+      #if [ "${USE_UPX}" = true ] ; then \
+      #  upx --best -q /opt/bouncer/target/bouncer ; \
+      #fi \
       # We need a placeholder jar file to copy (and then later delete)
-      && touch /opt/bouncer/target/bouncer-${APP_VERSION}.jar ; \
+#      && touch /opt/bouncer/target/bouncer-${APP_VERSION}.jar ; \
     # If we're using an uber-jar copy over the startup script
-    else \
+#    else \
       mkdir -p /opt/bouncer/target ; \
       cp target/bouncer-${APP_VERSION}.jar /opt/bouncer/target/bouncer-${APP_VERSION}.jar; \
       cp src/main/docker/scripts/bouncer /opt/bouncer/target/bouncer ; \
     fi
+
+#ENTRYPOINT ["tail", "-f", "/dev/null"]
 
 # Set up the image to which to copy our build artifacts
 FROM alpine:${ALPINE_TAG}

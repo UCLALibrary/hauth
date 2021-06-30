@@ -1,24 +1,21 @@
 
 package edu.ucla.library.iiif.auth.verticles;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
 
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.SqlClient;
+import io.vertx.junit5.VertxExtension;
 
 /**
  * A test of the database connection.
  */
-@RunWith(VertxUnitRunner.class)
+@ExtendWith(VertxExtension.class)
 public class AuthDatabaseIT extends AbstractBouncerIT {
 
     /**
@@ -27,37 +24,11 @@ public class AuthDatabaseIT extends AbstractBouncerIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthDatabaseIT.class, MessageCodes.BUNDLE);
 
     /**
-     * Tests the number of users in the database.
-     *
-     * @param aContext A test context
+     * Sets up the testing environment.
      */
-    @Test
-    public final void testDbUserCount(final TestContext aContext) {
-        final SqlClient client = PgPool.client(myContext.vertx(), getConnectionOpts(), getPoolOpts());
-        final Async asyncTask = aContext.async();
-
-        // Check that the number of users is what we expect it to be
-        client.query("select * from pg_catalog.pg_user;").execute(query -> {
-            if (query.succeeded()) {
-                // Three users tells us our SQL load successfully completed
-                aContext.assertEquals(3, query.result().size());
-                complete(asyncTask);
-            } else {
-                aContext.fail(query.cause());
-            }
-
-            client.close();
-        });
-    }
-
-    /**
-     * Returns the logger used by these tests.
-     *
-     * @return The logger used by these tests
-     */
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
+    @BeforeAll
+    public static final void testEnvSetUp() {
+        LOGGER.debug(MessageCodes.BNCR_003, System.getenv(Config.DB_PASSWORD));
     }
 
 }
