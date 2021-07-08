@@ -26,7 +26,7 @@ import io.vertx.junit5.VertxTestContext;
  * An abstract test that other tests can extend.
  */
 @ExtendWith(VertxExtension.class)
-public abstract class AbstractBouncerTest {
+public abstract class AbstractHauthTest {
 
     /**
      * The port at which our test instances listen.
@@ -72,7 +72,7 @@ public abstract class AbstractBouncerTest {
         aVertx.sharedData().getLocalAsyncMap(MainVerticle.VERTICLES_MAP).onSuccess(map -> {
             map.get(aVerticleName).onSuccess(deploymentID -> {
                 aVertx.undeploy(deploymentID.toString()).onSuccess(result -> {
-                    getLogger().debug(MessageCodes.BNCR_002, aVerticleName, deploymentID);
+                    getLogger().debug(MessageCodes.AUTH_002, aVerticleName, deploymentID);
                     promise.complete();
                 }).onFailure(error -> promise.fail(error));
             }).onFailure(error -> promise.fail(error));

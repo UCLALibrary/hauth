@@ -16,7 +16,7 @@ import io.vertx.junit5.VertxTestContext;
  * An abstract test that other tests can extend.
  */
 @ExtendWith(VertxExtension.class)
-public abstract class AbstractBouncerIT {
+public abstract class AbstractHauthIT {
 
     /**
      * The configuration used to start the integration server.
@@ -38,7 +38,7 @@ public abstract class AbstractBouncerIT {
     }
 
     /**
-     * Gets the port number for the test instance of bouncer application.
+     * Gets the port number for the test instance of hauth application.
      *
      * @return The application's port number
      */

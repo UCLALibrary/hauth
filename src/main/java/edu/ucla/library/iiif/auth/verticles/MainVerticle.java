@@ -35,7 +35,7 @@ public class MainVerticle extends AbstractVerticle {
     /**
      * The location of the OpenAPI specification.
      */
-    private static final String DEFAULT_API_SPEC = "bouncer.yaml";
+    private static final String DEFAULT_API_SPEC = "hauth.yaml";
 
     /**
      * The default host at which the application runs.
@@ -48,7 +48,7 @@ public class MainVerticle extends AbstractVerticle {
     private static final int DEFAULT_PORT = 8888;
 
     /**
-     * The HTTP server for the Bouncer service.
+     * The HTTP server for the Hauth service.
      */
     private HttpServer myServer;
 
@@ -85,7 +85,7 @@ public class MainVerticle extends AbstractVerticle {
 
                 myServer = getVertx().createHttpServer(serverOptions).requestHandler(routerBuilder.createRouter());
                 myServer.listen().onSuccess(result -> {
-                    LOGGER.info(MessageCodes.BNCR_001, port);
+                    LOGGER.info(MessageCodes.AUTH_001, port);
                     aPromise.complete();
                 }).onFailure(error -> aPromise.fail(error));
             } else {

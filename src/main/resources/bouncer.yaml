@@ -1,11 +1,11 @@
 openapi: 3.0.0
 info:
   version: 1.0.0
-  title: Bouncer API
+  title: Hauth API
   license:
     name: The 3-Clause BSD License
 servers:
-- url: http://github.com/uclalibrary/bouncer
+- url: http://github.com/uclalibrary/hauth
 paths:
   /access/{id}:
     get:

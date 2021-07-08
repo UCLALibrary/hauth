@@ -2,7 +2,7 @@
 package edu.ucla.library.iiif.auth;
 
 /**
- * Valid parameters as defined in the Bouncer OpenAPI specification.
+ * Valid parameters as defined in the Hauth OpenAPI specification.
  */
 public final class Param {
 

@@ -22,7 +22,7 @@ import io.vertx.junit5.VertxTestContext;
  * Tests the main verticle of the Vert.x application.
  */
 @ExtendWith(VertxExtension.class)
-public class MainVerticleTest extends AbstractBouncerTest {
+public class MainVerticleTest extends AbstractHauthTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainVerticleTest.class, MessageCodes.BUNDLE);
 

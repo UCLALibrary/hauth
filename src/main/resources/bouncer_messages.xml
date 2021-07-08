@@ -5,16 +5,16 @@
 <properties>
   <entry key="message-class-name">edu.ucla.library.iiif.auth.MessageCodes</entry>
 
-  <entry key="BNCR_000">{}</entry>
-  <entry key="BNCR_001">Server started and listening at port: {}</entry>
-  <entry key="BNCR_002">Verticle successfully undeployed: {} [{}]</entry>
-  <entry key="BNCR_003">Test database using auto-generated password: {}</entry>
-  <entry key="BNCR_004"></entry>
-  <entry key="BNCR_005"></entry>
-  <entry key="BNCR_006"></entry>
-  <entry key="BNCR_007"></entry>
-  <entry key="BNCR_008"></entry>
-  <entry key="BNCR_009"></entry>
-  <entry key="BNCR_010"></entry>
+  <entry key="AUTH_000">{}</entry>
+  <entry key="AUTH_001">Server started and listening at port: {}</entry>
+  <entry key="AUTH_002">Verticle successfully undeployed: {} [{}]</entry>
+  <entry key="AUTH_003">Test database using auto-generated password: {}</entry>
+  <entry key="AUTH_004"></entry>
+  <entry key="AUTH_005"></entry>
+  <entry key="AUTH_006"></entry>
+  <entry key="AUTH_007"></entry>
+  <entry key="AUTH_008"></entry>
+  <entry key="AUTH_009"></entry>
+  <entry key="AUTH_010"></entry>
 
 </properties>
