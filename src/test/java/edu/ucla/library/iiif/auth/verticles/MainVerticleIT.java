@@ -22,7 +22,7 @@ import io.vertx.junit5.VertxTestContext;
  * An integration test that runs against a containerized version of the application.
  */
 @ExtendWith(VertxExtension.class)
-public class MainVerticleIT extends AbstractBouncerIT {
+public class MainVerticleIT extends AbstractHauthIT {
 
     /**
      * The logger used by these tests.

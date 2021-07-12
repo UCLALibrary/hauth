@@ -2,4 +2,4 @@
 
 LOGGER="-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
 
-java $LOGGER -jar /opt/bouncer/bouncer.jar run edu.ucla.library.iiif.auth.verticles.MainVerticle
+java $LOGGER -jar /opt/hauth/hauth.jar run edu.ucla.library.iiif.auth.verticles.MainVerticle

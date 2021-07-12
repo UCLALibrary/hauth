@@ -16,7 +16,7 @@ import io.vertx.junit5.VertxExtension;
  * A test of the database connection.
  */
 @ExtendWith(VertxExtension.class)
-public class AuthDatabaseIT extends AbstractBouncerIT {
+public class AuthDatabaseIT extends AbstractHauthIT {
 
     /**
      * The logger used by these tests.
@@ -28,7 +28,7 @@ public class AuthDatabaseIT extends AbstractBouncerIT {
      */
     @BeforeAll
     public static final void testEnvSetUp() {
-        LOGGER.debug(MessageCodes.BNCR_003, System.getenv(Config.DB_PASSWORD));
+        LOGGER.debug(MessageCodes.AUTH_003, System.getenv(Config.DB_PASSWORD));
     }
 
 }
