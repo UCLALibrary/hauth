@@ -64,9 +64,6 @@
     <!-- Maven build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <!-- A test port to use for exposing the database -->
-    <pgsql.test.port>5432</pgsql.test.port>
-
     <!-- The default logging level for the application -->
     <logLevel>ERROR</logLevel>
 
