@@ -49,4 +49,8 @@ public class MainVerticleIT extends AbstractHauthIT {
         });
     }
 
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 }
