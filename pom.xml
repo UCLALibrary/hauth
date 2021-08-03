@@ -312,8 +312,13 @@
                 <env>
                 </env>
                 <!-- Test to make sure the server started as expected -->
-                <!-- <wait> <http> <url>http://localhost:${test.http.port}/status</url> <method>GET</method> <status>200</status> 
-                  </http> </wait> -->
+                <wait>
+                  <http>
+                    <url>http://localhost:${test.http.port}/status</url>
+                    <method>GET</method>
+                    <status>200</status>
+                  </http>
+                </wait>
               </run>
             </hauth>
           </imagesMap>
