@@ -64,6 +64,9 @@
     <!-- Maven build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+    <!-- A test port to use for exposing the database -->
+    <pgsql.test.port>5432</pgsql.test.port>
+
     <!-- The default logging level for the application -->
     <logLevel>ERROR</logLevel>
 
@@ -120,6 +123,10 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web-openapi</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-pg-client</artifactId>
+    </dependency>
 
     <!-- Below is a dependency that needs updating due to security issue (may be able to remove in future) -->
     <dependency>
@@ -173,6 +180,21 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
+        <configuration>
+          <portNames>
+            <portName>test.http.port</portName>
+            <portName>test.db.port</portName>
+          </portNames>
+        </configuration>
+        <executions>
+          <execution>
+            <id>reserve-port</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>reserve-network-port</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>info.freelibrary</groupId>
@@ -229,6 +251,26 @@
         <version>${docker.maven.plugin.version}</version>
         <configuration>
           <imagesMap>
+            <hauth_pgsql>
+              <name>postgres:12.7-alpine</name>
+              <run>
+                <containerNamePattern>hauth_pgsql</containerNamePattern>
+                <ports>
+                  <port>${test.db.port}:5432</port>
+                </ports>
+                <volumes>
+                  <bind>
+                    <volume>${project.basedir}/src/test/resources/db/:/docker-entrypoint-initdb.d/</volume>
+                  </bind>
+                </volumes>
+                <env>
+                  <POSTGRES_PASSWORD>${test.db.password}</POSTGRES_PASSWORD>
+                </env>
+                <wait>
+                  <log>database system is ready to accept connections</log>
+                </wait>
+              </run>
+            </hauth_pgsql>
             <hauth>
               <!-- Registry account, if supplied, must end in a slash (e.g. "account/") -->
               <!-- The %l at the end translates to "latest" if version ends in "-SNAPSHOT" -->
@@ -265,7 +307,7 @@
                 <containerNamePattern>hauth</containerNamePattern>
                 <ports>
                   <!-- Start test container on an available host port -->
-                  <port>${http.port}:8888</port>
+                  <port>${test.http.port}:8888</port>
                 </ports>
                 <volumes>
                   <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
@@ -273,13 +315,8 @@
                 <env>
                 </env>
                 <!-- Test to make sure the server started as expected -->
-                <!-- <wait>
-                  <http>
-                    <url>http://localhost:${http.port}/status</url>
-                    <method>GET</method>
-                    <status>200</status>
-                  </http>
-                </wait>-->
+                <!-- <wait> <http> <url>http://localhost:${test.http.port}/status</url> <method>GET</method> <status>200</status> 
+                  </http> </wait> -->
               </run>
             </hauth>
           </imagesMap>
@@ -313,7 +350,7 @@
             </goals>
             <configuration>
               <allContainers>true</allContainers>
-              <stopNamePattern>bounce*</stopNamePattern>
+              <stopNamePattern>hauth*</stopNamePattern>
             </configuration>
           </execution>
 
@@ -361,7 +398,9 @@
             </goals>
             <configuration>
               <environmentVariables>
-                <HTTP_PORT>${http.port}</HTTP_PORT>
+                <HTTP_PORT>${test.http.port}</HTTP_PORT>
+                <DB_PORT>${test.db.port}</DB_PORT>
+                <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
               </environmentVariables>
               <includes>
                 <include>**/*IT.java</include>

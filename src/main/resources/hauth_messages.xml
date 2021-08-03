@@ -8,7 +8,7 @@
   <entry key="AUTH_000">{}</entry>
   <entry key="AUTH_001">Server started and listening at port: {}</entry>
   <entry key="AUTH_002">Verticle successfully undeployed: {} [{}]</entry>
-  <entry key="AUTH_003">Test database using auto-generated password: {}</entry>
+  <entry key="AUTH_003">Test database (on port: {}) using auto-generated password: {}</entry>
   <entry key="AUTH_004"></entry>
   <entry key="AUTH_005"></entry>
   <entry key="AUTH_006"></entry>

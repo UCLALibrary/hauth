@@ -27,6 +27,11 @@ public final class Config {
     public static final String DB_PASSWORD = "DB_PASSWORD";
 
     /**
+     * The ENV property for the database port.
+     */
+    public static final String DB_PORT = "DB_PORT";
+
+    /**
      * Constant classes should have private constructors.
      */
     private Config() {
