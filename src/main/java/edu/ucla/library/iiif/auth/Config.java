@@ -32,6 +32,11 @@ public final class Config {
     public static final String DB_PORT = "DB_PORT";
 
     /**
+     * The ENV property for the database cache port.
+     */
+    public static final String DB_CACHE_PORT = "DB_CACHE_PORT";
+
+    /**
      * Constant classes should have private constructors.
      */
     private Config() {
