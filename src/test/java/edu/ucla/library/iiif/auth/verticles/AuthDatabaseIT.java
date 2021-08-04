@@ -67,9 +67,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
         final Redis client = Redis.createClient(aVertx, getDbCacheClientOpts());
 
         client.connect().compose(connection -> {
-            final RedisAPI redis = RedisAPI.api(client);
-
-            return redis.lolwut(List.of());
+            return RedisAPI.api(client).lolwut(List.of());
         }).onSuccess(response -> {
             for (final String line : response.toString().split("\\r?\\n")) {
                 LOGGER.debug(line);
