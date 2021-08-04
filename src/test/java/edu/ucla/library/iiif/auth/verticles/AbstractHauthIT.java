@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import info.freelibrary.util.Logger;
+import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
@@ -16,6 +17,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.redis.client.RedisOptions;
 import io.vertx.sqlclient.PoolOptions;
 
 /**
@@ -69,7 +71,7 @@ public abstract class AbstractHauthIT {
      *
      * @return The test database's connection options
      */
-    protected PgConnectOptions getConnectionOpts() {
+    protected PgConnectOptions getDbConnectionOpts() {
         final String dbPassword = myConfig.getString(Config.DB_PASSWORD);
         final int dbPort = myConfig.getInteger(Config.DB_PORT, 5432);
 
@@ -78,6 +80,18 @@ public abstract class AbstractHauthIT {
 
         return new PgConnectOptions().setPort(dbPort).setHost(TestConstants.INADDR_ANY).setDatabase(POSTGRES)
                 .setUser(POSTGRES).setPassword(dbPassword);
+    }
+
+    /**
+     * Gets the test database cache's client options.
+     *
+     * @return The test database cache's client options
+     */
+    protected RedisOptions getDbCacheClientOpts() {
+        final int dbCachePort = myConfig.getInteger(Config.DB_CACHE_PORT, 6379);
+        final String connectionString = StringUtils.format("redis://localhost:{}", dbCachePort);
+
+        return new RedisOptions().setConnectionString(connectionString);
     }
 
     /**
