@@ -91,6 +91,8 @@ public abstract class AbstractHauthIT {
         final int dbCachePort = myConfig.getInteger(Config.DB_CACHE_PORT, 6379);
         final String connectionString = StringUtils.format("redis://localhost:{}", dbCachePort);
 
+        getLogger().debug(MessageCodes.AUTH_004, dbCachePort);
+
         return new RedisOptions().setConnectionString(connectionString);
     }
 
