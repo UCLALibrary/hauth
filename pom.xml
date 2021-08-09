@@ -257,6 +257,9 @@
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
       <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
         <groupId>io.fabric8</groupId>
         <artifactId>docker-maven-plugin</artifactId>
         <version>${docker.maven.plugin.version}</version>
@@ -310,7 +313,7 @@
                   <CANTALOUPE_ENDPOINT_ADMIN_SECRET>secret</CANTALOUPE_ENDPOINT_ADMIN_SECRET>
                   <CANTALOUPE_ENDPOINT_ADMIN_ENABLED>true</CANTALOUPE_ENDPOINT_ADMIN_ENABLED>
                   <CANTALOUPE_DELEGATE_SCRIPT_ENABLED>true</CANTALOUPE_DELEGATE_SCRIPT_ENABLED>
-<!--                   <CANTALOUPE_DELEGATE_SCRIPT_PATHNAME>delegate.jar</CANTALOUPE_DELEGATE_SCRIPT_PATHNAME> -->
+                  <CANTALOUPE_DELEGATE_SCRIPT_PATHNAME>delegate.jar</CANTALOUPE_DELEGATE_SCRIPT_PATHNAME>
                   <DELEGATE_URL>${snapshot.url}</DELEGATE_URL>
                 </env>
                 <wait>
