@@ -9,10 +9,10 @@
   <entry key="AUTH_001">Server started and listening at port: {}</entry>
   <entry key="AUTH_002">Verticle successfully undeployed: {} [{}]</entry>
   <entry key="AUTH_003">Test database (on port: {}) using auto-generated password: {}</entry>
-  <entry key="AUTH_004">Test database cache (on port: {})</entry>
-  <entry key="AUTH_005"></entry>
-  <entry key="AUTH_006"></entry>
-  <entry key="AUTH_007"></entry>
+  <entry key="AUTH_004">Row '{}' doesn't exist in table '{}'</entry>
+  <entry key="AUTH_005">Row '{}' could not be upserted to table '{}'</entry>
+  <entry key="AUTH_006">Query '{}' failed: {}</entry>
+  <entry key="AUTH_007">Got back '{}' but expected '{}'</entry>
   <entry key="AUTH_008"></entry>
   <entry key="AUTH_009"></entry>
   <entry key="AUTH_010"></entry>

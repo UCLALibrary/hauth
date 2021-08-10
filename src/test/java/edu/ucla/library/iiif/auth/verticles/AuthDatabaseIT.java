@@ -3,23 +3,24 @@ package edu.ucla.library.iiif.auth.verticles;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.List;
+import java.net.URI;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
+import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.MessageCodes;
+import edu.ucla.library.iiif.auth.services.DatabaseService;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.pgclient.PgPool;
-import io.vertx.redis.client.Redis;
-import io.vertx.redis.client.RedisAPI;
-import io.vertx.sqlclient.SqlClient;
 
 /**
  * A test of the database connection.
@@ -32,6 +33,22 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthDatabaseIT.class, MessageCodes.BUNDLE);
 
+    private DatabaseService myDbService;
+
+    @Override
+    @BeforeEach
+    public final void setUp(final Vertx aVertx, final VertxTestContext aContext) {
+        DatabaseService.create(aVertx).onSuccess(service -> {
+            myDbService = service;
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
+    }
+
+    @AfterEach
+    public final void tearDown(final Vertx aVertx, final VertxTestContext aContext) {
+        myDbService.close().onSuccess(success -> aContext.completeNow()).onFailure(aContext::failNow);
+    }
+
     /**
      * Tests the number of users in the database.
      *
@@ -40,10 +57,8 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     @Test
     public final void testDbUserCount(final Vertx aVertx, final VertxTestContext aContext) {
-        final SqlClient client = PgPool.client(aVertx, getDbConnectionOpts(), getPoolOpts());
-
         // Check that the number of users is what we expect it to be
-        client.query("select * from pg_catalog.pg_user;").execute(query -> {
+        myDbService.getSqlClient().query("select * from pg_catalog.pg_user;").execute(query -> {
             if (query.succeeded()) {
                 // Three users tells us our SQL load successfully completed
                 assertEquals(3, query.result().size());
@@ -51,29 +66,108 @@ public class AuthDatabaseIT extends AbstractHauthIT {
             } else {
                 aContext.failNow(query.cause());
             }
-
-            client.close();
         });
     }
 
     /**
-     * Tests that the database cache is up and usable.
+     * Tests reading an item whose "access level" has not been set.
      *
-     * @param aVertx A Vert.x instance used to run the tests
      * @param aContext A test context
      */
     @Test
-    final void testDbCacheConnection(final Vertx aVertx, final VertxTestContext aContext) {
-        final Redis client = Redis.createClient(aVertx, getDbCacheClientOpts());
+    final void testAccessLevelUnset(final VertxTestContext aContext) {
+        final String id = "unset";
+        final String expected = "null";
 
-        client.connect().compose(connection -> {
-            return RedisAPI.api(client).lolwut(List.of());
-        }).onSuccess(response -> {
-            for (final String line : response.toString().split("\\r?\\n")) {
-                LOGGER.debug(line);
-            }
+        myDbService.getAccessLevel(id).onFailure(details -> {
+            // The get should fail since nothing has been set for the id
             aContext.completeNow();
-        }).onFailure(aContext::failNow).onComplete(done -> client.close());
+        }).onSuccess(result -> {
+            completeIfExpectedElseFail(result, expected, aContext);
+        });
+    }
+
+    /**
+     * Tests reading an item whose "access level" has been set once.
+     *
+     * @param aContext A test context
+     */
+    @Test
+    final void testAccessLevelSetOnce(final VertxTestContext aContext) {
+        final String id = "setOnce";
+        final int expected = 1;
+        final Future<Void> setOnce = myDbService.setAccessLevel(id, expected);
+
+        setOnce.compose(put -> myDbService.getAccessLevel(id)).onFailure(aContext::failNow).onSuccess(result -> {
+            completeIfExpectedElseFail(result, expected, aContext);
+        });
+    }
+
+    /**
+     * Tests reading an item whose "access level" that has been set more than once.
+     *
+     * @param aContext A test context
+     */
+    @Test
+    final void testAccessLevelSetTwice(final VertxTestContext aContext) {
+        final String id = "setTwice";
+        final int expected = 2;
+        final Future<Void> setTwice = myDbService.setAccessLevel(id, 1)
+                .compose(put -> myDbService.setAccessLevel(id, expected));
+
+        setTwice.compose(put -> myDbService.getAccessLevel(id)).onFailure(aContext::failNow).onSuccess(result -> {
+            completeIfExpectedElseFail(result, expected, aContext);
+        });
+    }
+
+    /**
+     * Tests reading an origin whose "degraded allowed" has not been set.
+     *
+     * @param aContext A test context
+     */
+    @Test
+    final void testDegradedAllowedUnset(final VertxTestContext aContext) {
+        final URI url = URI.create("https://library.ucla.edu");
+        final String expected = "null";
+
+        myDbService.getDegradedAllowed(url).onFailure(details -> {
+            aContext.completeNow();
+        }).onSuccess(result -> {
+            completeIfExpectedElseFail(result, expected, aContext);
+        });
+    }
+
+    /**
+     * Tests reading an origin whose "degraded allowed" has been set once.
+     *
+     * @param aContext A test context
+     */
+    @Test
+    final void testDegradedAllowedSetOnce(final VertxTestContext aContext) {
+        final URI uri = URI.create("https://iiif.library.ucla.edu");
+        final boolean expected = true;
+        final Future<Void> setOnce = myDbService.setDegradedAllowed(uri, expected);
+
+        setOnce.compose(put -> myDbService.getDegradedAllowed(uri)).onFailure(aContext::failNow).onSuccess(result -> {
+            completeIfExpectedElseFail(result, expected, aContext);
+        });
+    }
+
+    /**
+     * Tests reading an origin whose "degraded allowed" has been set more than once.
+     *
+     * @param aContext A test context
+     */
+    @Test
+    final void testDegradedAllowedSetTwice(final VertxTestContext aContext) {
+        final URI uri = URI.create("https://iiif.sinaimanuscripts.library.ucla.edu");
+        final boolean expected = true;
+        final Future<Void> setTwice = myDbService.setDegradedAllowed(uri, false)
+                .compose(put -> myDbService.setDegradedAllowed(uri, expected));
+
+        setTwice.compose(put -> myDbService.getDegradedAllowed(uri)).onFailure(aContext::failNow).onSuccess(result -> {
+            completeIfExpectedElseFail(result, expected, aContext);
+        });
     }
 
     @Override
@@ -81,4 +175,20 @@ public class AuthDatabaseIT extends AbstractHauthIT {
         return LOGGER;
     }
 
+    /**
+     * Completes the context if the actual result and the expected result are equal, otherwise fails the context.
+     *
+     * @param <T> The type of result
+     * @param aResult The actual result
+     * @param aExpected The expected result
+     * @param aContext A test context
+     */
+    final private <T> void completeIfExpectedElseFail(final T aResult, final T aExpected,
+            final VertxTestContext aContext) {
+        if (aResult.equals(aExpected)) {
+            aContext.completeNow();
+        } else {
+            aContext.failNow(StringUtils.format(MessageCodes.AUTH_007, aResult, aExpected));
+        }
+    }
 }
