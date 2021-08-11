@@ -50,7 +50,7 @@
     <!-- Build plugin versions -->
     <jar.plugin.version>3.2.0</jar.plugin.version>
     <vertx.plugin.version>1.0.24</vertx.plugin.version>
-    <freelib.maven.version>0.2.0</freelib.maven.version>
+    <freelib.maven.version>0.3.0</freelib.maven.version>
     <deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
     <docker.maven.plugin.version>0.36.0</docker.maven.plugin.version>
 
@@ -186,6 +186,7 @@
             <portName>test.http.port</portName>
             <portName>test.db.port</portName>
             <portName>test.db.cache.port</portName>
+            <portName>test.iiif.images.port</portName>
           </portNames>
         </configuration>
         <executions>
@@ -220,6 +221,17 @@
             </goals>
             <configuration>
               <name>test.db.password</name>
+            </configuration>
+          </execution>
+          <execution>
+            <id>set-snapshot-url</id>
+            <goals>
+              <goal>set-snapshot-url</goal>
+            </goals>
+            <configuration>
+              <snapshot.artifact>cantaloupe-auth-delegate</snapshot.artifact>
+              <snapshot.group>edu.ucla.library</snapshot.group>
+              <snapshot.version>0.0.1-SNAPSHOT</snapshot.version>
             </configuration>
           </execution>
         </executions>
@@ -285,6 +297,30 @@
                 </wait>
               </run>
             </hauth_redis>
+            <hauth_cantaloupe>
+              <name>uclalibrary/cantaloupe:5.0.3-0</name>
+              <run>
+                <containerNamePattern>hauth_cantaloupe</containerNamePattern>
+                <ports>
+                  <port>${test.iiif.images.port}:8182</port>
+                </ports>
+                <volumes>
+                  <bind>
+                    <volume>${project.basedir}/src/test/resources/images/:/imageroot/</volume>
+                  </bind>
+                </volumes>
+                <env>
+                  <CANTALOUPE_ENDPOINT_ADMIN_SECRET>secret</CANTALOUPE_ENDPOINT_ADMIN_SECRET>
+                  <CANTALOUPE_ENDPOINT_ADMIN_ENABLED>true</CANTALOUPE_ENDPOINT_ADMIN_ENABLED>
+                  <CANTALOUPE_DELEGATE_SCRIPT_ENABLED>true</CANTALOUPE_DELEGATE_SCRIPT_ENABLED>
+                  <CANTALOUPE_DELEGATE_SCRIPT_PATHNAME>delegate.jar</CANTALOUPE_DELEGATE_SCRIPT_PATHNAME>
+                  <DELEGATE_URL>${snapshot.url}</DELEGATE_URL>
+                </env>
+                <wait>
+                  <log>Started @</log>
+                </wait>
+              </run>
+            </hauth_cantaloupe>
             <hauth>
               <!-- Registry account, if supplied, must end in a slash (e.g. "account/") -->
               <!-- The %l at the end translates to "latest" if version ends in "-SNAPSHOT" -->
@@ -336,6 +372,7 @@
                     <status>200</status>
                   </http>
                 </wait>
+                <skip>${skip.hauth.container}</skip>
               </run>
             </hauth>
           </imagesMap>
@@ -536,6 +573,7 @@
       <properties>
         <maven.test.skip>true</maven.test.skip>
         <jacoco.skip>true</jacoco.skip>
+        <skip.hauth.container>true</skip.hauth.container>
       </properties>
       <build>
         <plugins>
@@ -551,13 +589,6 @@
                 <configuration>
                   <outputDirectory>${basedir}/target/classes/</outputDirectory>
                   <resources>
-                    <resource>
-                      <directory>${basedir}/src/main/resources</directory>
-                      <filtering>true</filtering>
-                      <includes>
-                        <include>fester.yaml</include>
-                      </includes>
-                    </resource>
                     <resource>
                       <directory>${basedir}</directory>
                       <filtering>true</filtering>
@@ -578,7 +609,7 @@
             <executions>
               <execution>
                 <id>test-vertx-startup</id>
-                <phase>test</phase>
+                <phase>integration-test</phase>
                 <goals>
                   <goal>run</goal>
                 </goals>
