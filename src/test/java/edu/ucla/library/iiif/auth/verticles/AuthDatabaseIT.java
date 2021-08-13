@@ -33,6 +33,11 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthDatabaseIT.class, MessageCodes.BUNDLE);
 
+    /**
+     * A string that reads "null" (for logging purposes).
+     */
+    private static final String NULL = "null";
+
     private DatabaseService myDbService;
 
     @Override
@@ -44,6 +49,12 @@ public class AuthDatabaseIT extends AbstractHauthIT {
         }).onFailure(aContext::failNow);
     }
 
+    /**
+     * Tears down the test.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
     @AfterEach
     public final void tearDown(final Vertx aVertx, final VertxTestContext aContext) {
         myDbService.close().onSuccess(success -> aContext.completeNow()).onFailure(aContext::failNow);
@@ -77,7 +88,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
     @Test
     final void testGetAccessLevelUnset(final VertxTestContext aContext) {
         final String id = "unset";
-        final String expected = "null";
+        final String expected = NULL;
 
         myDbService.getAccessLevel(id).onFailure(details -> {
             // The get should fail since nothing has been set for the id
@@ -128,7 +139,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
     @Test
     final void testGetDegradedAllowedUnset(final VertxTestContext aContext) {
         final URI url = URI.create("https://library.ucla.edu");
-        final String expected = "null";
+        final String expected = NULL;
 
         myDbService.getDegradedAllowed(url).onFailure(details -> {
             aContext.completeNow();
@@ -183,7 +194,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      * @param aExpected The expected result
      * @param aContext A test context
      */
-    final private <T> void completeIfExpectedElseFail(final T aResult, final T aExpected,
+    private <T> void completeIfExpectedElseFail(final T aResult, final T aExpected,
             final VertxTestContext aContext) {
         if (aResult.equals(aExpected)) {
             aContext.completeNow();

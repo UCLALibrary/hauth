@@ -37,7 +37,7 @@ public interface DatabaseService {
      * @param aId The item identifier
      * @return A Future that resolves to the access level once it's been fetched
      */
-    Future<Integer> getAccessLevel(final String aId);
+    Future<Integer> getAccessLevel(String aId);
 
     /**
      * Sets the given "access level" of the item with the given identifier.
@@ -46,7 +46,7 @@ public interface DatabaseService {
      * @param aAccessLevel The access level to set for the item
      * @return A Future that resolves once the access level has been set
      */
-    Future<Void> setAccessLevel(final String aId, final int aAccessLevel);
+    Future<Void> setAccessLevel(String aId, int aAccessLevel);
 
     /**
      * Gets the "degraded allowed" for content hosted at the given origin.
@@ -54,7 +54,7 @@ public interface DatabaseService {
      * @param aOrigin The origin
      * @return A Future that resolves to the degraded allowed once it's been fetched
      */
-    Future<Boolean> getDegradedAllowed(final URI aOrigin);
+    Future<Boolean> getDegradedAllowed(URI aOrigin);
 
     /**
      * Sets the given "degraded allowed" for content hosted at the given origin.
@@ -63,7 +63,7 @@ public interface DatabaseService {
      * @param aDegradedAllowed The degraded allowed to set for the origin
      * @return A Future that resolves once the degraded allowed has been set
      */
-    Future<Void> setDegradedAllowed(final URI aOrigin, final boolean aDegradedAllowed);
+    Future<Void> setDegradedAllowed(URI aOrigin, boolean aDegradedAllowed);
 
     /**
      * Gets the underlying SQL client.
