@@ -37,8 +37,10 @@ These are a work in progress. None of these need to be supplied when running in 
 | HTTP_PORT | 8888 | No |
 | HTTP_HOST | 0.0.0.0 | No |
 | API_SPEC | hauth.yaml | No |
-| DB_HOST | XXX | Yes |
+| DB_HOST | localhost | No |
 | DB_PORT | 5432 | No |
+| DB_NAME | postgres | No |
+| DB_USER | postgres | No |
 | DB_PASSWORD | XXX | Yes |
 | IIIF_SERVER_HOST | XXX | Yes |
 | IIIF_SERVER_PORT | 8182 | No |
