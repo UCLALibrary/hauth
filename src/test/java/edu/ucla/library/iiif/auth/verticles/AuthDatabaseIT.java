@@ -75,7 +75,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      * @param aContext A test context
      */
     @Test
-    final void testAccessLevelUnset(final VertxTestContext aContext) {
+    final void testGetAccessLevelUnset(final VertxTestContext aContext) {
         final String id = "unset";
         final String expected = "null";
 
@@ -93,7 +93,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      * @param aContext A test context
      */
     @Test
-    final void testAccessLevelSetOnce(final VertxTestContext aContext) {
+    final void testGetAccessLevelSetOnce(final VertxTestContext aContext) {
         final String id = "setOnce";
         final int expected = 1;
         final Future<Void> setOnce = myDbService.setAccessLevel(id, expected);
@@ -109,7 +109,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      * @param aContext A test context
      */
     @Test
-    final void testAccessLevelSetTwice(final VertxTestContext aContext) {
+    final void testGetAccessLevelSetTwice(final VertxTestContext aContext) {
         final String id = "setTwice";
         final int expected = 2;
         final Future<Void> setTwice = myDbService.setAccessLevel(id, 1)
@@ -126,7 +126,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      * @param aContext A test context
      */
     @Test
-    final void testDegradedAllowedUnset(final VertxTestContext aContext) {
+    final void testGetDegradedAllowedUnset(final VertxTestContext aContext) {
         final URI url = URI.create("https://library.ucla.edu");
         final String expected = "null";
 
@@ -143,7 +143,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      * @param aContext A test context
      */
     @Test
-    final void testDegradedAllowedSetOnce(final VertxTestContext aContext) {
+    final void testGetDegradedAllowedSetOnce(final VertxTestContext aContext) {
         final URI url = URI.create("https://iiif.library.ucla.edu");
         final boolean expected = true;
         final Future<Void> setOnce = myDbService.setDegradedAllowed(url, expected);
@@ -159,7 +159,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      * @param aContext A test context
      */
     @Test
-    final void testDegradedAllowedSetTwice(final VertxTestContext aContext) {
+    final void testGetDegradedAllowedSetTwice(final VertxTestContext aContext) {
         final URI url = URI.create("https://iiif.sinaimanuscripts.library.ucla.edu");
         final boolean expected = true;
         final Future<Void> setTwice = myDbService.setDegradedAllowed(url, false)
