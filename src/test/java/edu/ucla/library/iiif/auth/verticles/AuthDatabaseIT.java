@@ -144,11 +144,11 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     @Test
     final void testDegradedAllowedSetOnce(final VertxTestContext aContext) {
-        final URI uri = URI.create("https://iiif.library.ucla.edu");
+        final URI url = URI.create("https://iiif.library.ucla.edu");
         final boolean expected = true;
-        final Future<Void> setOnce = myDbService.setDegradedAllowed(uri, expected);
+        final Future<Void> setOnce = myDbService.setDegradedAllowed(url, expected);
 
-        setOnce.compose(put -> myDbService.getDegradedAllowed(uri)).onFailure(aContext::failNow).onSuccess(result -> {
+        setOnce.compose(put -> myDbService.getDegradedAllowed(url)).onFailure(aContext::failNow).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
         });
     }
@@ -160,12 +160,12 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     @Test
     final void testDegradedAllowedSetTwice(final VertxTestContext aContext) {
-        final URI uri = URI.create("https://iiif.sinaimanuscripts.library.ucla.edu");
+        final URI url = URI.create("https://iiif.sinaimanuscripts.library.ucla.edu");
         final boolean expected = true;
-        final Future<Void> setTwice = myDbService.setDegradedAllowed(uri, false)
-                .compose(put -> myDbService.setDegradedAllowed(uri, expected));
+        final Future<Void> setTwice = myDbService.setDegradedAllowed(url, false)
+                .compose(put -> myDbService.setDegradedAllowed(url, expected));
 
-        setTwice.compose(put -> myDbService.getDegradedAllowed(uri)).onFailure(aContext::failNow).onSuccess(result -> {
+        setTwice.compose(put -> myDbService.getDegradedAllowed(url)).onFailure(aContext::failNow).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
         });
     }
