@@ -95,12 +95,12 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .execute(Tuple.of(aId));
 
         return queryResult.recover(error -> {
-            return Future.failedFuture(StringUtils.format(MessageCodes.AUTH_006, SELECT_ACCESS_LEVEL, error));
+            return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, SELECT_ACCESS_LEVEL, error));
         }).compose(select -> {
             if (hasSingleRow(select)) {
                 return Future.succeededFuture(select.iterator().next().getInteger("access_level"));
             } else {
-                return Future.failedFuture(StringUtils.format(MessageCodes.AUTH_004, aId, ITEMS));
+                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_004, aId, ITEMS));
             }
         });
     }
@@ -111,7 +111,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .execute(Tuple.of(aId, aAccessLevel));
 
         return queryResult.recover(error -> {
-            return Future.failedFuture(StringUtils.format(MessageCodes.AUTH_006, UPSERT_ACCESS_LEVEL, error));
+            return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, UPSERT_ACCESS_LEVEL, error));
         }).compose(upsert -> {
             if (hasSingleRow(upsert)) {
                 if (upsert.iterator().hasNext()) {
@@ -119,7 +119,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 }
                 return Future.succeededFuture();
             } else {
-                return Future.failedFuture(StringUtils.format(MessageCodes.AUTH_005, aId, ITEMS));
+                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_005, aId, ITEMS));
             }
         });
     }
@@ -130,12 +130,12 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .execute(Tuple.of(aOrigin.toString()));
 
         return queryResult.recover(error -> {
-            return Future.failedFuture(StringUtils.format(MessageCodes.AUTH_006, SELECT_DEGRADED_ALLOWED, error));
+            return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, SELECT_DEGRADED_ALLOWED, error));
         }).compose(select -> {
             if (hasSingleRow(select)) {
                 return Future.succeededFuture(select.iterator().next().getBoolean("degraded_allowed"));
             } else {
-                return Future.failedFuture(StringUtils.format(MessageCodes.AUTH_004, aOrigin, ORIGINS));
+                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_004, aOrigin, ORIGINS));
             }
         });
     }
@@ -146,7 +146,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .execute(Tuple.of(aOrigin.toString(), aDegradedAllowed));
 
         return queryResult.recover(error -> {
-            return Future.failedFuture(StringUtils.format(MessageCodes.AUTH_006, UPSERT_DEGRADED_ALLOWED, error));
+            return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, UPSERT_DEGRADED_ALLOWED, error));
         }).compose(upsert -> {
             if (hasSingleRow(upsert)) {
                 if (upsert.iterator().hasNext()) {
@@ -154,7 +154,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 }
                 return Future.succeededFuture();
             } else {
-                return Future.failedFuture(StringUtils.format(MessageCodes.AUTH_005, aOrigin, ORIGINS));
+                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_005, aOrigin, ORIGINS));
             }
         });
     }

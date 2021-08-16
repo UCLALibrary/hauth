@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
-import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
@@ -199,7 +198,7 @@ public class AuthDatabaseIT extends AbstractHauthIT {
         if (aResult.equals(aExpected)) {
             aContext.completeNow();
         } else {
-            aContext.failNow(StringUtils.format(MessageCodes.AUTH_007, aResult, aExpected));
+            aContext.failNow(LOGGER.getMessage(MessageCodes.AUTH_007, aResult, aExpected));
         }
     }
 }
