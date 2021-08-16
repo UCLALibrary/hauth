@@ -4,6 +4,7 @@ package edu.ucla.library.iiif.auth.verticles;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.redis.client.RedisAPI;
 
 /**
  * A test of the database connection.
@@ -178,6 +180,22 @@ public class AuthDatabaseIT extends AbstractHauthIT {
         setTwice.compose(put -> myDbService.getDegradedAllowed(url)).onFailure(aContext::failNow).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
         });
+    }
+
+    /**
+     * Tests that the database cache is up and usable.
+     *
+     * @param aVertx A Vert.x instance used to run the tests
+     * @param aContext A test context
+     */
+    @Test
+    final void testDbCacheConnection(final Vertx aVertx, final VertxTestContext aContext) {
+        RedisAPI.api(myDbService.getRedisClient()).lolwut(List.of()).onSuccess(response -> {
+            for (final String line : response.toString().split("\\r?\\n")) {
+                LOGGER.debug(line);
+            }
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
     }
 
     @Override

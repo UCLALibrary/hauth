@@ -16,6 +16,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
+import io.vertx.redis.client.Redis;
+import io.vertx.redis.client.RedisOptions;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -75,6 +77,11 @@ public class DatabaseServiceImpl implements DatabaseService {
     private final SqlClient myDbClient;
 
     /**
+     * The underlying Redis client.
+     */
+    private final Redis myDbCacheClient;
+
+    /**
      * Creates an instance of the service.
      *
      * @param aVertx A Vert.x instance
@@ -82,10 +89,21 @@ public class DatabaseServiceImpl implements DatabaseService {
      */
     public DatabaseServiceImpl(final Vertx aVertx, final JsonObject aConfig) {
         myDbClient = PgPool.client(aVertx, getConnectionOpts(aConfig), getPoolOpts());
+        myDbCacheClient = Redis.createClient(aVertx, getDbCacheClientOpts(aConfig));
+    }
+
+    @Override
+    public Future<DatabaseService> open() {
+        final DatabaseService self = this;
+
+        return getRedisClient().connect().compose(connection -> Future.succeededFuture(self)).recover(error -> {
+            return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_009, error.getMessage()));
+        });
     }
 
     @Override
     public Future<Void> close() {
+        getRedisClient().close();
         return getSqlClient().close();
     }
 
@@ -164,6 +182,11 @@ public class DatabaseServiceImpl implements DatabaseService {
         return myDbClient;
     }
 
+    @Override
+    public Redis getRedisClient() {
+        return myDbCacheClient;
+    }
+
     /**
      * Gets the pooling options for Vert.x's Postgres client.
      *
@@ -191,6 +214,21 @@ public class DatabaseServiceImpl implements DatabaseService {
 
         return new PgConnectOptions().setPort(dbPort).setHost(dbHost).setDatabase(dbName).setUser(dbUser)
                 .setPassword(dbPassword);
+    }
+
+    /**
+     * Gets the test database cache's client options.
+     *
+     * @param aConfig A configuration
+     * @return The test database cache's client options
+     */
+    private RedisOptions getDbCacheClientOpts(final JsonObject aConfig) {
+        final int dbCachePort = aConfig.getInteger(Config.DB_CACHE_PORT, 6379);
+        final String connectionString = StringUtils.format("redis://localhost:{}", dbCachePort);
+
+        LOGGER.debug(MessageCodes.AUTH_008, dbCachePort);
+
+        return new RedisOptions().setConnectionString(connectionString);
     }
 
     /**

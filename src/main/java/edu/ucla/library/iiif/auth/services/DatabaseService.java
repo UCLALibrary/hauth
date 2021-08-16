@@ -5,6 +5,7 @@ import java.net.URI;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.redis.client.Redis;
 import io.vertx.sqlclient.SqlClient;
 
 /**
@@ -20,9 +21,16 @@ public interface DatabaseService {
      */
     static Future<DatabaseService> create(final Vertx aVertx) {
         return ConfigRetriever.create(aVertx).getConfig().compose(config -> {
-            return Future.succeededFuture(new DatabaseServiceImpl(aVertx, config));
+            return new DatabaseServiceImpl(aVertx, config).open();
         });
     }
+
+    /**
+     * Opens the underlying connections required by this service.
+     *
+     * @return A Future that resolves once the connections have been opened
+     */
+    Future<DatabaseService> open();
 
     /**
      * Closes the underlying connections required by this service.
@@ -71,4 +79,11 @@ public interface DatabaseService {
      * @return The underlying SQL client
      */
     SqlClient getSqlClient();
+
+    /**
+     * Gets the underlying Redis client.
+     *
+     * @return The underlying Redis client.
+     */
+    Redis getRedisClient();
 }

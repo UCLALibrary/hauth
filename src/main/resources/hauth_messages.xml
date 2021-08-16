@@ -13,7 +13,7 @@
   <entry key="AUTH_005">Row '{}' could not be upserted to table '{}'</entry>
   <entry key="AUTH_006">Query '{}' failed: {}</entry>
   <entry key="AUTH_007">Got back '{}' but expected '{}'</entry>
-  <entry key="AUTH_008"></entry>
+  <entry key="AUTH_008">Test database cache (on port: {}) (the database is not currently using this external cache)</entry>
   <entry key="AUTH_009"></entry>
   <entry key="AUTH_010"></entry>
 
