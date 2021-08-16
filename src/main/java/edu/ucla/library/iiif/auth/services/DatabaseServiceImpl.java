@@ -1,5 +1,7 @@
 package edu.ucla.library.iiif.auth.services;
 
+import static info.freelibrary.util.Constants.SPACE;
+
 import java.net.URI;
 
 import edu.ucla.library.iiif.auth.Config;
@@ -46,11 +48,6 @@ public class DatabaseServiceImpl implements DatabaseService {
     private static final String ORIGINS = "origins";
 
     /**
-     * A single space.
-     */
-    private static final String SPACE = " ";
-
-    /**
      * The PreparedQuery template for selecting an item's "access level".
      */
     private static final String SELECT_ACCESS_LEVEL = "SELECT access_level FROM items WHERE uid = $1";
@@ -70,8 +67,7 @@ public class DatabaseServiceImpl implements DatabaseService {
      * The PreparedQuery template for upserting an origin's "degraded allowed".
      */
     private static final String UPSERT_DEGRADED_ALLOWED = String.join(SPACE, "INSERT INTO origins VALUES ($1, $2)",
-            "ON CONFLICT (url) DO ", "UPDATE SET degraded_allowed = EXCLUDED.degraded_allowed");
-
+            "ON CONFLICT (url) DO", "UPDATE SET degraded_allowed = EXCLUDED.degraded_allowed");
 
     /**
      * The underlying SQL client.
