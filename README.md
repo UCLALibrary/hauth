@@ -42,6 +42,9 @@ These are a work in progress. None of these need to be supplied when running in 
 | DB_NAME | postgres | No |
 | DB_USER | postgres | No |
 | DB_PASSWORD | XXX | Yes |
+| DB_CONNECTION_POOL_MAX_SIZE | 5 | No |
+| DB_RECONNECT_ATTEMPTS | 2 | No |
+| DB_RECONNECT_INTERVAL | 1000 | No |
 | IIIF_SERVER_HOST | XXX | Yes |
 | IIIF_SERVER_PORT | 8182 | No |
 --- | --- | ---

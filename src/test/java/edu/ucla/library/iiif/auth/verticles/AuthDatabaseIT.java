@@ -3,7 +3,6 @@ package edu.ucla.library.iiif.auth.verticles;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.net.URI;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -19,9 +18,12 @@ import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.redis.client.RedisAPI;
+import io.vertx.serviceproxy.ServiceBinder;
 
 /**
  * A test of the database connection.
@@ -39,13 +41,37 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     private static final String NULL = "null";
 
-    private DatabaseService myDbService;
+    /**
+     * The service proxy for testing typical client usage.
+     */
+    private DatabaseService myServiceProxy;
+
+    /**
+     * Only used for event bus unregistration.
+     */
+    private MessageConsumer<JsonObject> myService;
+
+    /**
+     * Non-primitive types like {@link PgPool} cannot be sent over the event bus, so instead of registering a message
+     * codec for these types, we can call e.g. {@link DatabaseService#getConnectionPool} directly on the proxy's
+     * underlying service instance.
+     */
+    private DatabaseService myUnderlyingService;
 
     @Override
     @BeforeEach
     public final void setUp(final Vertx aVertx, final VertxTestContext aContext) {
-        DatabaseService.create(aVertx).onSuccess(service -> {
-            myDbService = service;
+        // In order to test the service proxy, we need to instantiate the service first
+        DatabaseService.create(aVertx).compose(service -> {
+            final ServiceBinder binder = new ServiceBinder(aVertx);
+
+            myService = binder.setAddress(DatabaseService.ADDRESS).register(DatabaseService.class, service);
+            myUnderlyingService = service;
+
+            // Now we can instantiate a proxy to the service
+            return DatabaseService.createProxy(aVertx);
+        }).onSuccess(serviceProxy -> {
+            myServiceProxy = serviceProxy;
             aContext.completeNow();
         }).onFailure(aContext::failNow);
     }
@@ -58,7 +84,9 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     @AfterEach
     public final void tearDown(final Vertx aVertx, final VertxTestContext aContext) {
-        myDbService.close().onSuccess(success -> aContext.completeNow()).onFailure(aContext::failNow);
+        // Close the service proxy, then unregister the service (order important)
+        myServiceProxy.close().compose(result -> myService.unregister()).onSuccess(success -> aContext.completeNow())
+                .onFailure(aContext::failNow);
     }
 
     /**
@@ -70,15 +98,15 @@ public class AuthDatabaseIT extends AbstractHauthIT {
     @Test
     public final void testDbUserCount(final Vertx aVertx, final VertxTestContext aContext) {
         // Check that the number of users is what we expect it to be
-        myDbService.getSqlClient().query("select * from pg_catalog.pg_user;").execute(query -> {
-            if (query.succeeded()) {
-                // Three users tells us our SQL load successfully completed
-                assertEquals(3, query.result().size());
-                aContext.completeNow();
-            } else {
-                aContext.failNow(query.cause());
-            }
-        });
+        myUnderlyingService.getConnectionPool().compose(pool -> pool.withConnection(connection -> {
+            final String sql = "select * from pg_catalog.pg_user;";
+
+            return connection.query(sql).execute();
+        })).onSuccess(result -> {
+            // Three users tells us our SQL load successfully completed
+            assertEquals(3, result.size());
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
     }
 
     /**
@@ -91,10 +119,11 @@ public class AuthDatabaseIT extends AbstractHauthIT {
         final String id = "unset";
         final String expected = NULL;
 
-        myDbService.getAccessLevel(id).onFailure(details -> {
+        myServiceProxy.getAccessLevel(id).onFailure(details -> {
             // The get should fail since nothing has been set for the id
             aContext.completeNow();
         }).onSuccess(result -> {
+            // The following will always fail
             completeIfExpectedElseFail(result, expected, aContext);
         });
     }
@@ -108,11 +137,11 @@ public class AuthDatabaseIT extends AbstractHauthIT {
     final void testGetAccessLevelSetOnce(final VertxTestContext aContext) {
         final String id = "setOnce";
         final int expected = 1;
-        final Future<Void> setOnce = myDbService.setAccessLevel(id, expected);
+        final Future<Void> setOnce = myServiceProxy.setAccessLevel(id, expected);
 
-        setOnce.compose(put -> myDbService.getAccessLevel(id)).onFailure(aContext::failNow).onSuccess(result -> {
+        setOnce.compose(put -> myServiceProxy.getAccessLevel(id)).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
-        });
+        }).onFailure(aContext::failNow);
     }
 
     /**
@@ -124,12 +153,12 @@ public class AuthDatabaseIT extends AbstractHauthIT {
     final void testGetAccessLevelSetTwice(final VertxTestContext aContext) {
         final String id = "setTwice";
         final int expected = 2;
-        final Future<Void> setTwice = myDbService.setAccessLevel(id, 1)
-                .compose(put -> myDbService.setAccessLevel(id, expected));
+        final Future<Void> setTwice = myServiceProxy.setAccessLevel(id, 1)
+                .compose(put -> myServiceProxy.setAccessLevel(id, expected));
 
-        setTwice.compose(put -> myDbService.getAccessLevel(id)).onFailure(aContext::failNow).onSuccess(result -> {
+        setTwice.compose(put -> myServiceProxy.getAccessLevel(id)).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
-        });
+        }).onFailure(aContext::failNow);
     }
 
     /**
@@ -139,13 +168,13 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     @Test
     final void testGetDegradedAllowedUnset(final VertxTestContext aContext) {
-        final URI url = URI.create("https://library.ucla.edu");
+        final String url = "https://library.ucla.edu";
         final String expected = NULL;
 
-        myDbService.getDegradedAllowed(url).onFailure(details -> {
-            aContext.completeNow();
-        }).onSuccess(result -> {
+        myServiceProxy.getDegradedAllowed(url).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
+        }).onFailure(details -> {
+            aContext.completeNow();
         });
     }
 
@@ -156,13 +185,13 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     @Test
     final void testGetDegradedAllowedSetOnce(final VertxTestContext aContext) {
-        final URI url = URI.create("https://iiif.library.ucla.edu");
+        final String url = "https://iiif.library.ucla.edu";
         final boolean expected = true;
-        final Future<Void> setOnce = myDbService.setDegradedAllowed(url, expected);
+        final Future<Void> setOnce = myServiceProxy.setDegradedAllowed(url, expected);
 
-        setOnce.compose(put -> myDbService.getDegradedAllowed(url)).onFailure(aContext::failNow).onSuccess(result -> {
+        setOnce.compose(put -> myServiceProxy.getDegradedAllowed(url)).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
-        });
+        }).onFailure(aContext::failNow);
     }
 
     /**
@@ -172,14 +201,14 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     @Test
     final void testGetDegradedAllowedSetTwice(final VertxTestContext aContext) {
-        final URI url = URI.create("https://iiif.sinaimanuscripts.library.ucla.edu");
+        final String url = "https://iiif.sinaimanuscripts.library.ucla.edu";
         final boolean expected = true;
-        final Future<Void> setTwice = myDbService.setDegradedAllowed(url, false)
-                .compose(put -> myDbService.setDegradedAllowed(url, expected));
+        final Future<Void> setTwice = myServiceProxy.setDegradedAllowed(url, false)
+                .compose(put -> myServiceProxy.setDegradedAllowed(url, expected));
 
-        setTwice.compose(put -> myDbService.getDegradedAllowed(url)).onFailure(aContext::failNow).onSuccess(result -> {
+        setTwice.compose(put -> myServiceProxy.getDegradedAllowed(url)).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
-        });
+        }).onFailure(aContext::failNow);
     }
 
     /**
@@ -190,7 +219,9 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     @Test
     final void testDbCacheConnection(final Vertx aVertx, final VertxTestContext aContext) {
-        RedisAPI.api(myDbService.getRedisClient()).lolwut(List.of()).onSuccess(response -> {
+        myUnderlyingService.getRedisClient().compose(client -> {
+            return RedisAPI.api(client).lolwut(List.of());
+        }).onSuccess(response -> {
             for (final String line : response.toString().split("\\r?\\n")) {
                 LOGGER.debug(line);
             }

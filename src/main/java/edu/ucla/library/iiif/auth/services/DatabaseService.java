@@ -1,42 +1,61 @@
 package edu.ucla.library.iiif.auth.services;
 
-import java.net.URI;
-
+import io.vertx.codegen.annotations.ProxyClose;
+import io.vertx.codegen.annotations.ProxyGen;
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.pgclient.PgPool;
 import io.vertx.redis.client.Redis;
-import io.vertx.sqlclient.SqlClient;
+import io.vertx.serviceproxy.ServiceProxyBuilder;
 
 /**
- * A service for accessing the Hauth SQL database.
+ * A service for accessing the Hauth database.
  */
+@ProxyGen
+@VertxGen
 public interface DatabaseService {
+
+    /**
+     * The event bus address that the service will be registered on, for access via service proxies.
+     */
+    String ADDRESS = DatabaseService.class.getName();
 
     /**
      * Creates an instance of the service.
      *
      * @param aVertx A Vert.x instance
-     * @return The service instance
+     * @return A Future that resolves to the service instance
      */
     static Future<DatabaseService> create(final Vertx aVertx) {
         return ConfigRetriever.create(aVertx).getConfig().compose(config -> {
-            return new DatabaseServiceImpl(aVertx, config).open();
+            return Future.succeededFuture(new DatabaseServiceImpl(aVertx, config));
         });
     }
 
     /**
-     * Opens the underlying connections required by this service.
+     * Creates an instance of the service proxy. Note that the service itself must have already been instantiated with
+     * {@link #create} in order for this method to succeed.
      *
-     * @return A Future that resolves once the connections have been opened
+     * @param aVertx A Vert.x instance
+     * @return A Future that resolves to the service proxy instance
      */
-    Future<DatabaseService> open();
+    static Future<DatabaseService> createProxy(final Vertx aVertx) {
+        return ConfigRetriever.create(aVertx).getConfig().compose(config -> {
+            final DatabaseService service = new ServiceProxyBuilder(aVertx).setAddress(ADDRESS)
+                    .build(DatabaseService.class);
+
+            return Future.succeededFuture(service);
+        });
+    }
 
     /**
      * Closes the underlying connections required by this service.
      *
      * @return A Future that resolves once the connections have been closed
      */
+    @ProxyClose
     Future<Void> close();
 
     /**
@@ -62,7 +81,7 @@ public interface DatabaseService {
      * @param aOrigin The origin
      * @return A Future that resolves to the degraded allowed once it's been fetched
      */
-    Future<Boolean> getDegradedAllowed(URI aOrigin);
+    Future<Boolean> getDegradedAllowed(String aOrigin);
 
     /**
      * Sets the given "degraded allowed" for content hosted at the given origin.
@@ -71,19 +90,19 @@ public interface DatabaseService {
      * @param aDegradedAllowed The degraded allowed to set for the origin
      * @return A Future that resolves once the degraded allowed has been set
      */
-    Future<Void> setDegradedAllowed(URI aOrigin, boolean aDegradedAllowed);
+    Future<Void> setDegradedAllowed(String aOrigin, boolean aDegradedAllowed);
 
     /**
-     * Gets the underlying SQL client.
+     * Gets the underlying database connection pool.
      *
-     * @return The underlying SQL client
+     * @return A Future that resolves to the underlying database connection pool
      */
-    SqlClient getSqlClient();
+    Future<PgPool> getConnectionPool();
 
     /**
      * Gets the underlying Redis client.
      *
-     * @return The underlying Redis client.
+     * @return A Future that resolves to the underlying Redis client
      */
-    Redis getRedisClient();
+    Future<Redis> getRedisClient();
 }

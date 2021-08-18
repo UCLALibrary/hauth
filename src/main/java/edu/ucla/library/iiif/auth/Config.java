@@ -52,6 +52,21 @@ public final class Config {
     public static final String DB_CACHE_PORT = "DB_CACHE_PORT";
 
     /**
+     * The ENV property for the max size of the database connection pool.
+     */
+    public static final String DB_CONNECTION_POOL_MAX_SIZE = "DB_CONNECTION_POOL_MAX_SIZE";
+
+    /**
+     * The ENV property for the number of database reconnect attempts.
+     */
+    public static final String DB_RECONNECT_ATTEMPTS = "DB_RECONNECT_ATTEMPTS";
+
+    /**
+     * The ENV property for the length of the database reconnect interval (in milliseconds).
+     */
+    public static final String DB_RECONNECT_INTERVAL = "DB_RECONNECT_INTERVAL";
+
+    /**
      * Constant classes should have private constructors.
      */
     private Config() {
