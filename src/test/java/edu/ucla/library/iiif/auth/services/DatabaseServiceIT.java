@@ -1,5 +1,5 @@
 
-package edu.ucla.library.iiif.auth.verticles;
+package edu.ucla.library.iiif.auth.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +14,6 @@ import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
 import edu.ucla.library.iiif.auth.MessageCodes;
-import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -29,12 +28,12 @@ import io.vertx.serviceproxy.ServiceBinder;
  * A test of the database connection.
  */
 @ExtendWith(VertxExtension.class)
-public class AuthDatabaseIT extends AbstractHauthIT {
+public class DatabaseServiceIT {
 
     /**
      * The logger used by these tests.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthDatabaseIT.class, MessageCodes.BUNDLE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseServiceIT.class, MessageCodes.BUNDLE);
 
     /**
      * A string that reads "null" (for logging purposes).
@@ -58,7 +57,12 @@ public class AuthDatabaseIT extends AbstractHauthIT {
      */
     private DatabaseService myUnderlyingService;
 
-    @Override
+    /**
+     * Sets up the test.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
     @BeforeEach
     public final void setUp(final Vertx aVertx, final VertxTestContext aContext) {
         // In order to test the service proxy, we need to instantiate the service first
@@ -229,7 +233,6 @@ public class AuthDatabaseIT extends AbstractHauthIT {
         }).onFailure(aContext::failNow);
     }
 
-    @Override
     protected Logger getLogger() {
         return LOGGER;
     }
