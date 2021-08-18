@@ -69,6 +69,11 @@ public class DatabaseServiceImpl implements DatabaseService {
             "ON CONFLICT (url) DO", "UPDATE SET degraded_allowed = EXCLUDED.degraded_allowed");
 
     /**
+     * The database's default hostname.
+     */
+    private static final String DEFAULT_HOSTNAME = "localhost";
+
+    /**
      * The underlying SQL client.
      */
     private final PgPool myDbConnectionPool;
@@ -190,7 +195,7 @@ public class DatabaseServiceImpl implements DatabaseService {
      * @return The database's connection options
      */
     private PgConnectOptions getConnectionOpts(final JsonObject aConfig) {
-        final String dbHost = aConfig.getString(Config.DB_HOST, "localhost");
+        final String dbHost = aConfig.getString(Config.DB_HOST, DEFAULT_HOSTNAME);
         final int dbPort = aConfig.getInteger(Config.DB_PORT, 5432);
         final String dbName = aConfig.getString(Config.DB_NAME, POSTGRES);
         final String dbUser = aConfig.getString(Config.DB_USER, POSTGRES);
@@ -213,8 +218,9 @@ public class DatabaseServiceImpl implements DatabaseService {
      * @return The test database cache's client options
      */
     private RedisOptions getDbCacheClientOpts(final JsonObject aConfig) {
+        final String dbCacheHost = aConfig.getString(Config.DB_CACHE_HOST, DEFAULT_HOSTNAME);
         final int dbCachePort = aConfig.getInteger(Config.DB_CACHE_PORT, 6379);
-        final String connectionString = StringUtils.format("redis://localhost:{}", dbCachePort);
+        final String connectionString = StringUtils.format("redis://{}:{}", dbCacheHost, dbCachePort);
 
         LOGGER.debug(MessageCodes.AUTH_008, dbCachePort);
 

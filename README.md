@@ -26,7 +26,7 @@ To bring up the server locally for testing or development purposes, run:
 
     mvn -Plive integration-test
 
-This will spin up Hauth locally, along with the PostgreSQL and Cantaloupe Docker containers. You can also, optionally, supply `-Ddocker.showLogs` if you want to see the containers' logs.
+This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloupe Docker containers. You can also, optionally, supply `-Ddocker.showLogs` if you want to see the containers' logs.
 
 ## Environmental Properties
 
@@ -45,6 +45,8 @@ These are a work in progress. None of these need to be supplied when running in 
 | DB_CONNECTION_POOL_MAX_SIZE | 5 | No |
 | DB_RECONNECT_ATTEMPTS | 2 | No |
 | DB_RECONNECT_INTERVAL | 1000 | No |
+| DB_CACHE_HOST | localhost | No |
+| DB_CACHE_PORT | 6379 | No |
 | IIIF_SERVER_HOST | XXX | Yes |
 | IIIF_SERVER_PORT | 8182 | No |
 --- | --- | ---

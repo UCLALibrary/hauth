@@ -302,6 +302,18 @@
                 </wait>
               </run>
             </hauth_pgsql>
+            <hauth_redis>
+              <name>redis:6.2.5-alpine</name>
+              <run>
+                <containerNamePattern>hauth_redis</containerNamePattern>
+                <ports>
+                  <port>${test.db.cache.port}:6379</port>
+                </ports>
+                <wait>
+                  <log>Ready to accept connections</log>
+                </wait>
+              </run>
+            </hauth_redis>
             <hauth_cantaloupe>
               <name>uclalibrary/cantaloupe:5.0.3-0</name>
               <run>
@@ -326,18 +338,6 @@
                 </wait>
               </run>
             </hauth_cantaloupe>
-            <hauth_redis>
-              <name>redis:6.2.5-alpine</name>
-              <run>
-                <containerNamePattern>hauth_redis</containerNamePattern>
-                <ports>
-                  <port>${test.db.cache.port}:6379</port>
-                </ports>
-                <wait>
-                  <log>Ready to accept connections</log>
-                </wait>
-              </run>
-            </hauth_redis>
             <hauth>
               <!-- Registry account, if supplied, must end in a slash (e.g. "account/") -->
               <!-- The %l at the end translates to "latest" if version ends in "-SNAPSHOT" -->
