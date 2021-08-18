@@ -3,9 +3,9 @@ package edu.ucla.library.iiif.auth.services;
 import io.vertx.codegen.annotations.ProxyClose;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.config.ConfigRetriever;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgPool;
 import io.vertx.redis.client.Redis;
 import io.vertx.serviceproxy.ServiceProxyBuilder;
@@ -26,12 +26,11 @@ public interface DatabaseService {
      * Creates an instance of the service.
      *
      * @param aVertx A Vert.x instance
-     * @return A Future that resolves to the service instance
+     * @param aConfig A configuration
+     * @return The service instance
      */
-    static Future<DatabaseService> create(final Vertx aVertx) {
-        return ConfigRetriever.create(aVertx).getConfig().compose(config -> {
-            return Future.succeededFuture(new DatabaseServiceImpl(aVertx, config));
-        });
+    static DatabaseService create(final Vertx aVertx, final JsonObject aConfig) {
+        return new DatabaseServiceImpl(aVertx, aConfig);
     }
 
     /**
@@ -39,7 +38,7 @@ public interface DatabaseService {
      * {@link #create} in order for this method to succeed.
      *
      * @param aVertx A Vert.x instance
-     * @return The service proxy instance
+     * @return A service proxy instance
      */
     static DatabaseService createProxy(final Vertx aVertx) {
         return new ServiceProxyBuilder(aVertx).setAddress(ADDRESS).build(DatabaseService.class);

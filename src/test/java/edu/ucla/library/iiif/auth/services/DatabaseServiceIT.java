@@ -15,6 +15,7 @@ import info.freelibrary.util.LoggerFactory;
 
 import edu.ucla.library.iiif.auth.MessageCodes;
 
+import io.vertx.config.ConfigRetriever;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -65,8 +66,9 @@ public class DatabaseServiceIT {
      */
     @BeforeEach
     public final void setUp(final Vertx aVertx, final VertxTestContext aContext) {
-        // In order to test the service proxy, we need to instantiate the service first
-        DatabaseService.create(aVertx).onSuccess(service -> {
+        ConfigRetriever.create(aVertx).getConfig().onSuccess(config -> {
+            // In order to test the service proxy, we need to instantiate the service first
+            final DatabaseService service = DatabaseService.create(aVertx, config);
             final ServiceBinder binder = new ServiceBinder(aVertx);
 
             // Register the service on the event bus, and keep a reference to it so it can be unregistered later
