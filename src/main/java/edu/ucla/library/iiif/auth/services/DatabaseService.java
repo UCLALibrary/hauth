@@ -39,15 +39,10 @@ public interface DatabaseService {
      * {@link #create} in order for this method to succeed.
      *
      * @param aVertx A Vert.x instance
-     * @return A Future that resolves to the service proxy instance
+     * @return The service proxy instance
      */
-    static Future<DatabaseService> createProxy(final Vertx aVertx) {
-        return ConfigRetriever.create(aVertx).getConfig().compose(config -> {
-            final DatabaseService service = new ServiceProxyBuilder(aVertx).setAddress(ADDRESS)
-                    .build(DatabaseService.class);
-
-            return Future.succeededFuture(service);
-        });
+    static DatabaseService createProxy(final Vertx aVertx) {
+        return new ServiceProxyBuilder(aVertx).setAddress(ADDRESS).build(DatabaseService.class);
     }
 
     /**

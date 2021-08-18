@@ -66,16 +66,19 @@ public class DatabaseServiceIT {
     @BeforeEach
     public final void setUp(final Vertx aVertx, final VertxTestContext aContext) {
         // In order to test the service proxy, we need to instantiate the service first
-        DatabaseService.create(aVertx).compose(service -> {
+        DatabaseService.create(aVertx).onSuccess(service -> {
             final ServiceBinder binder = new ServiceBinder(aVertx);
 
+            // Register the service on the event bus, and keep a reference to it so it can be unregistered later
             myService = binder.setAddress(DatabaseService.ADDRESS).register(DatabaseService.class, service);
+
+            // Useful for testing certain methods of DatabaseService that would require custom message codecs to use the
+            // event bus
             myUnderlyingService = service;
 
             // Now we can instantiate a proxy to the service
-            return DatabaseService.createProxy(aVertx);
-        }).onSuccess(serviceProxy -> {
-            myServiceProxy = serviceProxy;
+            myServiceProxy = DatabaseService.createProxy(aVertx);
+
             aContext.completeNow();
         }).onFailure(aContext::failNow);
     }
