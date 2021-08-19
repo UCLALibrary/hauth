@@ -55,19 +55,19 @@ public interface DatabaseService {
     /**
      * Gets the "access level" of the item with the given identifier.
      *
-     * @param aId The item identifier
+     * @param aID The item identifier
      * @return A Future that resolves to the access level once it's been fetched
      */
-    Future<Integer> getAccessLevel(String aId);
+    Future<Integer> getAccessLevel(String aID);
 
     /**
      * Sets the given "access level" of the item with the given identifier.
      *
-     * @param aId The item identifier
+     * @param aID The item identifier
      * @param aAccessLevel The access level to set for the item
      * @return A Future that resolves once the access level has been set
      */
-    Future<Void> setAccessLevel(String aId, int aAccessLevel);
+    Future<Void> setAccessLevel(String aID, int aAccessLevel);
 
     /**
      * Gets the "degraded allowed" for content hosted at the given origin.

@@ -101,24 +101,24 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public Future<Integer> getAccessLevel(final String aId) {
+    public Future<Integer> getAccessLevel(final String aID) {
         return myDbConnectionPool.withConnection(connection -> {
-            return connection.preparedQuery(SELECT_ACCESS_LEVEL).execute(Tuple.of(aId));
+            return connection.preparedQuery(SELECT_ACCESS_LEVEL).execute(Tuple.of(aID));
         }).recover(error -> {
             return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, SELECT_ACCESS_LEVEL, error));
         }).compose(select -> {
             if (hasSingleRow(select)) {
                 return Future.succeededFuture(select.iterator().next().getInteger("access_level"));
             } else {
-                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_004, aId, ITEMS));
+                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_004, aID, ITEMS));
             }
         });
     }
 
     @Override
-    public Future<Void> setAccessLevel(final String aId, final int aAccessLevel) {
+    public Future<Void> setAccessLevel(final String aID, final int aAccessLevel) {
         return myDbConnectionPool.withConnection(connection -> {
-            return connection.preparedQuery(UPSERT_ACCESS_LEVEL).execute(Tuple.of(aId, aAccessLevel));
+            return connection.preparedQuery(UPSERT_ACCESS_LEVEL).execute(Tuple.of(aID, aAccessLevel));
         }).recover(error -> {
             return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, UPSERT_ACCESS_LEVEL, error));
         }).compose(upsert -> {
@@ -128,7 +128,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 }
                 return Future.succeededFuture();
             } else {
-                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_005, aId, ITEMS));
+                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_005, aID, ITEMS));
             }
         });
     }
