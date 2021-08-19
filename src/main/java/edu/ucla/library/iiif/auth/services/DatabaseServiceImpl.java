@@ -166,16 +166,6 @@ public class DatabaseServiceImpl implements DatabaseService {
         });
     }
 
-    @Override
-    public Future<PgPool> getConnectionPool() {
-        return Future.succeededFuture(myDbConnectionPool);
-    }
-
-    @Override
-    public Future<Redis> getRedisClient() {
-        return Future.succeededFuture(myDbCacheClient);
-    }
-
     /**
      * Gets the options for the database connection pool.
      *

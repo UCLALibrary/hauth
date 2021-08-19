@@ -6,8 +6,6 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.pgclient.PgPool;
-import io.vertx.redis.client.Redis;
 import io.vertx.serviceproxy.ServiceProxyBuilder;
 
 /**
@@ -85,18 +83,4 @@ public interface DatabaseService {
      * @return A Future that resolves once the degraded allowed has been set
      */
     Future<Void> setDegradedAllowed(String aOrigin, boolean aDegradedAllowed);
-
-    /**
-     * Gets the underlying database connection pool.
-     *
-     * @return A Future that resolves to the underlying database connection pool
-     */
-    Future<PgPool> getConnectionPool();
-
-    /**
-     * Gets the underlying Redis client.
-     *
-     * @return A Future that resolves to the underlying Redis client
-     */
-    Future<Redis> getRedisClient();
 }

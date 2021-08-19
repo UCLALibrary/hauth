@@ -1,10 +1,6 @@
 
 package edu.ucla.library.iiif.auth.services;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.List;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +18,6 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.redis.client.RedisAPI;
 import io.vertx.serviceproxy.ServiceBinder;
 
 /**
@@ -52,13 +47,6 @@ public class DatabaseServiceIT {
     private MessageConsumer<JsonObject> myService;
 
     /**
-     * Non-primitive types like {@link PgPool} cannot be sent over the event bus, so instead of registering a message
-     * codec for these types, we can call e.g. {@link DatabaseService#getConnectionPool} directly on the proxy's
-     * underlying service instance.
-     */
-    private DatabaseService myUnderlyingService;
-
-    /**
      * Sets up the test.
      *
      * @param aVertx A Vert.x instance
@@ -73,10 +61,6 @@ public class DatabaseServiceIT {
 
             // Register the service on the event bus, and keep a reference to it so it can be unregistered later
             myService = binder.setAddress(DatabaseService.ADDRESS).register(DatabaseService.class, service);
-
-            // Useful for testing certain methods of DatabaseService that would require custom message codecs to use the
-            // event bus
-            myUnderlyingService = service;
 
             // Now we can instantiate a proxy to the service
             myServiceProxy = DatabaseService.createProxy(aVertx);
@@ -96,26 +80,6 @@ public class DatabaseServiceIT {
         // Close the service proxy, then unregister the service (order important)
         myServiceProxy.close().compose(result -> myService.unregister()).onSuccess(success -> aContext.completeNow())
                 .onFailure(aContext::failNow);
-    }
-
-    /**
-     * Tests the number of users in the database.
-     *
-     * @param aVertx A Vert.x instance used to run the tests
-     * @param aContext A test context
-     */
-    @Test
-    public final void testDbUserCount(final Vertx aVertx, final VertxTestContext aContext) {
-        // Check that the number of users is what we expect it to be
-        myUnderlyingService.getConnectionPool().compose(pool -> pool.withConnection(connection -> {
-            final String sql = "select * from pg_catalog.pg_user;";
-
-            return connection.query(sql).execute();
-        })).onSuccess(result -> {
-            // Three users tells us our SQL load successfully completed
-            assertEquals(3, result.size());
-            aContext.completeNow();
-        }).onFailure(aContext::failNow);
     }
 
     /**
@@ -217,24 +181,6 @@ public class DatabaseServiceIT {
 
         setTwice.compose(put -> myServiceProxy.getDegradedAllowed(url)).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
-        }).onFailure(aContext::failNow);
-    }
-
-    /**
-     * Tests that the database cache is up and usable.
-     *
-     * @param aVertx A Vert.x instance used to run the tests
-     * @param aContext A test context
-     */
-    @Test
-    final void testDbCacheConnection(final Vertx aVertx, final VertxTestContext aContext) {
-        myUnderlyingService.getRedisClient().compose(client -> {
-            return RedisAPI.api(client).lolwut(List.of());
-        }).onSuccess(response -> {
-            for (final String line : response.toString().split("\\r?\\n")) {
-                LOGGER.debug(line);
-            }
-            aContext.completeNow();
         }).onFailure(aContext::failNow);
     }
 
