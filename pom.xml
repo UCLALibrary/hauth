@@ -128,6 +128,15 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-redis-client</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-service-proxy</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-codegen</artifactId>
+      <classifier>processor</classifier>
+    </dependency>
 
     <!-- Below is a dependency that needs updating due to security issue (may be able to remove in future) -->
     <dependency>
@@ -185,8 +194,8 @@
           <portNames>
             <portName>test.http.port</portName>
             <portName>test.db.port</portName>
-            <portName>test.db.cache.port</portName>
             <portName>test.iiif.images.port</portName>
+            <portName>test.db.cache.port</portName>
           </portNames>
         </configuration>
         <executions>
@@ -235,6 +244,14 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <!-- Incremental compilation causes problems with vertx-codegen; see example config at:
+               https://github.com/vert-x3/vertx-codegen/blob/0974676c45c95a4410d0d1620ada4f64514688ee/README.md#processor-configuration -->
+          <useIncrementalCompilation>false</useIncrementalCompilation>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-pmd-plugin</artifactId>
@@ -455,6 +472,7 @@
             <configuration>
               <environmentVariables>
                 <HTTP_PORT>${test.http.port}</HTTP_PORT>
+                <DB_HOST>0.0.0.0</DB_HOST>
                 <DB_PORT>${test.db.port}</DB_PORT>
                 <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                 <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>

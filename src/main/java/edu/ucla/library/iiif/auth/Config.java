@@ -32,6 +32,41 @@ public final class Config {
     public static final String DB_PORT = "DB_PORT";
 
     /**
+     * The ENV property for the database host.
+     */
+    public static final String DB_HOST = "DB_HOST";
+
+    /**
+     * The ENV property for the database name.
+     */
+    public static final String DB_NAME = "DB_NAME";
+
+    /**
+     * The ENV property for the database user.
+     */
+    public static final String DB_USER = "DB_USER";
+
+    /**
+     * The ENV property for the max size of the database connection pool.
+     */
+    public static final String DB_CONNECTION_POOL_MAX_SIZE = "DB_CONNECTION_POOL_MAX_SIZE";
+
+    /**
+     * The ENV property for the number of database reconnect attempts.
+     */
+    public static final String DB_RECONNECT_ATTEMPTS = "DB_RECONNECT_ATTEMPTS";
+
+    /**
+     * The ENV property for the length of the database reconnect interval (in milliseconds).
+     */
+    public static final String DB_RECONNECT_INTERVAL = "DB_RECONNECT_INTERVAL";
+
+    /**
+     * The ENV property for the database cache host.
+     */
+    public static final String DB_CACHE_HOST = "DB_CACHE_HOST";
+
+    /**
      * The ENV property for the database cache port.
      */
     public static final String DB_CACHE_PORT = "DB_CACHE_PORT";
