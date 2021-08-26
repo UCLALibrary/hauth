@@ -380,7 +380,16 @@
                   <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
                 </volumes>
                 <env>
+                  <DB_HOST>172.17.0.1</DB_HOST>
+                  <DB_PORT>${test.db.port}</DB_PORT>
+                  <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
+                  <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
                 </env>
+                <dependsOn>
+                  <container>hauth_pgsql</container>
+                  <container>hauth_redis</container>
+                  <container>hauth_cantaloupe</container>
+                </dependsOn>
                 <!-- Test to make sure the server started as expected -->
                 <wait>
                   <http>
@@ -472,7 +481,6 @@
             <configuration>
               <environmentVariables>
                 <HTTP_PORT>${test.http.port}</HTTP_PORT>
-                <DB_HOST>0.0.0.0</DB_HOST>
                 <DB_PORT>${test.db.port}</DB_PORT>
                 <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                 <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>

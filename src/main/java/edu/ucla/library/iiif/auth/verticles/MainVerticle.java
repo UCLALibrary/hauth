@@ -8,14 +8,18 @@ import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Op;
 import edu.ucla.library.iiif.auth.handlers.StatusHandler;
+import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.openapi.RouterBuilder;
+import io.vertx.serviceproxy.ServiceBinder;
 
 /**
  * Main verticle that starts the application.
@@ -52,6 +56,11 @@ public class MainVerticle extends AbstractVerticle {
      */
     private HttpServer myServer;
 
+    /**
+     * The database service.
+     */
+    private MessageConsumer<JsonObject> myDatabaseService;
+
     @Override
     public void start(final Promise<Void> aPromise) {
         ConfigRetriever.create(vertx).getConfig()
@@ -61,7 +70,9 @@ public class MainVerticle extends AbstractVerticle {
 
     @Override
     public void stop(final Promise<Void> aPromise) {
-        myServer.close().onSuccess(result -> aPromise.complete()).onFailure(error -> aPromise.fail(error));
+        final Future<Void> stopAll = myDatabaseService.unregister().compose(result -> myServer.close());
+
+        stopAll.onSuccess(result -> aPromise.complete()).onFailure(error -> aPromise.fail(error));
     }
 
     /**
@@ -74,6 +85,10 @@ public class MainVerticle extends AbstractVerticle {
         final String apiSpec = aConfig.getString(Config.API_SPEC, DEFAULT_API_SPEC);
         final String host = aConfig.getString(Config.HTTP_HOST, DEFAULT_HOST);
         final int port = aConfig.getInteger(Config.HTTP_PORT, DEFAULT_PORT);
+
+        // Register the service on the event bus, and keep a reference to it so it can be unregistered later
+        myDatabaseService = new ServiceBinder(getVertx()).setAddress(DatabaseService.ADDRESS)
+                .register(DatabaseService.class, DatabaseService.create(getVertx(), aConfig));
 
         RouterBuilder.create(vertx, apiSpec).onComplete(routerConfig -> {
             if (routerConfig.succeeded()) {
