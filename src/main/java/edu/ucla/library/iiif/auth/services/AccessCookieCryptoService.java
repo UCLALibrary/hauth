@@ -30,12 +30,12 @@ public interface AccessCookieCryptoService {
     /**
      * The failure code if the service is configured improperly.
      */
-    int CONFIGURATION_ERROR = 0;
+    int CONFIGURATION_ERROR = 1;
 
     /**
      * The failure code if the service receives a decryption request for a cookie that has been tampered with.
      */
-    int TAMPERED_COOKIE_ERROR = 1;
+    int TAMPERED_COOKIE_ERROR = 2;
 
     /**
      * Creates an instance of the service.
