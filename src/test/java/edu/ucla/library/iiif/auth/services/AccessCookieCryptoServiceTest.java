@@ -5,14 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Random;
-
-import javax.crypto.NoSuchPaddingException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,8 +79,7 @@ public class AccessCookieCryptoServiceTest {
                 myServiceProxy = AccessCookieCryptoService.createProxy(aVertx);
 
                 aContext.completeNow();
-            } catch (final InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException
-                    | NoSuchPaddingException details) {
+            } catch (final ServiceException details) {
                 aContext.failNow(details);
             }
         }).onFailure(aContext::failNow);

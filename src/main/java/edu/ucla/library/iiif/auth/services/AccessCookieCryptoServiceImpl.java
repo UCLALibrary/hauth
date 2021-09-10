@@ -81,9 +81,10 @@ public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService 
      * </ul>
      *
      * @param aConfig A configuration
-     * @throws InvalidKeySpecException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
+     * @throws InvalidKeySpecException if the {@link KeySpec} was not instantiated correctly
+     * @throws NoSuchAlgorithmException if either {@link KEY_DERIVATION_FUNCTION} or {@link CIPHER_TRANSFORMATION} are
+     * not valid algorithms
+     * @throws NoSuchPaddingException if {@link CIPHER_TRANSFORMATION} contains a padding scheme that is not available
      */
     AccessCookieCryptoServiceImpl(final JsonObject aConfig)
             throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException {

@@ -4,12 +4,6 @@ package edu.ucla.library.iiif.auth.verticles;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
-import javax.crypto.NoSuchPaddingException;
-
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Op;
@@ -29,6 +23,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import io.vertx.serviceproxy.ServiceBinder;
+import io.vertx.serviceproxy.ServiceException;
 
 /**
  * Main verticle that starts the application.
@@ -80,8 +75,7 @@ public class MainVerticle extends AbstractVerticle {
         ConfigRetriever.create(vertx).getConfig().onSuccess(config -> {
             try {
                 configureServer(config.mergeIn(config()), aPromise);
-            } catch (final InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException
-                    | NoSuchPaddingException details) {
+            } catch (final ServiceException details) {
                 aPromise.fail(details);
             }
         }).onFailure(aPromise::fail);
@@ -101,13 +95,9 @@ public class MainVerticle extends AbstractVerticle {
      *
      * @param aConfig A JSON configuration
      * @param aPromise A startup promise
-     * @throws InvalidKeyException
-     * @throws InvalidKeySpecException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
+     * @throws ServiceException if any of the service implementations aren't configured properly
      */
-    private void configureServer(final JsonObject aConfig, final Promise<Void> aPromise)
-            throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException {
+    private void configureServer(final JsonObject aConfig, final Promise<Void> aPromise) {
         final String apiSpec = aConfig.getString(Config.API_SPEC, DEFAULT_API_SPEC);
         final String host = aConfig.getString(Config.HTTP_HOST, DEFAULT_HOST);
         final int port = aConfig.getInteger(Config.HTTP_PORT, DEFAULT_PORT);

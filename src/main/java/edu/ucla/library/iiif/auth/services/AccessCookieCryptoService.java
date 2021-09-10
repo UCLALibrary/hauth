@@ -1,6 +1,5 @@
 package edu.ucla.library.iiif.auth.services;
 
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
@@ -13,6 +12,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonObject;
+import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceProxyBuilder;
 
 /**
@@ -42,14 +42,15 @@ public interface AccessCookieCryptoService {
      *
      * @param aConfig A configuration
      * @return The service instance
-     * @throws InvalidKeyException
-     * @throws InvalidKeySpecException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
+     * @throws ServiceException if the service implementation isn't configured properly
      */
-    static AccessCookieCryptoService create(final JsonObject aConfig)
-            throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException {
-        return new AccessCookieCryptoServiceImpl(aConfig);
+    @SuppressWarnings({ "PMD.PreserveStackTrace" })
+    static AccessCookieCryptoService create(final JsonObject aConfig) {
+        try {
+            return new AccessCookieCryptoServiceImpl(aConfig);
+        } catch (final InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException details) {
+            throw new ServiceException(CONFIGURATION_ERROR, details.getMessage());
+        }
     }
 
     /**
