@@ -28,6 +28,11 @@ import io.vertx.junit5.VertxTestContext;
 public class MainVerticleIT extends AbstractHauthIT {
 
     /**
+     * A URI template for access cookie requests.
+     */
+    private static final String GET_COOKIE_URI_TEMPLATE = "/cookie?origin={}";
+
+    /**
      * The logger used by these tests.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(MainVerticleIT.class, MessageCodes.BUNDLE);
@@ -61,7 +66,7 @@ public class MainVerticleIT extends AbstractHauthIT {
     @Test
     public void testObtainAccessCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final WebClient client = WebClient.create(aVertx);
-        final String requestUri = StringUtils.format("/cookie?origin={}", IIIF_TEST_ORIGIN);
+        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE, IIIF_TEST_ORIGIN);
 
         client.get(getPort(), TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {
@@ -71,6 +76,27 @@ public class MainVerticleIT extends AbstractHauthIT {
                 assertEquals(Constants.HTML_MEDIA_TYPE, response.headers().get(Constants.HTTP_HEADER_CONTENT_TYPE));
                 assertEquals(1, response.cookies().size());
 
+                aContext.completeNow();
+            } else {
+                aContext.failNow(get.cause());
+            }
+        });
+    }
+
+    /**
+     * Tests that a client can't obtain an access cookie for an unknown origin.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public void testGetCookieUnknownOrigin(final Vertx aVertx, final VertxTestContext aContext) {
+        final WebClient client = WebClient.create(aVertx);
+        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE, "https://iiif.unknown.library.ucla.edu");
+
+        client.get(getPort(), TestConstants.INADDR_ANY, requestUri).send(get -> {
+            if (get.succeeded()) {
+                assertEquals(HTTP.INTERNAL_SERVER_ERROR, get.result().statusCode());
                 aContext.completeNow();
             } else {
                 aContext.failNow(get.cause());
