@@ -21,6 +21,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
+
 import io.vertx.core.Future;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
