@@ -14,7 +14,7 @@
   <entry key="AUTH_006">Query '{}' failed: {}</entry>
   <entry key="AUTH_007">Got back '{}' but expected '{}'</entry>
   <entry key="AUTH_008">Test database cache (on port: {}) (the database is not currently using this external cache)</entry>
-  <entry key="AUTH_009"></entry>
+  <entry key="AUTH_009">Expected decryption and decoding of tampered cookie to fail, but it succeeded: {}</entry>
   <entry key="AUTH_010"></entry>
 
 </properties>

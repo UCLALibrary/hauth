@@ -137,6 +137,15 @@
       <artifactId>vertx-codegen</artifactId>
       <classifier>processor</classifier>
     </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-templ-handlebars</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.veqryn</groupId>
+      <artifactId>cidr-ip-trie</artifactId>
+      <version>1.0.1</version>
+    </dependency>
 
     <!-- Below is a dependency that needs updating due to security issue (may be able to remove in future) -->
     <dependency>
@@ -380,10 +389,15 @@
                   <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
                 </volumes>
                 <env>
+                  <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
+                  <!--  Default Docker bridge host IP -->
                   <DB_HOST>172.17.0.1</DB_HOST>
                   <DB_PORT>${test.db.port}</DB_PORT>
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                   <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
+                  <CAMPUS_NETWORK_SUBNETS>172.17.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
+                  <SECRET_KEY_GENERATION_PASSWORD>password</SECRET_KEY_GENERATION_PASSWORD>
+                  <SECRET_KEY_GENERATION_SALT>salt</SECRET_KEY_GENERATION_SALT>
                 </env>
                 <dependsOn>
                   <container>hauth_pgsql</container>
@@ -466,6 +480,10 @@
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
           <argLine>${jacoco.agent.arg}</argLine>
+          <environmentVariables>
+            <SECRET_KEY_GENERATION_PASSWORD>password</SECRET_KEY_GENERATION_PASSWORD>
+            <SECRET_KEY_GENERATION_SALT>salt</SECRET_KEY_GENERATION_SALT>
+          </environmentVariables>
           <systemPropertyVariables>
             <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.SLF4JLogDelegateFactory</vertx.logger-delegate-factory-class-name>
           </systemPropertyVariables>
@@ -615,6 +633,13 @@
                 <configuration>
                   <outputDirectory>${basedir}/target/classes/</outputDirectory>
                   <resources>
+                    <resource>
+                      <directory>${basedir}/src/main/resources</directory>
+                      <filtering>true</filtering>
+                      <includes>
+                        <include>templates/*</include>
+                      </includes>
+                    </resource>
                     <resource>
                       <directory>${basedir}</directory>
                       <filtering>true</filtering>

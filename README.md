@@ -33,7 +33,7 @@ This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloup
 These are a work in progress. None of these need to be supplied when running in developer mode. Randomized ports and passwords are created on the fly. The port numbers can be seen in the Maven output.
 
 | ENV Property | Default Value | Required |
---- | --- | ---
+| --- | --- | --- |
 | HTTP_PORT | 8888 | No |
 | HTTP_HOST | 0.0.0.0 | No |
 | API_SPEC | hauth.yaml | No |
@@ -49,4 +49,7 @@ These are a work in progress. None of these need to be supplied when running in 
 | DB_CACHE_PORT | 6379 | No |
 | IIIF_SERVER_HOST | XXX | Yes |
 | IIIF_SERVER_PORT | 8182 | No |
---- | --- | ---
+| HAUTH_VERSION | XXX | Yes |
+| SECRET_KEY_GENERATION_PASSWORD | XXX | Yes |
+| SECRET_KEY_GENERATION_SALT | XXX | Yes |
+| --- | --- | --- |

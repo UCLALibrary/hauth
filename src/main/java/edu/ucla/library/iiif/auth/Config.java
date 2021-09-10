@@ -7,6 +7,11 @@ package edu.ucla.library.iiif.auth;
 public final class Config {
 
     /**
+     * The ENV property for the application's version identifier.
+     */
+    public static final String HAUTH_VERSION = "HAUTH_VERSION";
+
+    /**
      * The ENV property for the application's port.
      */
     public static final String HTTP_PORT = "HTTP_PORT";
@@ -70,6 +75,22 @@ public final class Config {
      * The ENV property for the database cache port.
      */
     public static final String DB_CACHE_PORT = "DB_CACHE_PORT";
+
+    /**
+     * The ENV property for the list of Campus Network subnets, separated by commas, in CIDR notation.
+     */
+    public static final String CAMPUS_NETWORK_SUBNETS = "CAMPUS_NETWORK_SUBNETS";
+
+    /**
+     * The ENV property for the password used to derive the secret key for generating and validating signed access
+     * cookies.
+     */
+    public static final String SECRET_KEY_GENERATION_PASSWORD = "SECRET_KEY_GENERATION_PASSWORD";
+
+    /**
+     * The ENV property for the salt used to derive the secret key for generating and validating signed access cookies.
+     */
+    public static final String SECRET_KEY_GENERATION_SALT = "SECRET_KEY_GENERATION_SALT";
 
     /**
      * Constant classes should have private constructors.

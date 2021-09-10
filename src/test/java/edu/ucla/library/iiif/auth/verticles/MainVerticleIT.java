@@ -9,11 +9,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
+import info.freelibrary.util.StringUtils;
 
+import edu.ucla.library.iiif.auth.Constants;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.utils.TestConstants;
 
 import io.vertx.core.Vertx;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -42,6 +45,32 @@ public class MainVerticleIT extends AbstractHauthIT {
         client.get(getPort(), TestConstants.INADDR_ANY, "/status").send(get -> {
             if (get.succeeded()) {
                 assertEquals(HTTP.OK, get.result().statusCode());
+                aContext.completeNow();
+            } else {
+                aContext.failNow(get.cause());
+            }
+        });
+    }
+
+    /**
+     * Tests that a client can obtain an access cookie.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public void testObtainAccessCookie(final Vertx aVertx, final VertxTestContext aContext) {
+        final WebClient client = WebClient.create(aVertx);
+        final String requestUri = StringUtils.format("/cookie?origin={}", IIIF_TEST_ORIGIN);
+
+        client.get(getPort(), TestConstants.INADDR_ANY, requestUri).send(get -> {
+            if (get.succeeded()) {
+                final HttpResponse<?> response = get.result();
+
+                assertEquals(HTTP.OK, response.statusCode());
+                assertEquals(Constants.HTML_MEDIA_TYPE, response.headers().get(Constants.HTTP_HEADER_CONTENT_TYPE));
+                assertEquals(1, response.cookies().size());
+
                 aContext.completeNow();
             } else {
                 aContext.failNow(get.cause());

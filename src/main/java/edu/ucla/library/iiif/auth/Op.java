@@ -12,6 +12,11 @@ public final class Op {
     public static final String GET_STATUS = "getStatus";
 
     /**
+     * Gets an authentication cookie.
+     */
+    public static final String GET_COOKIE = "getCookie";
+
+    /**
      * Constant class constructors should be private.
      */
     private Op() {
