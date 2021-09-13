@@ -114,7 +114,7 @@ public class AccessCookieCryptoServiceTest {
             // The result is base64-encoded JSON with three keys
             final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(cookie.getBytes())));
 
-            for (final String key : List.of(CookieJsonKeys.VERSION, CookieJsonKeys.SECRET, CookieJsonKeys.SECRET)) {
+            for (final String key : List.of(CookieJsonKeys.VERSION, CookieJsonKeys.SECRET, CookieJsonKeys.NONCE)) {
                 assertTrue(decodedCookie.containsKey(key));
             }
 
