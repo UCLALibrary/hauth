@@ -126,7 +126,7 @@ public class MainVerticleIT extends AbstractHauthIT {
     @Test
     public void testObtainAccessCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final WebClient client = WebClient.create(aVertx);
-        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE, IIIF_TEST_ORIGIN);
+        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE, TEST_ORIGIN);
 
         client.get(getPort(), TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {

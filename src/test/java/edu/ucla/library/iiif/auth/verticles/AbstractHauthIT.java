@@ -32,7 +32,7 @@ public abstract class AbstractHauthIT {
     /**
      * A test origin.
      */
-    protected static final String IIIF_TEST_ORIGIN = "https://iiif-test.library.ucla.edu";
+    protected static final String TEST_ORIGIN = "https://iiif-test.library.ucla.edu";
 
     /**
      * The configuration used to start the integration server.
@@ -53,7 +53,7 @@ public abstract class AbstractHauthIT {
             myConfig = config;
 
             // Add some database entries
-            return CompositeFuture.all(db.setAccessLevel(TEST_ID, 0), db.setDegradedAllowed(IIIF_TEST_ORIGIN, false))
+            return CompositeFuture.all(db.setAccessLevel(TEST_ID, 0), db.setDegradedAllowed(TEST_ORIGIN, false))
                     .compose(result -> db.close());
         }).onSuccess(result -> aContext.completeNow()).onFailure(aContext::failNow);
     }
