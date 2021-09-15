@@ -11,11 +11,12 @@ import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
-import edu.ucla.library.iiif.auth.Constants;
 import edu.ucla.library.iiif.auth.MessageCodes;
+import edu.ucla.library.iiif.auth.utils.MediaType;
 import edu.ucla.library.iiif.auth.utils.TestConstants;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
@@ -73,7 +74,7 @@ public class MainVerticleIT extends AbstractHauthIT {
                 final HttpResponse<?> response = get.result();
 
                 assertEquals(HTTP.OK, response.statusCode());
-                assertEquals(Constants.HTML_MEDIA_TYPE, response.headers().get(Constants.HTTP_HEADER_CONTENT_TYPE));
+                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
                 assertEquals(1, response.cookies().size());
 
                 aContext.completeNow();

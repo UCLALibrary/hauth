@@ -10,11 +10,11 @@ import com.github.veqryn.net.Cidr4;
 import com.github.veqryn.net.Ip4;
 
 import edu.ucla.library.iiif.auth.Config;
-import edu.ucla.library.iiif.auth.Constants;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
 import edu.ucla.library.iiif.auth.Param;
 import edu.ucla.library.iiif.auth.services.AccessCookieCryptoService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
+import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import info.freelibrary.util.HTTP;
 
@@ -22,6 +22,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -107,8 +108,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                 });
             }).onSuccess(renderedHtmlTeplate -> {
                 aContext.response().setStatusCode(HTTP.OK)
-                        .putHeader(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.HTML_MEDIA_TYPE)
-                        .end(renderedHtmlTeplate);
+                        .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString()).end(renderedHtmlTeplate);
             }).onFailure(error -> {
                 aContext.fail(HTTP.INTERNAL_SERVER_ERROR, error);
             });
