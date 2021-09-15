@@ -16,6 +16,7 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.redis.client.Redis;
 import io.vertx.redis.client.RedisOptions;
+import io.vertx.serviceproxy.ServiceException;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -35,16 +36,6 @@ public class DatabaseServiceImpl implements DatabaseService {
      * The postgres database (and default user) name.
      */
     private static final String POSTGRES = "postgres";
-
-    /**
-     * The name of the database's "items" table.
-     */
-    private static final String ITEMS = "items";
-
-    /**
-     * The name of the database's "origins" table.
-     */
-    private static final String ORIGINS = "origins";
 
     /**
      * The PreparedQuery template for selecting an item's "access level".
@@ -105,12 +96,12 @@ public class DatabaseServiceImpl implements DatabaseService {
         return myDbConnectionPool.withConnection(connection -> {
             return connection.preparedQuery(SELECT_ACCESS_LEVEL).execute(Tuple.of(aID));
         }).recover(error -> {
-            return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, SELECT_ACCESS_LEVEL, error));
+            return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
         }).compose(select -> {
             if (hasSingleRow(select)) {
                 return Future.succeededFuture(select.iterator().next().getInteger("access_level"));
             } else {
-                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_004, aID, ITEMS));
+                return Future.failedFuture(new ServiceException(NOT_FOUND_ERROR, aID));
             }
         });
     }
@@ -120,16 +111,9 @@ public class DatabaseServiceImpl implements DatabaseService {
         return myDbConnectionPool.withConnection(connection -> {
             return connection.preparedQuery(UPSERT_ACCESS_LEVEL).execute(Tuple.of(aID, aAccessLevel));
         }).recover(error -> {
-            return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, UPSERT_ACCESS_LEVEL, error));
+            return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
         }).compose(upsert -> {
-            if (hasSingleRow(upsert)) {
-                if (upsert.iterator().hasNext()) {
-                    LOGGER.debug(upsert.iterator().next().deepToString());
-                }
-                return Future.succeededFuture();
-            } else {
-                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_005, aID, ITEMS));
-            }
+            return Future.succeededFuture();
         });
     }
 
@@ -138,12 +122,12 @@ public class DatabaseServiceImpl implements DatabaseService {
         return myDbConnectionPool.withConnection(connection -> {
             return connection.preparedQuery(SELECT_DEGRADED_ALLOWED).execute(Tuple.of(aOrigin));
         }).recover(error -> {
-            return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, SELECT_DEGRADED_ALLOWED, error));
+            return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
         }).compose(select -> {
             if (hasSingleRow(select)) {
                 return Future.succeededFuture(select.iterator().next().getBoolean("degraded_allowed"));
             } else {
-                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_004, aOrigin, ORIGINS));
+                return Future.failedFuture(new ServiceException(NOT_FOUND_ERROR, aOrigin));
             }
         });
     }
@@ -153,16 +137,9 @@ public class DatabaseServiceImpl implements DatabaseService {
         return myDbConnectionPool.withConnection(connection -> {
             return connection.preparedQuery(UPSERT_DEGRADED_ALLOWED).execute(Tuple.of(aOrigin, aDegradedAllowed));
         }).recover(error -> {
-            return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_006, UPSERT_DEGRADED_ALLOWED, error));
+            return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
         }).compose(upsert -> {
-            if (hasSingleRow(upsert)) {
-                if (upsert.iterator().hasNext()) {
-                    LOGGER.debug(upsert.iterator().next().deepToString());
-                }
-                return Future.succeededFuture();
-            } else {
-                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_005, aOrigin, ORIGINS));
-            }
+            return Future.succeededFuture();
         });
     }
 
