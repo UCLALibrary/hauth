@@ -242,6 +242,24 @@
             </configuration>
           </execution>
           <execution>
+            <id>generate-secret-key-password</id>
+            <goals>
+              <goal>set-uuid-property</goal>
+            </goals>
+            <configuration>
+              <name>test.secretkey.password</name>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-secret-key-salt</id>
+            <goals>
+              <goal>set-uuid-property</goal>
+            </goals>
+            <configuration>
+              <name>test.secretkey.salt</name>
+            </configuration>
+          </execution>
+          <execution>
             <id>set-snapshot-url</id>
             <goals>
               <goal>set-snapshot-url</goal>
@@ -396,8 +414,8 @@
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                   <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
                   <CAMPUS_NETWORK_SUBNETS>172.17.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
-                  <SECRET_KEY_GENERATION_PASSWORD>password</SECRET_KEY_GENERATION_PASSWORD>
-                  <SECRET_KEY_GENERATION_SALT>salt</SECRET_KEY_GENERATION_SALT>
+                  <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
+                  <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
                 </env>
                 <dependsOn>
                   <container>hauth_pgsql</container>
@@ -481,8 +499,8 @@
           <reuseForks>false</reuseForks>
           <argLine>${jacoco.agent.arg}</argLine>
           <environmentVariables>
-            <SECRET_KEY_GENERATION_PASSWORD>password</SECRET_KEY_GENERATION_PASSWORD>
-            <SECRET_KEY_GENERATION_SALT>salt</SECRET_KEY_GENERATION_SALT>
+            <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
+            <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
           </environmentVariables>
           <systemPropertyVariables>
             <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.SLF4JLogDelegateFactory</vertx.logger-delegate-factory-class-name>
