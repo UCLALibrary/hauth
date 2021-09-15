@@ -112,9 +112,7 @@ public class DatabaseServiceImpl implements DatabaseService {
             return connection.preparedQuery(UPSERT_ACCESS_LEVEL).execute(Tuple.of(aID, aAccessLevel));
         }).recover(error -> {
             return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
-        }).compose(upsert -> {
-            return Future.succeededFuture();
-        });
+        }).compose(result -> Future.succeededFuture());
     }
 
     @Override
@@ -138,9 +136,7 @@ public class DatabaseServiceImpl implements DatabaseService {
             return connection.preparedQuery(UPSERT_DEGRADED_ALLOWED).execute(Tuple.of(aOrigin, aDegradedAllowed));
         }).recover(error -> {
             return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
-        }).compose(upsert -> {
-            return Future.succeededFuture();
-        });
+        }).compose(result -> Future.succeededFuture());
     }
 
     /**
