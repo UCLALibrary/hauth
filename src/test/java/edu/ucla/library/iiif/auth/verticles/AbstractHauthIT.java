@@ -1,12 +1,14 @@
 
 package edu.ucla.library.iiif.auth.verticles;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import info.freelibrary.util.Logger;
 
 import edu.ucla.library.iiif.auth.Config;
+import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.Vertx;
@@ -22,6 +24,11 @@ import io.vertx.sqlclient.PoolOptions;
 public abstract class AbstractHauthIT {
 
     /**
+     * A test origin.
+     */
+    protected static final String IIIF_TEST_ORIGIN = "https://iiif-test.library.ucla.edu";
+
+    /**
      * The configuration used to start the integration server.
      */
     private JsonObject myConfig;
@@ -34,10 +41,25 @@ public abstract class AbstractHauthIT {
      */
     @BeforeEach
     public void setUp(final Vertx aVertx, final VertxTestContext aContext) {
-        ConfigRetriever.create(aVertx).getConfig().onSuccess(config -> {
+        ConfigRetriever.create(aVertx).getConfig().compose(config -> {
+            // Add some database entries
+            final DatabaseService db = DatabaseService.create(aVertx, config);
+
             myConfig = config;
-            aContext.completeNow();
-        }).onFailure(error -> aContext.failNow(error));
+
+            return db.setDegradedAllowed(IIIF_TEST_ORIGIN, false).compose(result -> db.close());
+        }).onSuccess(result -> aContext.completeNow()).onFailure(aContext::failNow);
+    }
+
+    /**
+     * Tears down the test.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @AfterEach
+    public void tearDown(final Vertx aVertx, final VertxTestContext aContext) {
+        aContext.completeNow();
     }
 
     /**

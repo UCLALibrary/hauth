@@ -7,15 +7,23 @@ import info.freelibrary.util.LoggerFactory;
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Op;
+import edu.ucla.library.iiif.auth.handlers.AccessCookieHandler;
 import edu.ucla.library.iiif.auth.handlers.StatusHandler;
+import edu.ucla.library.iiif.auth.services.AccessCookieCryptoService;
+import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.openapi.RouterBuilder;
+import io.vertx.serviceproxy.ServiceBinder;
+import io.vertx.serviceproxy.ServiceException;
 
 /**
  * Main verticle that starts the application.
@@ -52,16 +60,34 @@ public class MainVerticle extends AbstractVerticle {
      */
     private HttpServer myServer;
 
+    /**
+     * The database service.
+     */
+    private MessageConsumer<JsonObject> myDatabaseService;
+
+    /**
+     * The access cookie crypto service.
+     */
+    private MessageConsumer<JsonObject> myAccessCookieCryptoService;
+
     @Override
     public void start(final Promise<Void> aPromise) {
-        ConfigRetriever.create(vertx).getConfig()
-                .onSuccess(config -> configureServer(config.mergeIn(config()), aPromise))
-                .onFailure(error -> aPromise.fail(error));
+        ConfigRetriever.create(vertx).getConfig().onSuccess(config -> {
+            try {
+                configureServer(config.mergeIn(config()), aPromise);
+            } catch (final ServiceException details) {
+                aPromise.fail(details);
+            }
+        }).onFailure(aPromise::fail);
     }
 
     @Override
     public void stop(final Promise<Void> aPromise) {
-        myServer.close().onSuccess(result -> aPromise.complete()).onFailure(error -> aPromise.fail(error));
+        final Future<Void> stopAll = CompositeFuture
+                .all(myDatabaseService.unregister(), myAccessCookieCryptoService.unregister())
+                .compose(result -> myServer.close());
+
+        stopAll.onSuccess(aPromise::complete).onFailure(aPromise::fail);
     }
 
     /**
@@ -69,11 +95,19 @@ public class MainVerticle extends AbstractVerticle {
      *
      * @param aConfig A JSON configuration
      * @param aPromise A startup promise
+     * @throws ServiceException if any of the service implementations aren't configured properly
      */
     private void configureServer(final JsonObject aConfig, final Promise<Void> aPromise) {
         final String apiSpec = aConfig.getString(Config.API_SPEC, DEFAULT_API_SPEC);
         final String host = aConfig.getString(Config.HTTP_HOST, DEFAULT_HOST);
         final int port = aConfig.getInteger(Config.HTTP_PORT, DEFAULT_PORT);
+        final ServiceBinder serviceBinder = new ServiceBinder(getVertx());
+
+        // Register the services on the event bus, and keep a reference to them so they can be unregistered later
+        myDatabaseService = serviceBinder.setAddress(DatabaseService.ADDRESS)
+                .register(DatabaseService.class, DatabaseService.create(getVertx(), aConfig));
+        myAccessCookieCryptoService = serviceBinder.setAddress(AccessCookieCryptoService.ADDRESS)
+                .register(AccessCookieCryptoService.class, AccessCookieCryptoService.create(aConfig));
 
         RouterBuilder.create(vertx, apiSpec).onComplete(routerConfig -> {
             if (routerConfig.succeeded()) {
@@ -82,6 +116,7 @@ public class MainVerticle extends AbstractVerticle {
 
                 // Associate handlers with operation IDs from the application's OpenAPI specification
                 routerBuilder.operation(Op.GET_STATUS).handler(new StatusHandler(getVertx()));
+                routerBuilder.operation(Op.GET_COOKIE).handler(new AccessCookieHandler(getVertx(), aConfig));
 
                 myServer = getVertx().createHttpServer(serverOptions).requestHandler(routerBuilder.createRouter());
                 myServer.listen().onSuccess(result -> {

@@ -1,0 +1,68 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>IIIF Access Cookie set | Hauth</title>
+</head>
+<body>
+    <h1>IIIF Access Cookie set</h1>
+    <p>
+        This web browser is now storing an
+        <a href="https://iiif.io/api/auth/1.0/#authentication-for-content-resources">Access Cookie for IIIF content</a>
+        hosted at: <em id="origin">{{origin}}</em>
+    <p>
+    <p>
+        {{#if degraded-allowed}}
+        Degraded versions of the content are accessible
+        {{else}}
+        The content is not accessible
+        {{/if}}
+
+        to users outside of the Campus Network.
+    </p>
+    <p>
+        Your current IP address: <em id="client-ip-address">{{client-ip-address}}</em>
+    </p>
+    <p>
+        Campus Network:
+
+        {{#if campus-network}}
+        <span class="green">connected</span>
+        {{else}}
+        <span class="red">not connected</span>
+        {{/if}}
+    </p>
+
+    {{#unless campus-network}}
+    <p>
+        For full access to IIIF content, please connect to the Campus Network:
+        <ul>
+            <li><a href="https://www.it.ucla.edu/it-support-center/services/wireless-network-access">
+                Wireless Network Access</a></li>
+            <li><a href="https://www.it.ucla.edu/it-support-center/services/virtual-private-network-vpn-clients">
+                Virtual Private Networking Service (VPN)</a></li>
+            <li><a href="https://www.it.ucla.edu/it-support-center/services/guest-network-logon-ids">
+                Guest Access</a></li>
+        </ul>
+    </p>
+    {{/unless}}
+
+    <p>
+        <em>To continue, please close this tab (or window).</em>
+    </p>
+    <hr>
+    <p>
+        <span id="version" style="font-style: italic;">Hauth v{{version}}</span>
+    </p>
+    <style>
+        em {
+            font-style: normal;
+            font-weight: bold;
+        }
+        .green {
+            color: green;
+        }
+        .red {
+            color: red;
+        }
+    </style>
+</body>

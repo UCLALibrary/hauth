@@ -12,6 +12,11 @@ public final class Param {
     public static final String ID = "id";
 
     /**
+     * The origin parameter.
+     */
+    public static final String ORIGIN = "origin";
+
+    /**
      * Creates a new constants class for HTTP parameters.
      */
     private Param() {
