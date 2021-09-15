@@ -11,6 +11,7 @@ import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.config.ConfigRetriever;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
@@ -22,6 +23,11 @@ import io.vertx.sqlclient.PoolOptions;
  */
 @ExtendWith(VertxExtension.class)
 public abstract class AbstractHauthIT {
+
+    /**
+     * A test id.
+     */
+    protected static final String TEST_ID = "ark:/21198/00000000";
 
     /**
      * A test origin.
@@ -42,12 +48,13 @@ public abstract class AbstractHauthIT {
     @BeforeEach
     public void setUp(final Vertx aVertx, final VertxTestContext aContext) {
         ConfigRetriever.create(aVertx).getConfig().compose(config -> {
-            // Add some database entries
             final DatabaseService db = DatabaseService.create(aVertx, config);
 
             myConfig = config;
 
-            return db.setDegradedAllowed(IIIF_TEST_ORIGIN, false).compose(result -> db.close());
+            // Add some database entries
+            return CompositeFuture.all(db.setAccessLevel(TEST_ID, 0), db.setDegradedAllowed(IIIF_TEST_ORIGIN, false))
+                    .compose(result -> db.close());
         }).onSuccess(result -> aContext.completeNow()).onFailure(aContext::failNow);
     }
 

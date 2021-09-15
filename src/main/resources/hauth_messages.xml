@@ -9,9 +9,12 @@
   <entry key="AUTH_001">Server started and listening at port: {}</entry>
   <entry key="AUTH_002">Verticle successfully undeployed: {} [{}]</entry>
   <entry key="AUTH_003">Test database (on port: {}) using auto-generated password: {}</entry>
+  <entry key="AUTH_004">The requested ID ({}) was not found</entry>
+  <entry key="AUTH_005">The service failed to connect to its access control database</entry>
+  <entry key="AUTH_006">Request {} {} failed: {}</entry>
   <entry key="AUTH_007">Got back '{}' but expected '{}'</entry>
   <entry key="AUTH_008">Test database cache (on port: {}) (the database is not currently using this external cache)</entry>
   <entry key="AUTH_009">Expected decryption and decoding of tampered cookie to fail, but it succeeded: {}</entry>
-  <entry key="AUTH_010"></entry>
+  <entry key="AUTH_010">Unexpected error: {}</entry>
 
 </properties>

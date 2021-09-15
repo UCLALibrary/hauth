@@ -12,6 +12,11 @@ public final class Op {
     public static final String GET_STATUS = "getStatus";
 
     /**
+     * Gets an item's access level.
+     */
+    public static final String GET_ACCESS_LEVEL = "getAccessLevel";
+
+    /**
      * Gets an authentication cookie.
      */
     public static final String GET_COOKIE = "getCookie";
