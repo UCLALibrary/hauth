@@ -12,6 +12,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.serviceproxy.ServiceException;
 
@@ -32,6 +33,7 @@ public class DatabaseAccessFailureHandler implements Handler<RoutingContext> {
         final HttpServerRequest request;
         final HttpServerResponse response;
         final String responseMessage;
+        final JsonObject data;
 
         try {
             error = (ServiceException) aContext.failure();
@@ -43,6 +45,7 @@ public class DatabaseAccessFailureHandler implements Handler<RoutingContext> {
 
         request = aContext.request();
         response = aContext.response();
+        data = new JsonObject();
 
         switch (error.failureCode()) {
             case DatabaseService.NOT_FOUND_ERROR:
@@ -55,7 +58,8 @@ public class DatabaseAccessFailureHandler implements Handler<RoutingContext> {
                 responseMessage = LOGGER.getMessage(MessageCodes.AUTH_005);
                 break;
         }
-        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN.toString()).end(responseMessage);
+        data.put("error", error.failureCode()).put("message", responseMessage);
+        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
 
         LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
     }

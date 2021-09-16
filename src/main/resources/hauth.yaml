@@ -37,17 +37,29 @@ paths:
         '404':
           description: Notification that the supplied ID couldn't be found
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: The requested ID (ark:/21198/zz002dvwr6) was not found
+                type: object
+                properties:
+                  error:
+                    type: integer
+                    example: 2
+                  message:
+                    type: string
+                    example: The requested ID (ark:/21198/zz002dvwr6) was not found
         '500':
           description: There was an internal server error
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: The service failed to connect to its access control database
+                type: object
+                properties:
+                  error:
+                    type: integer
+                    example: 1
+                  message:
+                    type: string
+                    example: The service failed to connect to its access control database
   /cookie:
     get:
       summary: Get Authentication Cookie

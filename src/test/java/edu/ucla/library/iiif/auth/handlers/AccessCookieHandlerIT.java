@@ -2,6 +2,9 @@ package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Test;
 
 import edu.ucla.library.iiif.auth.utils.MediaType;
@@ -33,7 +36,8 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetCookie(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE, TEST_ORIGIN);
+        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE,
+                URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {
@@ -58,7 +62,8 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetCookieUnknownOrigin(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE, "https://iiif.unknown.library.ucla.edu");
+        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE,
+                URLEncoder.encode("https://iiif.unknown.library.ucla.edu", StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {

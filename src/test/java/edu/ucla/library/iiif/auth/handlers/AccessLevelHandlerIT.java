@@ -1,6 +1,7 @@
 package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -8,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 import edu.ucla.library.iiif.auth.Param;
+import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 import edu.ucla.library.iiif.auth.utils.TestConstants;
 
@@ -65,11 +67,18 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetAccessLevelUnknownItem(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_ACCESS_URI_TEMPLATE, "ark:/21198/unknown");
+        final String requestUri = StringUtils.format(GET_ACCESS_URI_TEMPLATE,
+                URLEncoder.encode("ark:/21198/unknown", StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {
-                assertEquals(HTTP.NOT_FOUND, get.result().statusCode());
+                final HttpResponse<?> response = get.result();
+
+                assertEquals(HTTP.NOT_FOUND, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(DatabaseService.NOT_FOUND_ERROR, response.bodyAsJsonObject().getInteger("error"));
+                assertTrue(response.bodyAsJsonObject().containsKey("message"));
+
                 aContext.completeNow();
             } else {
                 aContext.failNow(get.cause());
