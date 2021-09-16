@@ -53,9 +53,10 @@ public class DatabaseAccessFailureHandler implements Handler<RoutingContext> {
 
         switch (errorCode) {
             case NOT_FOUND:
+                final String id = error.getMessage();
                 response.setStatusCode(HTTP.NOT_FOUND);
-                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_004);
-                data.put(ResponseJsonKeys.ID, error.getMessage());
+                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_004, id);
+                data.put(ResponseJsonKeys.ID, id);
                 break;
             case INTERNAL:
             default:

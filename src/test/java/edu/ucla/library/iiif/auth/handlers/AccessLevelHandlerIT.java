@@ -85,7 +85,7 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
                 final JsonObject responseBody = response.bodyAsJsonObject();
                 final JsonObject expected = new JsonObject()
                         .put(ResponseJsonKeys.ERROR, DatabaseServiceError.NOT_FOUND.toString())
-                        .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_004))
+                        .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_004, id))
                         .put(ResponseJsonKeys.ID, id);
 
                 assertEquals(HTTP.NOT_FOUND, response.statusCode());
