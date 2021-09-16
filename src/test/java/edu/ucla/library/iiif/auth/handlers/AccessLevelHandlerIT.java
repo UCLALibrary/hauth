@@ -1,19 +1,21 @@
 package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
-import edu.ucla.library.iiif.auth.Param;
-import edu.ucla.library.iiif.auth.services.DatabaseService;
+import edu.ucla.library.iiif.auth.MessageCodes;
+import edu.ucla.library.iiif.auth.ResponseJsonKeys;
+import edu.ucla.library.iiif.auth.services.DatabaseServiceError;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 import edu.ucla.library.iiif.auth.utils.TestConstants;
 
 import info.freelibrary.util.HTTP;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.Vertx;
@@ -26,6 +28,11 @@ import io.vertx.junit5.VertxTestContext;
  * Tests {@link AccessLevelHandler#handle}.
  */
 public final class AccessLevelHandlerIT extends AbstractHandlerIT {
+
+    /**
+     * The test's logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessLevelHandlerIT.class, MessageCodes.BUNDLE);
 
     /**
      * A URI template for access level requests.
@@ -46,7 +53,8 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {
                 final HttpResponse<?> response = get.result();
-                final JsonObject expected = new JsonObject().put(Param.ID, TEST_ID).put("restricted", false);
+                final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ID, TEST_ID)
+                        .put(ResponseJsonKeys.RESTRICTED, false);
 
                 assertEquals(HTTP.OK, response.statusCode());
                 assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
@@ -67,17 +75,22 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetAccessLevelUnknownItem(final Vertx aVertx, final VertxTestContext aContext) {
+        final String id = "ark:/21198/unknown";
         final String requestUri = StringUtils.format(GET_ACCESS_URI_TEMPLATE,
-                URLEncoder.encode("ark:/21198/unknown", StandardCharsets.UTF_8));
+                URLEncoder.encode(id, StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {
                 final HttpResponse<?> response = get.result();
+                final JsonObject responseBody = response.bodyAsJsonObject();
+                final JsonObject expected = new JsonObject()
+                        .put(ResponseJsonKeys.ERROR, DatabaseServiceError.NOT_FOUND.toString())
+                        .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_004))
+                        .put(ResponseJsonKeys.ID, id);
 
                 assertEquals(HTTP.NOT_FOUND, response.statusCode());
                 assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-                assertEquals(DatabaseService.NOT_FOUND_ERROR, response.bodyAsJsonObject().getInteger("error"));
-                assertTrue(response.bodyAsJsonObject().containsKey("message"));
+                assertEquals(expected, responseBody);
 
                 aContext.completeNow();
             } else {

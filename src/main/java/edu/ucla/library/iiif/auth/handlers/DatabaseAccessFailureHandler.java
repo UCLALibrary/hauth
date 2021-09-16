@@ -1,7 +1,9 @@
 package edu.ucla.library.iiif.auth.handlers;
 
 import edu.ucla.library.iiif.auth.MessageCodes;
-import edu.ucla.library.iiif.auth.services.DatabaseService;
+import edu.ucla.library.iiif.auth.ResponseJsonKeys;
+import edu.ucla.library.iiif.auth.services.DatabaseServiceError;
+import edu.ucla.library.iiif.auth.services.DatabaseServiceImpl;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import info.freelibrary.util.HTTP;
@@ -34,6 +36,7 @@ public class DatabaseAccessFailureHandler implements Handler<RoutingContext> {
         final HttpServerResponse response;
         final String responseMessage;
         final JsonObject data;
+        final DatabaseServiceError errorCode;
 
         try {
             error = (ServiceException) aContext.failure();
@@ -46,19 +49,21 @@ public class DatabaseAccessFailureHandler implements Handler<RoutingContext> {
         request = aContext.request();
         response = aContext.response();
         data = new JsonObject();
+        errorCode = DatabaseServiceImpl.getError(error);
 
-        switch (error.failureCode()) {
-            case DatabaseService.NOT_FOUND_ERROR:
+        switch (errorCode) {
+            case NOT_FOUND:
                 response.setStatusCode(HTTP.NOT_FOUND);
-                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_004, error.getMessage());
+                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_004);
+                data.put(ResponseJsonKeys.ID, error.getMessage());
                 break;
-            case DatabaseService.INTERNAL_ERROR:
+            case INTERNAL:
             default:
                 response.setStatusCode(HTTP.INTERNAL_SERVER_ERROR);
                 responseMessage = LOGGER.getMessage(MessageCodes.AUTH_005);
                 break;
         }
-        data.put("error", error.failureCode()).put("message", responseMessage);
+        data.put(ResponseJsonKeys.ERROR, errorCode).put(ResponseJsonKeys.MESSAGE, responseMessage);
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
 
         LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);

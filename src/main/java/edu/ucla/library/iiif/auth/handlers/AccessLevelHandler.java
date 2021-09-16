@@ -4,6 +4,7 @@ package edu.ucla.library.iiif.auth.handlers;
 import info.freelibrary.util.HTTP;
 
 import edu.ucla.library.iiif.auth.Param;
+import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
@@ -38,7 +39,8 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
 
         myDatabaseServiceProxy.getAccessLevel(id).onSuccess(accessLevel -> {
             final boolean isRestricted = accessLevel == 0 ? false : true;
-            final JsonObject data = new JsonObject().put(Param.ID, id).put("restricted", isRestricted);
+            final JsonObject data = new JsonObject().put(ResponseJsonKeys.ID, id).put(ResponseJsonKeys.RESTRICTED,
+                    isRestricted);
 
             aContext.response().setStatusCode(HTTP.OK)
                     .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())

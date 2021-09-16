@@ -65,6 +65,16 @@ public class DatabaseServiceImpl implements DatabaseService {
     private static final String DEFAULT_HOSTNAME = "localhost";
 
     /**
+     * The failure code to use for a ServiceException that represents {@link DatabaseServiceError#INTERNAL}.
+     */
+    private static final int INTERNAL_ERROR = DatabaseServiceError.INTERNAL.ordinal();
+
+    /**
+     * The failure code to use for a ServiceException that represents {@link DatabaseServiceError#NOT_FOUND}.
+     */
+    private static final int NOT_FOUND_ERROR = DatabaseServiceError.NOT_FOUND.ordinal();
+
+    /**
      * The underlying SQL client.
      */
     private final PgPool myDbConnectionPool;
@@ -137,6 +147,16 @@ public class DatabaseServiceImpl implements DatabaseService {
         }).recover(error -> {
             return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
         }).compose(result -> Future.succeededFuture());
+    }
+
+    /**
+     * Gets the DatabaseServiceError represented by the ServiceException.
+     *
+     * @param aServiceException A ServiceException that represents a DatabaseServiceError
+     * @return The database service error
+     */
+    public static DatabaseServiceError getError(final ServiceException aServiceException) {
+        return DatabaseServiceError.values()[aServiceException.failureCode()];
     }
 
     /**

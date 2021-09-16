@@ -99,7 +99,7 @@ public class DatabaseServiceIT {
             // The get should fail since nothing has been set for the id
             final ServiceException error = (ServiceException) details;
 
-            assertEquals(DatabaseService.NOT_FOUND_ERROR, error.failureCode());
+            assertEquals(DatabaseServiceError.NOT_FOUND, DatabaseServiceImpl.getError(error));
             assertEquals(id, error.getMessage());
 
             aContext.completeNow();
@@ -157,7 +157,7 @@ public class DatabaseServiceIT {
         }).onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
-            assertEquals(DatabaseService.NOT_FOUND_ERROR, error.failureCode());
+            assertEquals(DatabaseServiceError.NOT_FOUND, DatabaseServiceImpl.getError(error));
             assertEquals(url, error.getMessage());
 
             aContext.completeNow();

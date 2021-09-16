@@ -21,16 +21,6 @@ public interface DatabaseService {
     String ADDRESS = DatabaseService.class.getName();
 
     /**
-     * The failure code if the service is unable to query the underlying database.
-     */
-    int INTERNAL_ERROR = 1;
-
-    /**
-     * The failure code if the service receives a get request for an unknown id or origin.
-     */
-    int NOT_FOUND_ERROR = 2;
-
-    /**
      * Creates an instance of the service.
      *
      * @param aVertx A Vert.x instance

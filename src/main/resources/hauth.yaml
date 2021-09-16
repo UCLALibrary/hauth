@@ -42,11 +42,14 @@ paths:
                 type: object
                 properties:
                   error:
-                    type: integer
-                    example: 2
+                    type: string
+                    example: NOT_FOUND
                   message:
                     type: string
-                    example: The requested ID (ark:/21198/zz002dvwr6) was not found
+                    example: The requested ID was not found
+                  id:
+                    type: string
+                    example: ark:/21198/zz002dvwr6
         '500':
           description: There was an internal server error
           content:
@@ -55,8 +58,8 @@ paths:
                 type: object
                 properties:
                   error:
-                    type: integer
-                    example: 1
+                    type: string
+                    example: INTERNAL
                   message:
                     type: string
                     example: The service failed to connect to its access control database
