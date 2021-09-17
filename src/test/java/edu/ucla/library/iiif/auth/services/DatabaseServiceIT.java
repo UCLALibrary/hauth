@@ -1,6 +1,8 @@
 
 package edu.ucla.library.iiif.auth.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +21,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.serviceproxy.ServiceBinder;
+import io.vertx.serviceproxy.ServiceException;
 
 /**
  * A test of the database connection.
@@ -94,6 +97,11 @@ public class DatabaseServiceIT {
 
         myServiceProxy.getAccessLevel(id).onFailure(details -> {
             // The get should fail since nothing has been set for the id
+            final ServiceException error = (ServiceException) details;
+
+            assertEquals(DatabaseServiceError.NOT_FOUND, DatabaseServiceImpl.getError(error));
+            assertEquals(id, error.getMessage());
+
             aContext.completeNow();
         }).onSuccess(result -> {
             // The following will always fail
@@ -147,6 +155,11 @@ public class DatabaseServiceIT {
         myServiceProxy.getDegradedAllowed(url).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
         }).onFailure(details -> {
+            final ServiceException error = (ServiceException) details;
+
+            assertEquals(DatabaseServiceError.NOT_FOUND, DatabaseServiceImpl.getError(error));
+            assertEquals(url, error.getMessage());
+
             aContext.completeNow();
         });
     }

@@ -3,12 +3,14 @@ package edu.ucla.library.iiif.auth.handlers;
 
 import info.freelibrary.util.HTTP;
 
+import edu.ucla.library.iiif.auth.Param;
+import edu.ucla.library.iiif.auth.ResponseJsonKeys;
+import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
@@ -18,10 +20,9 @@ import io.vertx.ext.web.RoutingContext;
 public class AccessLevelHandler implements Handler<RoutingContext> {
 
     /**
-     * The shared Vert.x instance.
+     * The service proxy for accessing the database.
      */
-    @SuppressWarnings({ "PMD.UnusedPrivateField", "unused", "PMD.SingularField" })
-    private final Vertx myVertx;
+    private final DatabaseService myDatabaseServiceProxy;
 
     /**
      * Creates a handler that checks the access level of an ID.
@@ -29,20 +30,21 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
      * @param aVertx The Vert.x instance
      */
     public AccessLevelHandler(final Vertx aVertx) {
-        myVertx = aVertx;
+        myDatabaseServiceProxy = DatabaseService.createProxy(aVertx);
     }
 
     @Override
     public void handle(final RoutingContext aContext) {
-        final HttpServerResponse response = aContext.response();
-        // final HttpServerRequest request = aContext.request();
-        final JsonObject info = new JsonObject();
-        // final String id = request.getParam(Param.ID);
+        final String id = aContext.request().getParam(Param.ID);
 
-        info.put("status", "ok");
+        myDatabaseServiceProxy.getAccessLevel(id).onSuccess(accessLevel -> {
+            final boolean isRestricted = accessLevel == 0 ? false : true;
+            final JsonObject data = new JsonObject().put(ResponseJsonKeys.ID, id).put(ResponseJsonKeys.RESTRICTED,
+                    isRestricted);
 
-        response.setStatusCode(HTTP.OK);
-        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(info.encodePrettily());
+            aContext.response().setStatusCode(HTTP.OK)
+                    .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .end(data.encodePrettily());
+        }).onFailure(aContext::fail);
     }
-
 }

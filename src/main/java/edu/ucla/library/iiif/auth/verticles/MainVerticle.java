@@ -8,6 +8,8 @@ import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Op;
 import edu.ucla.library.iiif.auth.handlers.AccessCookieHandler;
+import edu.ucla.library.iiif.auth.handlers.AccessLevelHandler;
+import edu.ucla.library.iiif.auth.handlers.DatabaseAccessFailureHandler;
 import edu.ucla.library.iiif.auth.handlers.StatusHandler;
 import edu.ucla.library.iiif.auth.services.AccessCookieCryptoService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
@@ -114,8 +116,12 @@ public class MainVerticle extends AbstractVerticle {
                 final HttpServerOptions serverOptions = new HttpServerOptions().setPort(port).setHost(host);
                 final RouterBuilder routerBuilder = routerConfig.result();
 
+                final DatabaseAccessFailureHandler dbAccessFailureHandler = new DatabaseAccessFailureHandler();
+
                 // Associate handlers with operation IDs from the application's OpenAPI specification
                 routerBuilder.operation(Op.GET_STATUS).handler(new StatusHandler(getVertx()));
+                routerBuilder.operation(Op.GET_ACCESS_LEVEL).handler(new AccessLevelHandler(getVertx()))
+                        .failureHandler(dbAccessFailureHandler);
                 routerBuilder.operation(Op.GET_COOKIE).handler(new AccessCookieHandler(getVertx(), aConfig));
 
                 myServer = getVertx().createHttpServer(serverOptions).requestHandler(routerBuilder.createRouter());
