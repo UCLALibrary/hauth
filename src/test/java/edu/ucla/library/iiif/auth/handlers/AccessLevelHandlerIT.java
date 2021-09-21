@@ -35,11 +35,6 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessLevelHandlerIT.class, MessageCodes.BUNDLE);
 
     /**
-     * A URI template for access level requests.
-     */
-    private static final String GET_ACCESS_URI_TEMPLATE = "/access/{}";
-
-    /**
      * Tests that a client can get an item's access level.
      *
      * @param aVertx A Vert.x instance
@@ -47,7 +42,7 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetAccessLevel(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_ACCESS_URI_TEMPLATE,
+        final String requestUri = StringUtils.format(GET_ACCESS_LEVEL_PATH,
                 URLEncoder.encode(TEST_ID, StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
@@ -76,7 +71,7 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
     @Test
     public void testGetAccessLevelUnknownItem(final Vertx aVertx, final VertxTestContext aContext) {
         final String id = "ark:/21198/unknown";
-        final String requestUri = StringUtils.format(GET_ACCESS_URI_TEMPLATE,
+        final String requestUri = StringUtils.format(GET_ACCESS_LEVEL_PATH,
                 URLEncoder.encode(id, StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {

@@ -31,6 +31,16 @@ public final class ResponseJsonKeys {
     public static final String MESSAGE = "message";
 
     /**
+     * The access token key.
+     */
+    public static final String ACCESS_TOKEN = "accessToken";
+
+    /**
+     * The expires-in key.
+     */
+    public static final String EXPIRES_IN = "expiresIn";
+
+    /**
      * Private constructor for utility class.
      */
     private ResponseJsonKeys() {

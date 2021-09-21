@@ -24,11 +24,6 @@ import io.vertx.junit5.VertxTestContext;
 public final class AccessCookieHandlerIT extends AbstractHandlerIT {
 
     /**
-     * A URI template for access cookie requests.
-     */
-    private static final String GET_COOKIE_URI_TEMPLATE = "/cookie?origin={}";
-
-    /**
      * Tests that a client can obtain an access cookie.
      *
      * @param aVertx A Vert.x instance
@@ -36,7 +31,7 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetCookie(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE,
+        final String requestUri = StringUtils.format(GET_COOKIE_PATH,
                 URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
@@ -62,7 +57,7 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetCookieUnknownOrigin(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_COOKIE_URI_TEMPLATE,
+        final String requestUri = StringUtils.format(GET_COOKIE_PATH,
                 URLEncoder.encode("https://iiif.unknown.library.ucla.edu", StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {

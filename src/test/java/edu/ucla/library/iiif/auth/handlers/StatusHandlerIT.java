@@ -24,7 +24,7 @@ public final class StatusHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetStatus(final Vertx aVertx, final VertxTestContext aContext) {
-        myWebClient.get(myPort, TestConstants.INADDR_ANY, "/status").send(get -> {
+        myWebClient.get(myPort, TestConstants.INADDR_ANY, GET_STATUS_PATH).send(get -> {
             if (get.succeeded()) {
                 assertEquals(HTTP.OK, get.result().statusCode());
                 aContext.completeNow();
