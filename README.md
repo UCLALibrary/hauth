@@ -36,6 +36,7 @@ These are a work in progress. None of these need to be supplied when running in 
 | --- | --- | --- |
 | HTTP_PORT | 8888 | No |
 | HTTP_HOST | 0.0.0.0 | No |
+| ACCESS_TOKEN_EXPIRES_IN | 3600 | No |
 | API_SPEC | hauth.yaml | No |
 | DB_HOST | localhost | No |
 | DB_PORT | 5432 | No |

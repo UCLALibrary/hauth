@@ -31,6 +31,11 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
     private final JsonObject myConfig;
 
     /**
+     * See {@link Config#ACCESS_TOKEN_EXPIRES_IN}.
+     */
+    private final int myExpiresIn;
+
+    /**
      * The service proxy for accessing the secret key.
      */
     private final AccessCookieCryptoService myAccessCookieCryptoService;
@@ -43,6 +48,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
      */
     public AccessTokenHandler(final Vertx aVertx, final JsonObject aConfig) {
         myConfig = aConfig;
+        myExpiresIn = aConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN, 3600);
         myAccessCookieCryptoService = AccessCookieCryptoService.createProxy(aVertx);
     }
 
@@ -57,13 +63,12 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
         myAccessCookieCryptoService.decryptCookie(cookieValue).onSuccess(cookieData -> {
             // if the IP addresses match, send back the access token
             if (clientIpAddress.equals(cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS))) {
-                // FIXME: make expiration configurable
                 final JsonObject accessTokenUnencoded = new JsonObject()
                         .put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
                         .put(TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
                 final String accessToken = Base64.getEncoder().encodeToString(accessTokenUnencoded.encode().getBytes());
                 final JsonObject data = new JsonObject().put(ResponseJsonKeys.ACCESS_TOKEN, accessToken)
-                        .put(ResponseJsonKeys.EXPIRES_IN, 3600);
+                        .put(ResponseJsonKeys.EXPIRES_IN, myExpiresIn);
 
                 aContext.response().setStatusCode(HTTP.OK).end(data.encodePrettily());
             } else {

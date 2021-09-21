@@ -55,8 +55,9 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
                             .put(TokenJsonKeys.CAMPUS_NETWORK, cookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
                     final String expectedAccessToken = Base64.getEncoder()
                             .encodeToString(expectedAccessTokenDecoded.encode().getBytes());
+                    final int expectedExpiresIn = myConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN, 3600);
                     final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_TOKEN, expectedAccessToken)
-                            .put(ResponseJsonKeys.EXPIRES_IN, 3600);
+                            .put(ResponseJsonKeys.EXPIRES_IN, expectedExpiresIn);
 
                     assertEquals(HTTP.OK, response.statusCode());
                     assertEquals(MediaType.APPLICATION_JSON.toString(),
