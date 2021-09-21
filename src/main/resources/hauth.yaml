@@ -108,10 +108,10 @@ paths:
       operationId: getToken
       parameters:
       - in: cookie
-        name: iiifauth
+        name: iiif-access
         schema:
           type: string
-          example: iiifauth=asrvaaDe43AAqw34QpOoPJR4j5b1; Path=/; HttpOnly
+          example: iiif-access=asrvaaDe43AAqw34QpOoPJR4j5b1; Path=/; HttpOnly
         required: true
       responses:
         '200':
