@@ -6,6 +6,11 @@ package edu.ucla.library.iiif.auth;
 public final class ResponseJsonKeys {
 
     /**
+     * The status key.
+     */
+    public static final String STATUS = "status";
+
+    /**
      * The ID key.
      */
     public static final String ID = "id";
