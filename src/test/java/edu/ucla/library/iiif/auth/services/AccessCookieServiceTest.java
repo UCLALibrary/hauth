@@ -159,7 +159,17 @@ public class AccessCookieServiceTest {
 
             aContext.completeNow();
         }).onSuccess(decryptedCookie -> {
-            aContext.failNow(StringUtils.format(MessageCodes.AUTH_009, decryptedCookie));
+            // Somehow we still got valid JSON; make sure the structure is not as expected
+            if (decryptedCookie.containsKey(CookieJsonKeys.CLIENT_IP_ADDRESS)
+                    && decryptedCookie.getString(CookieJsonKeys.CLIENT_IP_ADDRESS).equals(clientIpAddress)
+                    && decryptedCookie.containsKey(CookieJsonKeys.CAMPUS_NETWORK)
+                    && decryptedCookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK) == isCampusNetwork
+                    && decryptedCookie.containsKey(CookieJsonKeys.DEGRADED_ALLOWED)
+                    && decryptedCookie.getBoolean(CookieJsonKeys.DEGRADED_ALLOWED) == isDegradedAllowed) {
+                aContext.failNow(StringUtils.format(MessageCodes.AUTH_009, decryptedCookie));
+            } else {
+                aContext.completeNow();
+            }
         });
     }
 
