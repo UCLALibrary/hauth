@@ -7,9 +7,9 @@ import edu.ucla.library.iiif.auth.CookieJsonKeys;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.TokenJsonKeys;
-import edu.ucla.library.iiif.auth.services.AccessCookieCryptoService;
-import edu.ucla.library.iiif.auth.services.AccessCookieCryptoServiceError;
-import edu.ucla.library.iiif.auth.services.AccessCookieCryptoServiceImpl;
+import edu.ucla.library.iiif.auth.services.AccessCookieService;
+import edu.ucla.library.iiif.auth.services.AccessCookieServiceError;
+import edu.ucla.library.iiif.auth.services.AccessCookieServiceImpl;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import info.freelibrary.util.HTTP;
@@ -49,7 +49,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
     /**
      * The service proxy for accessing the secret key.
      */
-    private final AccessCookieCryptoService myAccessCookieCryptoService;
+    private final AccessCookieService myAccessCookieService;
 
     /**
      * Creates a handler that exchanges access cookies for access tokens.
@@ -60,7 +60,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
     public AccessTokenHandler(final Vertx aVertx, final JsonObject aConfig) {
         myConfig = aConfig;
         myExpiresIn = aConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN, 3600);
-        myAccessCookieCryptoService = AccessCookieCryptoService.createProxy(aVertx);
+        myAccessCookieService = AccessCookieService.createProxy(aVertx);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
 
         aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
 
-        myAccessCookieCryptoService.decryptCookie(cookieValue).onSuccess(cookieData -> {
+        myAccessCookieService.decryptCookie(cookieValue).onSuccess(cookieData -> {
             final JsonObject data = new JsonObject();
 
             // if the IP addresses match, send back the access token
@@ -88,7 +88,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
                 response.setStatusCode(HTTP.OK);
             } else {
                 final String responseMessage = LOGGER.getMessage(MessageCodes.AUTH_011);
-                data.put(ResponseJsonKeys.ERROR, AccessCookieCryptoServiceError.INVALID_COOKIE)
+                data.put(ResponseJsonKeys.ERROR, AccessCookieServiceError.INVALID_COOKIE)
                         .put(ResponseJsonKeys.MESSAGE, responseMessage);
 
                 response.setStatusCode(HTTP.BAD_REQUEST);
@@ -100,7 +100,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
             final ServiceException error = (ServiceException) failure;
             final String responseMessage;
             final JsonObject data = new JsonObject();
-            final AccessCookieCryptoServiceError errorCode = AccessCookieCryptoServiceImpl.getError(error);
+            final AccessCookieServiceError errorCode = AccessCookieServiceImpl.getError(error);
 
             switch (errorCode) {
                 case INVALID_COOKIE:

@@ -1,9 +1,9 @@
 package edu.ucla.library.iiif.auth.services;
 
 /**
- * AccessCookieCryptoService errors.
+ * AccessCookieService errors.
  */
-public enum AccessCookieCryptoServiceError {
+public enum AccessCookieServiceError {
     // The failure code if the service is configured improperly.
     CONFIGURATION,
 

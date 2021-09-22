@@ -31,17 +31,17 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
- * The implementation of AccessCookieCryptoService.
+ * The implementation of AccessCookieService.
  * <p>
  * Algorithm names are defined
  * <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">here</a>.
  */
-public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService {
+public class AccessCookieServiceImpl implements AccessCookieService {
 
     /**
-     * The access cookie crypto service impl's logger.
+     * The access cookie service impl's logger.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieCryptoServiceImpl.class,
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieServiceImpl.class,
             MessageCodes.BUNDLE);
 
     /**
@@ -61,15 +61,15 @@ public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService 
 
     /**
      * The failure code to use for a ServiceException that represents
-     * {@link AccessCookieCryptoServiceError#CONFIGURATION}.
+     * {@link AccessCookieServiceError#CONFIGURATION}.
      */
-    private static final int CONFIGURATION_ERROR = AccessCookieCryptoServiceError.CONFIGURATION.ordinal();
+    private static final int CONFIGURATION_ERROR = AccessCookieServiceError.CONFIGURATION.ordinal();
 
     /**
      * The failure code to use for a ServiceException that represents
-     * {@link AccessCookieCryptoServiceError#INVALID_COOKIE}.
+     * {@link AccessCookieServiceError#INVALID_COOKIE}.
      */
-    private static final int INVALID_COOKIE_ERROR = AccessCookieCryptoServiceError.INVALID_COOKIE.ordinal();
+    private static final int INVALID_COOKIE_ERROR = AccessCookieServiceError.INVALID_COOKIE.ordinal();
 
     /**
      * A reference to the configuration.
@@ -107,7 +107,7 @@ public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService 
      * not valid algorithms
      * @throws NoSuchPaddingException if {@link CIPHER_TRANSFORMATION} contains a padding scheme that is not available
      */
-    AccessCookieCryptoServiceImpl(final JsonObject aConfig)
+    AccessCookieServiceImpl(final JsonObject aConfig)
             throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException {
         final String password = aConfig.getString(Config.SECRET_KEY_GENERATION_PASSWORD);
         final String salt = aConfig.getString(Config.SECRET_KEY_GENERATION_SALT);
@@ -192,12 +192,12 @@ public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService 
     }
 
     /**
-     * Gets the AccessCookieCryptoServiceError represented by the ServiceException.
+     * Gets the AccessCookieServiceError represented by the ServiceException.
      *
-     * @param aServiceException A ServiceException that represents a AccessCookieCryptoServiceError
-     * @return The access cookie crypto service error
+     * @param aServiceException A ServiceException that represents a AccessCookieServiceError
+     * @return The access cookie service error
      */
-    public static AccessCookieCryptoServiceError getError(final ServiceException aServiceException) {
-        return AccessCookieCryptoServiceError.values()[aServiceException.failureCode()];
+    public static AccessCookieServiceError getError(final ServiceException aServiceException) {
+        return AccessCookieServiceError.values()[aServiceException.failureCode()];
     }
 }

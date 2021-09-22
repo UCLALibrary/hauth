@@ -16,12 +16,12 @@ import io.vertx.serviceproxy.ServiceProxyBuilder;
  */
 @ProxyGen
 @VertxGen
-public interface AccessCookieCryptoService {
+public interface AccessCookieService {
 
     /**
      * The event bus address that the service will be registered on, for access via service proxies.
      */
-    String ADDRESS = AccessCookieCryptoService.class.getName();
+    String ADDRESS = AccessCookieService.class.getName();
 
     /**
      * Creates an instance of the service.
@@ -31,8 +31,8 @@ public interface AccessCookieCryptoService {
      * @throws GeneralSecurityException if the service implementation isn't configured properly
      */
     @SuppressWarnings({ "PMD.PreserveStackTrace" })
-    static AccessCookieCryptoService create(final JsonObject aConfig) throws GeneralSecurityException {
-        return new AccessCookieCryptoServiceImpl(aConfig);
+    static AccessCookieService create(final JsonObject aConfig) throws GeneralSecurityException {
+        return new AccessCookieServiceImpl(aConfig);
     }
 
     /**
@@ -42,8 +42,8 @@ public interface AccessCookieCryptoService {
      * @param aVertx A Vert.x instance
      * @return A service proxy instance
      */
-    static AccessCookieCryptoService createProxy(final Vertx aVertx) {
-        return new ServiceProxyBuilder(aVertx).setAddress(ADDRESS).build(AccessCookieCryptoService.class);
+    static AccessCookieService createProxy(final Vertx aVertx) {
+        return new ServiceProxyBuilder(aVertx).setAddress(ADDRESS).build(AccessCookieService.class);
     }
 
     /**

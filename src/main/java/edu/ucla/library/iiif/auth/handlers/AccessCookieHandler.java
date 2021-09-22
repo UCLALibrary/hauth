@@ -12,7 +12,7 @@ import com.github.veqryn.net.Ip4;
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
 import edu.ucla.library.iiif.auth.Param;
-import edu.ucla.library.iiif.auth.services.AccessCookieCryptoService;
+import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
@@ -56,7 +56,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
     /**
      * A service for generating and decrypting encrypted access cookies.
      */
-    private final AccessCookieCryptoService myAccessCookieCryptoService;
+    private final AccessCookieService myAccessCookieService;
 
     /**
      * Creates a handler that retrieves an access cookie for the client.
@@ -69,7 +69,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
         myDatabaseServiceProxy = DatabaseService.createProxy(aVertx);
         myHtmlTemplateEngine = HandlebarsTemplateEngine.create(aVertx);
         myCampusNetworkSubnets = new Cidr4Trie<>();
-        myAccessCookieCryptoService = AccessCookieCryptoService.createProxy(aVertx);
+        myAccessCookieService = AccessCookieService.createProxy(aVertx);
 
         for (final String subnet : aConfig.getString(Config.CAMPUS_NETWORK_SUBNETS).split(COMMA)) {
             final Cidr4 cidr = new Cidr4(subnet);
@@ -89,7 +89,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
             final boolean isOnCampusNetwork = isOnNetwork(clientIpAddress, myCampusNetworkSubnets);
 
             myDatabaseServiceProxy.getDegradedAllowed(origin.toString()).compose(isDegradedAllowed -> {
-                final Future<String> cookieGeneration = myAccessCookieCryptoService
+                final Future<String> cookieGeneration = myAccessCookieService
                         .generateCookie(clientIpAddress.getAddress(), isOnCampusNetwork, isDegradedAllowed);
 
                 return cookieGeneration.compose(cookieValue -> {

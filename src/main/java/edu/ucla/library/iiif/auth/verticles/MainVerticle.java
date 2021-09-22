@@ -14,7 +14,7 @@ import edu.ucla.library.iiif.auth.handlers.AccessLevelHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessTokenHandler;
 import edu.ucla.library.iiif.auth.handlers.DatabaseAccessFailureHandler;
 import edu.ucla.library.iiif.auth.handlers.StatusHandler;
-import edu.ucla.library.iiif.auth.services.AccessCookieCryptoService;
+import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.config.ConfigRetriever;
@@ -71,9 +71,9 @@ public class MainVerticle extends AbstractVerticle {
     private MessageConsumer<JsonObject> myDatabaseService;
 
     /**
-     * The access cookie crypto service.
+     * The access cookie service.
      */
-    private MessageConsumer<JsonObject> myAccessCookieCryptoService;
+    private MessageConsumer<JsonObject> myAccessCookieService;
 
     @Override
     public void start(final Promise<Void> aPromise) {
@@ -89,7 +89,7 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void stop(final Promise<Void> aPromise) {
         final Future<Void> stopAll = CompositeFuture
-                .all(myDatabaseService.unregister(), myAccessCookieCryptoService.unregister())
+                .all(myDatabaseService.unregister(), myAccessCookieService.unregister())
                 .compose(result -> myServer.close());
 
         stopAll.onSuccess(aPromise::complete).onFailure(aPromise::fail);
@@ -110,8 +110,8 @@ public class MainVerticle extends AbstractVerticle {
 
         // Register the services on the event bus, and keep a reference to them so they can be unregistered later
         try {
-            myAccessCookieCryptoService = serviceBinder.setAddress(AccessCookieCryptoService.ADDRESS)
-                    .register(AccessCookieCryptoService.class, AccessCookieCryptoService.create(aConfig));
+            myAccessCookieService = serviceBinder.setAddress(AccessCookieService.ADDRESS)
+                    .register(AccessCookieService.class, AccessCookieService.create(aConfig));
         } catch (final GeneralSecurityException details) {
             aPromise.fail(details.getMessage());
             return;

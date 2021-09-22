@@ -9,7 +9,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import edu.ucla.library.iiif.auth.Config;
-import edu.ucla.library.iiif.auth.services.AccessCookieCryptoService;
+import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.config.ConfigRetriever;
@@ -76,7 +76,7 @@ public abstract class AbstractHandlerIT {
     /**
      * A duplicate service of the one running inside the Hauth container for decrypting access cookies on the test side.
      */
-    protected AccessCookieCryptoService myAccessCookieCryptoService;
+    protected AccessCookieService myAccessCookieService;
 
     /**
      * Sets up the test.
@@ -94,7 +94,7 @@ public abstract class AbstractHandlerIT {
             myPort = config.getInteger(Config.HTTP_PORT, 8888);
 
             try {
-                myAccessCookieCryptoService = AccessCookieCryptoService.create(config);
+                myAccessCookieService = AccessCookieService.create(config);
             } catch (final GeneralSecurityException details) {
                 return Future.failedFuture(details);
             }
