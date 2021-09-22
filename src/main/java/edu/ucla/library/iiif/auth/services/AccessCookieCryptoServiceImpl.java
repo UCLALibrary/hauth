@@ -134,11 +134,19 @@ public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService 
 
     @Override
     public Future<JsonObject> decryptCookie(final String aCookieValue) {
-        final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(aCookieValue)));
-        final byte[] encryptedCookieData = decodedCookie.getBinary(CookieJsonKeys.SECRET);
-        final byte[] nonce = decodedCookie.getBinary(CookieJsonKeys.NONCE);
+        final JsonObject decodedCookie;
+        final byte[] encryptedCookieData;
+        final byte[] nonce;
         final byte[] serializedCookieData;
         final JsonObject cookieData;
+
+        try {
+            decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(aCookieValue)));
+            encryptedCookieData = decodedCookie.getBinary(CookieJsonKeys.SECRET);
+            nonce = decodedCookie.getBinary(CookieJsonKeys.NONCE);
+        } catch (final ClassCastException | DecodeException | IllegalArgumentException details) {
+            return Future.failedFuture(new ServiceException(TAMPERED_COOKIE_ERROR, details.getMessage()));
+        }
 
         try {
             myCipher.init(Cipher.DECRYPT_MODE, mySecretKey, new IvParameterSpec(nonce));
