@@ -162,29 +162,23 @@ public class AccessCookieServiceImpl implements AccessCookieService {
 
     @Override
     public Future<JsonObject> decryptCookie(final String aCookieValue) {
-        final JsonObject decodedCookie;
-        final byte[] encryptedCookieData;
-        final byte[] nonce;
-        final byte[] serializedCookieData;
         final JsonObject cookieData;
 
         try {
-            decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(aCookieValue)));
-            encryptedCookieData = decodedCookie.getBinary(CookieJsonKeys.SECRET);
-            nonce = decodedCookie.getBinary(CookieJsonKeys.NONCE);
-        } catch (final ClassCastException | DecodeException | IllegalArgumentException details) {
-            return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR, details.getMessage()));
-        }
+            final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(aCookieValue)));
+            final byte[] encryptedCookieData = decodedCookie.getBinary(CookieJsonKeys.SECRET);
+            final byte[] nonce = decodedCookie.getBinary(CookieJsonKeys.NONCE);
+            final byte[] serializedCookieData;
 
-        try {
             myCipher.init(Cipher.DECRYPT_MODE, mySecretKey, new IvParameterSpec(nonce));
+
             serializedCookieData = myCipher.doFinal(encryptedCookieData);
             cookieData = new JsonObject(new String(serializedCookieData));
         } catch (final IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException details) {
             // This code should never be reached, since only we're doing the encryption
             return Future.failedFuture(new ServiceException(CONFIGURATION_ERROR, details.getMessage()));
-        } catch (final BadPaddingException | DecodeException details) {
-            // Cookie was tampered with
+        } catch (final BadPaddingException | ClassCastException | DecodeException | IllegalArgumentException details) {
+            // Cookie was tampered with, stolen, or is otherwise invalid
             return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR, details.getMessage()));
         }
 
