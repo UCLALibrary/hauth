@@ -66,7 +66,7 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
 
                     aContext.completeNow();
                 }).onFailure(aContext::failNow);
-            });
+            }).onFailure(aContext::failNow);
         }).onFailure(aContext::failNow);
     }
 
