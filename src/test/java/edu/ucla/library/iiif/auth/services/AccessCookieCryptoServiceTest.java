@@ -2,9 +2,9 @@
 package edu.ucla.library.iiif.auth.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Random;
@@ -79,7 +79,7 @@ public class AccessCookieCryptoServiceTest {
                 myServiceProxy = AccessCookieCryptoService.createProxy(aVertx);
 
                 aContext.completeNow();
-            } catch (final ServiceException details) {
+            } catch (final GeneralSecurityException details) {
                 aContext.failNow(details);
             }
         }).onFailure(aContext::failNow);
@@ -153,8 +153,9 @@ public class AccessCookieCryptoServiceTest {
 
             return myServiceProxy.decryptCookie(tamperedCookie);
         }).onFailure(details -> {
-            assertInstanceOf(ServiceException.class, details);
-            assertEquals(((ServiceException) details).failureCode(), AccessCookieCryptoService.TAMPERED_COOKIE_ERROR);
+            final ServiceException error = (ServiceException) details;
+
+            assertEquals(AccessCookieCryptoServiceError.INVALID_COOKIE, AccessCookieCryptoServiceImpl.getError(error));
 
             aContext.completeNow();
         }).onSuccess(decryptedCookie -> {

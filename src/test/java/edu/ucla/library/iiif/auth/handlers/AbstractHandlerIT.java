@@ -1,5 +1,7 @@
 package edu.ucla.library.iiif.auth.handlers;
 
+import java.security.GeneralSecurityException;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -12,6 +14,7 @@ import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -89,7 +92,12 @@ public abstract class AbstractHandlerIT {
             myConfig = config;
             myWebClient = WebClient.create(aVertx);
             myPort = config.getInteger(Config.HTTP_PORT, 8888);
-            myAccessCookieCryptoService = AccessCookieCryptoService.create(config);
+
+            try {
+                myAccessCookieCryptoService = AccessCookieCryptoService.create(config);
+            } catch (final GeneralSecurityException details) {
+                return Future.failedFuture(details);
+            }
 
             // Add some database entries
             return CompositeFuture.all(db.setAccessLevel(TEST_ID, 0), db.setDegradedAllowed(TEST_ORIGIN, false))

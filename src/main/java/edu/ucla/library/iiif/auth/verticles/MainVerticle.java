@@ -4,6 +4,8 @@ package edu.ucla.library.iiif.auth.verticles;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+import java.security.GeneralSecurityException;
+
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Op;
@@ -107,10 +109,15 @@ public class MainVerticle extends AbstractVerticle {
         final ServiceBinder serviceBinder = new ServiceBinder(getVertx());
 
         // Register the services on the event bus, and keep a reference to them so they can be unregistered later
+        try {
+            myAccessCookieCryptoService = serviceBinder.setAddress(AccessCookieCryptoService.ADDRESS)
+                    .register(AccessCookieCryptoService.class, AccessCookieCryptoService.create(aConfig));
+        } catch (final GeneralSecurityException details) {
+            aPromise.fail(details.getMessage());
+            return;
+        }
         myDatabaseService = serviceBinder.setAddress(DatabaseService.ADDRESS)
                 .register(DatabaseService.class, DatabaseService.create(getVertx(), aConfig));
-        myAccessCookieCryptoService = serviceBinder.setAddress(AccessCookieCryptoService.ADDRESS)
-                .register(AccessCookieCryptoService.class, AccessCookieCryptoService.create(aConfig));
 
         RouterBuilder.create(vertx, apiSpec).onComplete(routerConfig -> {
             if (routerConfig.succeeded()) {
