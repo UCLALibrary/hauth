@@ -22,6 +22,11 @@ public final class Config {
     public static final String HTTP_HOST = "HTTP_HOST";
 
     /**
+     * The number of seconds after which an access token will cease to be valid.
+     */
+    public static final String ACCESS_TOKEN_EXPIRES_IN = "ACCESS_TOKEN_EXPIRES_IN";
+
+    /**
      * The ENV property for the location of the application's OpenAPI specification.
      */
     public static final String API_SPEC = "API_SPEC";

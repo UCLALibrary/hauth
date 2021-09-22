@@ -13,7 +13,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
@@ -21,6 +20,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
+import edu.ucla.library.iiif.auth.MessageCodes;
+
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.DecodeException;
@@ -28,12 +31,18 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
- * The implementation of AccessCookieCryptoService.
+ * The implementation of AccessCookieService.
  * <p>
  * Algorithm names are defined
  * <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">here</a>.
  */
-public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService {
+public class AccessCookieServiceImpl implements AccessCookieService {
+
+    /**
+     * The access cookie service impl's logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieServiceImpl.class,
+            MessageCodes.BUNDLE);
 
     /**
      * The name of the algorithm to use for key derivation.
@@ -49,6 +58,18 @@ public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService 
      * The name of the cipher transformation.
      */
     private static final String CIPHER_TRANSFORMATION = "AES/CBC/PKCS5Padding";
+
+    /**
+     * The failure code to use for a ServiceException that represents
+     * {@link AccessCookieServiceError#CONFIGURATION}.
+     */
+    private static final int CONFIGURATION_ERROR = AccessCookieServiceError.CONFIGURATION.ordinal();
+
+    /**
+     * The failure code to use for a ServiceException that represents
+     * {@link AccessCookieServiceError#INVALID_COOKIE}.
+     */
+    private static final int INVALID_COOKIE_ERROR = AccessCookieServiceError.INVALID_COOKIE.ordinal();
 
     /**
      * A reference to the configuration.
@@ -86,19 +107,26 @@ public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService 
      * not valid algorithms
      * @throws NoSuchPaddingException if {@link CIPHER_TRANSFORMATION} contains a padding scheme that is not available
      */
-    AccessCookieCryptoServiceImpl(final JsonObject aConfig)
+    AccessCookieServiceImpl(final JsonObject aConfig)
             throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException {
         final String password = aConfig.getString(Config.SECRET_KEY_GENERATION_PASSWORD);
         final String salt = aConfig.getString(Config.SECRET_KEY_GENERATION_SALT);
         final int iterationCount = 65_536;
         final int keyLength = 256;
-        final SecretKeyFactory factory = SecretKeyFactory.getInstance(KEY_DERIVATION_FUNCTION);
-        final KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), iterationCount, keyLength);
-        final SecretKey derivedKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), KEY_ALGORITHM);
+
+        try {
+            final SecretKeyFactory factory = SecretKeyFactory.getInstance(KEY_DERIVATION_FUNCTION);
+            final KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), iterationCount, keyLength);
+
+            mySecretKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), KEY_ALGORITHM);
+            myCipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
+        } catch (final InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException details) {
+            LOGGER.error(MessageCodes.AUTH_010, details.getMessage());
+
+            throw details;
+        }
 
         myConfig = aConfig;
-        mySecretKey = derivedKey;
-        myCipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
         myInitializationVectorRng = new SecureRandom();
     }
 
@@ -134,24 +162,36 @@ public class AccessCookieCryptoServiceImpl implements AccessCookieCryptoService 
 
     @Override
     public Future<JsonObject> decryptCookie(final String aCookieValue) {
-        final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(aCookieValue)));
-        final byte[] encryptedCookieData = decodedCookie.getBinary(CookieJsonKeys.SECRET);
-        final byte[] nonce = decodedCookie.getBinary(CookieJsonKeys.NONCE);
-        final byte[] serializedCookieData;
         final JsonObject cookieData;
 
         try {
+            final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(aCookieValue)));
+            final byte[] encryptedCookieData = decodedCookie.getBinary(CookieJsonKeys.SECRET);
+            final byte[] nonce = decodedCookie.getBinary(CookieJsonKeys.NONCE);
+            final byte[] serializedCookieData;
+
             myCipher.init(Cipher.DECRYPT_MODE, mySecretKey, new IvParameterSpec(nonce));
+
             serializedCookieData = myCipher.doFinal(encryptedCookieData);
             cookieData = new JsonObject(new String(serializedCookieData));
         } catch (final IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException details) {
             // This code should never be reached, since only we're doing the encryption
             return Future.failedFuture(new ServiceException(CONFIGURATION_ERROR, details.getMessage()));
-        } catch (final BadPaddingException | DecodeException details) {
-            // Cookie was tampered with
-            return Future.failedFuture(new ServiceException(TAMPERED_COOKIE_ERROR, details.getMessage()));
+        } catch (final BadPaddingException | ClassCastException | DecodeException | IllegalArgumentException details) {
+            // Cookie was tampered with, stolen, or is otherwise invalid
+            return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR, details.getMessage()));
         }
 
         return Future.succeededFuture(cookieData);
+    }
+
+    /**
+     * Gets the AccessCookieServiceError represented by the ServiceException.
+     *
+     * @param aServiceException A ServiceException that represents a AccessCookieServiceError
+     * @return The access cookie service error
+     */
+    public static AccessCookieServiceError getError(final ServiceException aServiceException) {
+        return AccessCookieServiceError.values()[aServiceException.failureCode()];
     }
 }

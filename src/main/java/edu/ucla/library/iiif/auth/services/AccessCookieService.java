@@ -1,9 +1,6 @@
 package edu.ucla.library.iiif.auth.services;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
-import javax.crypto.NoSuchPaddingException;
+import java.security.GeneralSecurityException;
 
 import io.vertx.codegen.annotations.ProxyClose;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -12,7 +9,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonObject;
-import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceProxyBuilder;
 
 /**
@@ -20,37 +16,23 @@ import io.vertx.serviceproxy.ServiceProxyBuilder;
  */
 @ProxyGen
 @VertxGen
-public interface AccessCookieCryptoService {
+public interface AccessCookieService {
 
     /**
      * The event bus address that the service will be registered on, for access via service proxies.
      */
-    String ADDRESS = AccessCookieCryptoService.class.getName();
-
-    /**
-     * The failure code if the service is configured improperly.
-     */
-    int CONFIGURATION_ERROR = 1;
-
-    /**
-     * The failure code if the service receives a decryption request for a cookie that has been tampered with.
-     */
-    int TAMPERED_COOKIE_ERROR = 2;
+    String ADDRESS = AccessCookieService.class.getName();
 
     /**
      * Creates an instance of the service.
      *
      * @param aConfig A configuration
      * @return The service instance
-     * @throws ServiceException if the service implementation isn't configured properly
+     * @throws GeneralSecurityException if the service implementation isn't configured properly
      */
     @SuppressWarnings({ "PMD.PreserveStackTrace" })
-    static AccessCookieCryptoService create(final JsonObject aConfig) {
-        try {
-            return new AccessCookieCryptoServiceImpl(aConfig);
-        } catch (final InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException details) {
-            throw new ServiceException(CONFIGURATION_ERROR, details.getMessage());
-        }
+    static AccessCookieService create(final JsonObject aConfig) throws GeneralSecurityException {
+        return new AccessCookieServiceImpl(aConfig);
     }
 
     /**
@@ -60,8 +42,8 @@ public interface AccessCookieCryptoService {
      * @param aVertx A Vert.x instance
      * @return A service proxy instance
      */
-    static AccessCookieCryptoService createProxy(final Vertx aVertx) {
-        return new ServiceProxyBuilder(aVertx).setAddress(ADDRESS).build(AccessCookieCryptoService.class);
+    static AccessCookieService createProxy(final Vertx aVertx) {
+        return new ServiceProxyBuilder(aVertx).setAddress(ADDRESS).build(AccessCookieService.class);
     }
 
     /**

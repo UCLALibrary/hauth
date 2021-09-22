@@ -2,9 +2,9 @@
 package edu.ucla.library.iiif.auth.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Random;
@@ -31,15 +31,15 @@ import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
- * Tests the {@link AccessCookieCryptoService}.
+ * Tests the {@link AccessCookieService}.
  */
 @ExtendWith(VertxExtension.class)
-public class AccessCookieCryptoServiceTest {
+public class AccessCookieServiceTest {
 
     /**
      * The logger used by these tests.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieCryptoServiceTest.class,
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieServiceTest.class,
             MessageCodes.BUNDLE);
 
     /**
@@ -50,7 +50,7 @@ public class AccessCookieCryptoServiceTest {
     /**
      * The service proxy for testing typical client usage.
      */
-    private AccessCookieCryptoService myServiceProxy;
+    private AccessCookieService myServiceProxy;
 
     /**
      * Only used for event bus unregistration.
@@ -68,18 +68,18 @@ public class AccessCookieCryptoServiceTest {
         ConfigRetriever.create(aVertx).getConfig().onSuccess(config -> {
             try {
                 // In order to test the service proxy, we need to instantiate the service first
-                final AccessCookieCryptoService service = AccessCookieCryptoService.create(config);
+                final AccessCookieService service = AccessCookieService.create(config);
                 final ServiceBinder binder = new ServiceBinder(aVertx);
 
                 // Register the service on the event bus, and keep a reference to it so it can be unregistered later
-                myService = binder.setAddress(AccessCookieCryptoService.ADDRESS)
-                        .register(AccessCookieCryptoService.class, service);
+                myService = binder.setAddress(AccessCookieService.ADDRESS)
+                        .register(AccessCookieService.class, service);
 
                 // Now we can instantiate a proxy to the service
-                myServiceProxy = AccessCookieCryptoService.createProxy(aVertx);
+                myServiceProxy = AccessCookieService.createProxy(aVertx);
 
                 aContext.completeNow();
-            } catch (final ServiceException details) {
+            } catch (final GeneralSecurityException details) {
                 aContext.failNow(details);
             }
         }).onFailure(aContext::failNow);
@@ -135,6 +135,7 @@ public class AccessCookieCryptoServiceTest {
      * @param aContext A test context
      */
     @Test
+    @SuppressWarnings("checkstyle:BooleanExpressionComplexity")
     public final void testInvalidateTamperedCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String clientIpAddress = LOCALHOST;
         final boolean isCampusNetwork = false;
@@ -153,12 +154,23 @@ public class AccessCookieCryptoServiceTest {
 
             return myServiceProxy.decryptCookie(tamperedCookie);
         }).onFailure(details -> {
-            assertInstanceOf(ServiceException.class, details);
-            assertEquals(((ServiceException) details).failureCode(), AccessCookieCryptoService.TAMPERED_COOKIE_ERROR);
+            final ServiceException error = (ServiceException) details;
+
+            assertEquals(AccessCookieServiceError.INVALID_COOKIE, AccessCookieServiceImpl.getError(error));
 
             aContext.completeNow();
         }).onSuccess(decryptedCookie -> {
-            aContext.failNow(StringUtils.format(MessageCodes.AUTH_009, decryptedCookie));
+            // Somehow we still got syntactically valid JSON; make sure the structure is not semantically valid
+            if (decryptedCookie.containsKey(CookieJsonKeys.CLIENT_IP_ADDRESS)
+                    && decryptedCookie.getString(CookieJsonKeys.CLIENT_IP_ADDRESS).equals(clientIpAddress)
+                    && decryptedCookie.containsKey(CookieJsonKeys.CAMPUS_NETWORK)
+                    && decryptedCookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK) == isCampusNetwork
+                    && decryptedCookie.containsKey(CookieJsonKeys.DEGRADED_ALLOWED)
+                    && decryptedCookie.getBoolean(CookieJsonKeys.DEGRADED_ALLOWED) == isDegradedAllowed) {
+                aContext.failNow(StringUtils.format(MessageCodes.AUTH_009, decryptedCookie));
+            } else {
+                aContext.completeNow();
+            }
         });
     }
 

@@ -108,10 +108,10 @@ paths:
       operationId: getToken
       parameters:
       - in: cookie
-        name: iiifauth
+        name: iiif-access
         schema:
           type: string
-          example: iiifauth=asrvaaDe43AAqw34QpOoPJR4j5b1; Path=/; HttpOnly
+          example: iiif-access=asrvaaDe43AAqw34QpOoPJR4j5b1; Path=/; HttpOnly
         required: true
       responses:
         '200':
@@ -128,17 +128,29 @@ paths:
         '400':
           description: The request didn't contain a valid cookie
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: The request did not contain a valid cookie
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: INVALID_COOKIE
+                  message:
+                    type: string
+                    example: The request did not contain a valid cookie
         '500':
           description: There was an internal server error
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: The service failed to connect to its access control database
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: CONFIGURATION
+                  message:
+                    type: string
+                    example: The access cookie decryption service is not configured properly
   /status:
     get:
       summary: Get Application Status

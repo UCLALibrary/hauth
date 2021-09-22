@@ -4,14 +4,17 @@ package edu.ucla.library.iiif.auth.verticles;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+import java.security.GeneralSecurityException;
+
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Op;
 import edu.ucla.library.iiif.auth.handlers.AccessCookieHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessLevelHandler;
+import edu.ucla.library.iiif.auth.handlers.AccessTokenHandler;
 import edu.ucla.library.iiif.auth.handlers.DatabaseAccessFailureHandler;
 import edu.ucla.library.iiif.auth.handlers.StatusHandler;
-import edu.ucla.library.iiif.auth.services.AccessCookieCryptoService;
+import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 
 import io.vertx.config.ConfigRetriever;
@@ -68,9 +71,9 @@ public class MainVerticle extends AbstractVerticle {
     private MessageConsumer<JsonObject> myDatabaseService;
 
     /**
-     * The access cookie crypto service.
+     * The access cookie service.
      */
-    private MessageConsumer<JsonObject> myAccessCookieCryptoService;
+    private MessageConsumer<JsonObject> myAccessCookieService;
 
     @Override
     public void start(final Promise<Void> aPromise) {
@@ -86,7 +89,7 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void stop(final Promise<Void> aPromise) {
         final Future<Void> stopAll = CompositeFuture
-                .all(myDatabaseService.unregister(), myAccessCookieCryptoService.unregister())
+                .all(myDatabaseService.unregister(), myAccessCookieService.unregister())
                 .compose(result -> myServer.close());
 
         stopAll.onSuccess(aPromise::complete).onFailure(aPromise::fail);
@@ -106,10 +109,15 @@ public class MainVerticle extends AbstractVerticle {
         final ServiceBinder serviceBinder = new ServiceBinder(getVertx());
 
         // Register the services on the event bus, and keep a reference to them so they can be unregistered later
+        try {
+            myAccessCookieService = serviceBinder.setAddress(AccessCookieService.ADDRESS)
+                    .register(AccessCookieService.class, AccessCookieService.create(aConfig));
+        } catch (final GeneralSecurityException details) {
+            aPromise.fail(details.getMessage());
+            return;
+        }
         myDatabaseService = serviceBinder.setAddress(DatabaseService.ADDRESS)
                 .register(DatabaseService.class, DatabaseService.create(getVertx(), aConfig));
-        myAccessCookieCryptoService = serviceBinder.setAddress(AccessCookieCryptoService.ADDRESS)
-                .register(AccessCookieCryptoService.class, AccessCookieCryptoService.create(aConfig));
 
         RouterBuilder.create(vertx, apiSpec).onComplete(routerConfig -> {
             if (routerConfig.succeeded()) {
@@ -123,6 +131,7 @@ public class MainVerticle extends AbstractVerticle {
                 routerBuilder.operation(Op.GET_ACCESS_LEVEL).handler(new AccessLevelHandler(getVertx()))
                         .failureHandler(dbAccessFailureHandler);
                 routerBuilder.operation(Op.GET_COOKIE).handler(new AccessCookieHandler(getVertx(), aConfig));
+                routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), aConfig));
 
                 myServer = getVertx().createHttpServer(serverOptions).requestHandler(routerBuilder.createRouter());
                 myServer.listen().onSuccess(result -> {
