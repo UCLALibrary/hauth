@@ -135,6 +135,7 @@ public class AccessCookieServiceTest {
      * @param aContext A test context
      */
     @Test
+    @SuppressWarnings("checkstyle:BooleanExpressionComplexity")
     public final void testInvalidateTamperedCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String clientIpAddress = LOCALHOST;
         final boolean isCampusNetwork = false;
