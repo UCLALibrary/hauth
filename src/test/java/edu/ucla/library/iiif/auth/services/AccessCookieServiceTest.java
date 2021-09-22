@@ -159,7 +159,7 @@ public class AccessCookieServiceTest {
 
             aContext.completeNow();
         }).onSuccess(decryptedCookie -> {
-            // Somehow we still got valid JSON; make sure the structure is not as expected
+            // Somehow we still got syntactically valid JSON; make sure the structure is not semantically valid
             if (decryptedCookie.containsKey(CookieJsonKeys.CLIENT_IP_ADDRESS)
                     && decryptedCookie.getString(CookieJsonKeys.CLIENT_IP_ADDRESS).equals(clientIpAddress)
                     && decryptedCookie.containsKey(CookieJsonKeys.CAMPUS_NETWORK)
