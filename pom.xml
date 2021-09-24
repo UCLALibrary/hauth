@@ -45,7 +45,9 @@
     <!-- Application dependencies -->
     <freelib.utils.version>2.4.0</freelib.utils.version>
     <slf4j.ext.version>1.7.30</slf4j.ext.version>
+    <cidr.ip.version>1.0.1</cidr.ip.version>
     <vertx.version>4.1.4</vertx.version>
+
 
     <!-- Security fixes for transitive dependencies -->
     <jetty.version>4.1.68.Final</jetty.version>
@@ -60,6 +62,10 @@
     <!-- Test dependency versions -->
     <mockito.version>3.11.1</mockito.version>
     <junit.version>5.8.0-M1</junit.version>
+    <redis.version>6.2.5-alpine</redis.version>
+    <postgres.version>12.7-alpine</postgres.version>
+    <cantaloupe.version>5.0.3-0</cantaloupe.version>
+    <auth.delegate.version>0.0.1-SNAPSHOT</auth.delegate.version>
 
     <!-- Name of the main Vert.x verticle -->
     <main.verticle>edu.ucla.library.iiif.auth.verticles.MainVerticle</main.verticle>
@@ -147,7 +153,7 @@
     <dependency>
       <groupId>com.github.veqryn</groupId>
       <artifactId>cidr-ip-trie</artifactId>
-      <version>1.0.1</version>
+      <version>${cidr.ip.version}</version>
     </dependency>
 
     <!-- Security fixes for transitive dependencies -->
@@ -277,7 +283,7 @@
             <configuration>
               <snapshot.artifact>cantaloupe-auth-delegate</snapshot.artifact>
               <snapshot.group>edu.ucla.library</snapshot.group>
-              <snapshot.version>0.0.1-SNAPSHOT</snapshot.version>
+              <snapshot.version>${auth.delegate.version}</snapshot.version>
             </configuration>
           </execution>
         </executions>
@@ -323,7 +329,7 @@
         <configuration>
           <imagesMap>
             <hauth_pgsql>
-              <name>postgres:12.7-alpine</name>
+              <name>postgres:${postgres.version}</name>
               <run>
                 <containerNamePattern>hauth_pgsql</containerNamePattern>
                 <ports>
@@ -343,7 +349,7 @@
               </run>
             </hauth_pgsql>
             <hauth_redis>
-              <name>redis:6.2.5-alpine</name>
+              <name>redis:${redis.version}</name>
               <run>
                 <containerNamePattern>hauth_redis</containerNamePattern>
                 <ports>
@@ -355,7 +361,7 @@
               </run>
             </hauth_redis>
             <hauth_cantaloupe>
-              <name>uclalibrary/cantaloupe:5.0.3-0</name>
+              <name>uclalibrary/cantaloupe:${cantaloupe.version}</name>
               <run>
                 <containerNamePattern>hauth_cantaloupe</containerNamePattern>
                 <ports>
