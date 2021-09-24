@@ -1,10 +1,10 @@
 
 package edu.ucla.library.iiif.auth.verticles;
 
+import java.security.GeneralSecurityException;
+
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
-
-import java.security.GeneralSecurityException;
 
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
@@ -88,9 +88,9 @@ public class MainVerticle extends AbstractVerticle {
 
     @Override
     public void stop(final Promise<Void> aPromise) {
-        final Future<Void> stopAll = CompositeFuture
-                .all(myDatabaseService.unregister(), myAccessCookieService.unregister())
-                .compose(result -> myServer.close());
+        final Future<Void> stopAll =
+                CompositeFuture.all(myDatabaseService.unregister(), myAccessCookieService.unregister())
+                        .compose(result -> myServer.close());
 
         stopAll.onSuccess(aPromise::complete).onFailure(aPromise::fail);
     }
@@ -116,8 +116,8 @@ public class MainVerticle extends AbstractVerticle {
             aPromise.fail(details.getMessage());
             return;
         }
-        myDatabaseService = serviceBinder.setAddress(DatabaseService.ADDRESS)
-                .register(DatabaseService.class, DatabaseService.create(getVertx(), aConfig));
+        myDatabaseService = serviceBinder.setAddress(DatabaseService.ADDRESS).register(DatabaseService.class,
+                DatabaseService.create(getVertx(), aConfig));
 
         RouterBuilder.create(vertx, apiSpec).onComplete(routerConfig -> {
             if (routerConfig.succeeded()) {

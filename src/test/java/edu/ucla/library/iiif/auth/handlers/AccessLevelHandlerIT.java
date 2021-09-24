@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,14 +43,14 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetAccessLevel(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_ACCESS_LEVEL_PATH,
-                URLEncoder.encode(TEST_ID, StandardCharsets.UTF_8));
+        final String requestUri =
+                StringUtils.format(GET_ACCESS_LEVEL_PATH, URLEncoder.encode(TEST_ID, StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {
                 final HttpResponse<?> response = get.result();
-                final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ID, TEST_ID)
-                        .put(ResponseJsonKeys.RESTRICTED, false);
+                final JsonObject expected =
+                        new JsonObject().put(ResponseJsonKeys.ID, TEST_ID).put(ResponseJsonKeys.RESTRICTED, false);
 
                 assertEquals(HTTP.OK, response.statusCode());
                 assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
@@ -71,17 +72,17 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
     @Test
     public void testGetAccessLevelUnknownItem(final Vertx aVertx, final VertxTestContext aContext) {
         final String id = "ark:/21198/unknown";
-        final String requestUri = StringUtils.format(GET_ACCESS_LEVEL_PATH,
-                URLEncoder.encode(id, StandardCharsets.UTF_8));
+        final String requestUri =
+                StringUtils.format(GET_ACCESS_LEVEL_PATH, URLEncoder.encode(id, StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {
                 final HttpResponse<?> response = get.result();
                 final JsonObject responseBody = response.bodyAsJsonObject();
-                final JsonObject expected = new JsonObject()
-                        .put(ResponseJsonKeys.ERROR, DatabaseServiceError.NOT_FOUND.toString())
-                        .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_004, id))
-                        .put(ResponseJsonKeys.ID, id);
+                final JsonObject expected =
+                        new JsonObject().put(ResponseJsonKeys.ERROR, DatabaseServiceError.NOT_FOUND.toString())
+                                .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_004, id))
+                                .put(ResponseJsonKeys.ID, id);
 
                 assertEquals(HTTP.NOT_FOUND, response.statusCode());
                 assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));

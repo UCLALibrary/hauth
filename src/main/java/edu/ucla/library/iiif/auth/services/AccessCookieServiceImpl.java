@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.services;
 
 import java.security.InvalidAlgorithmParameterException;
@@ -41,8 +42,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     /**
      * The access cookie service impl's logger.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieServiceImpl.class,
-            MessageCodes.BUNDLE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieServiceImpl.class, MessageCodes.BUNDLE);
 
     /**
      * The name of the algorithm to use for key derivation.
@@ -60,14 +60,12 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     private static final String CIPHER_TRANSFORMATION = "AES/CBC/PKCS5Padding";
 
     /**
-     * The failure code to use for a ServiceException that represents
-     * {@link AccessCookieServiceError#CONFIGURATION}.
+     * The failure code to use for a ServiceException that represents {@link AccessCookieServiceError#CONFIGURATION}.
      */
     private static final int CONFIGURATION_ERROR = AccessCookieServiceError.CONFIGURATION.ordinal();
 
     /**
-     * The failure code to use for a ServiceException that represents
-     * {@link AccessCookieServiceError#INVALID_COOKIE}.
+     * The failure code to use for a ServiceException that represents {@link AccessCookieServiceError#INVALID_COOKIE}.
      */
     private static final int INVALID_COOKIE_ERROR = AccessCookieServiceError.INVALID_COOKIE.ordinal();
 
@@ -92,9 +90,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     private final SecureRandom myInitializationVectorRng;
 
     /**
-     * Creates an instance of the service.
-     *
-     * For reference material on the key derivation crypto, see RFC 8018:
+     * Creates an instance of the service. For reference material on the key derivation crypto, see RFC 8018:
      * <ul>
      * <li><a href="https://datatracker.ietf.org/doc/html/rfc8018#section-4.1">Salt</a>
      * <li><a href="https://datatracker.ietf.org/doc/html/rfc8018#section-4.2">Iteration count</a>
@@ -104,7 +100,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
      * @param aConfig A configuration
      * @throws InvalidKeySpecException if the {@link KeySpec} was not instantiated correctly
      * @throws NoSuchAlgorithmException if either {@link KEY_DERIVATION_FUNCTION} or {@link CIPHER_TRANSFORMATION} are
-     * not valid algorithms
+     *         not valid algorithms
      * @throws NoSuchPaddingException if {@link CIPHER_TRANSFORMATION} contains a padding scheme that is not available
      */
     AccessCookieServiceImpl(final JsonObject aConfig)

@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.services;
 
 import io.vertx.codegen.annotations.ProxyClose;

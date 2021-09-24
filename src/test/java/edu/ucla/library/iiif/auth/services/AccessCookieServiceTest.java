@@ -39,8 +39,7 @@ public class AccessCookieServiceTest {
     /**
      * The logger used by these tests.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieServiceTest.class,
-            MessageCodes.BUNDLE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieServiceTest.class, MessageCodes.BUNDLE);
 
     /**
      * The IP address 127.0.0.1.
@@ -72,8 +71,7 @@ public class AccessCookieServiceTest {
                 final ServiceBinder binder = new ServiceBinder(aVertx);
 
                 // Register the service on the event bus, and keep a reference to it so it can be unregistered later
-                myService = binder.setAddress(AccessCookieService.ADDRESS)
-                        .register(AccessCookieService.class, service);
+                myService = binder.setAddress(AccessCookieService.ADDRESS).register(AccessCookieService.class, service);
 
                 // Now we can instantiate a proxy to the service
                 myServiceProxy = AccessCookieService.createProxy(aVertx);
@@ -161,12 +159,12 @@ public class AccessCookieServiceTest {
             aContext.completeNow();
         }).onSuccess(decryptedCookie -> {
             // Somehow we still got syntactically valid JSON; make sure the structure is not semantically valid
-            if (decryptedCookie.containsKey(CookieJsonKeys.CLIENT_IP_ADDRESS)
-                    && decryptedCookie.getString(CookieJsonKeys.CLIENT_IP_ADDRESS).equals(clientIpAddress)
-                    && decryptedCookie.containsKey(CookieJsonKeys.CAMPUS_NETWORK)
-                    && decryptedCookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK) == isCampusNetwork
-                    && decryptedCookie.containsKey(CookieJsonKeys.DEGRADED_ALLOWED)
-                    && decryptedCookie.getBoolean(CookieJsonKeys.DEGRADED_ALLOWED) == isDegradedAllowed) {
+            if (decryptedCookie.containsKey(CookieJsonKeys.CLIENT_IP_ADDRESS) &&
+                    decryptedCookie.getString(CookieJsonKeys.CLIENT_IP_ADDRESS).equals(clientIpAddress) &&
+                    decryptedCookie.containsKey(CookieJsonKeys.CAMPUS_NETWORK) &&
+                    decryptedCookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK) == isCampusNetwork &&
+                    decryptedCookie.containsKey(CookieJsonKeys.DEGRADED_ALLOWED) &&
+                    decryptedCookie.getBoolean(CookieJsonKeys.DEGRADED_ALLOWED) == isDegradedAllowed) {
                 aContext.failNow(StringUtils.format(MessageCodes.AUTH_009, decryptedCookie));
             } else {
                 aContext.completeNow();

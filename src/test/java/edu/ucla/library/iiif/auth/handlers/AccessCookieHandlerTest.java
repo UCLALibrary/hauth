@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

@@ -1,11 +1,9 @@
 
 package edu.ucla.library.iiif.auth.handlers;
 
-import info.freelibrary.util.HTTP;
-
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.utils.MediaType;
-
+import info.freelibrary.util.HTTP;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -26,7 +24,7 @@ public class StatusHandler implements Handler<RoutingContext> {
     /**
      * Creates a handler that returns the status of the application.
      *
-     * @param aVertx
+     * @param aVertx A Vert.x instance
      */
     public StatusHandler(final Vertx aVertx) {
         myVertx = aVertx;

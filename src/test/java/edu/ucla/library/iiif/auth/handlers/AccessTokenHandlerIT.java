@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,8 +38,8 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetToken(final Vertx aVertx, final VertxTestContext aContext) {
-        final String getCookieRequestUri = StringUtils.format("/cookie?origin={}",
-                URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
+        final String getCookieRequestUri =
+                StringUtils.format("/cookie?origin={}", URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestUri);
 
         getCookie.send().compose(result -> {
@@ -50,11 +51,11 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);
 
                 return getToken.send().onSuccess(response -> {
-                    final JsonObject expectedAccessTokenDecoded = new JsonObject()
-                            .put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
-                            .put(TokenJsonKeys.CAMPUS_NETWORK, cookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
-                    final String expectedAccessToken = Base64.getEncoder()
-                            .encodeToString(expectedAccessTokenDecoded.encode().getBytes());
+                    final JsonObject expectedAccessTokenDecoded =
+                            new JsonObject().put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION)).put(
+                                    TokenJsonKeys.CAMPUS_NETWORK, cookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
+                    final String expectedAccessToken =
+                            Base64.getEncoder().encodeToString(expectedAccessTokenDecoded.encode().getBytes());
                     final int expectedExpiresIn = myConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN, 3600);
                     final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_TOKEN, expectedAccessToken)
                             .put(ResponseJsonKeys.EXPIRES_IN, expectedExpiresIn);

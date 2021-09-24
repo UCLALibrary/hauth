@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.services;
 
 import java.security.GeneralSecurityException;
@@ -61,7 +62,7 @@ public interface AccessCookieService {
      * @param aIsOnCampusNetwork If the client is on a campus network subnet
      * @param aIsDegradedAllowed If the origin allows degraded access to content
      * @return A Future that resolves to a value that can be used to create a cookie with
-     * {@link Cookie#cookie(String, String)}
+     *         {@link Cookie#cookie(String, String)}
      */
     Future<String> generateCookie(String aClientIpAddress, boolean aIsOnCampusNetwork, boolean aIsDegradedAllowed);
 

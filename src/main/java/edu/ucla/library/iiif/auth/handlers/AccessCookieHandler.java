@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.handlers;
 
 import static info.freelibrary.util.Constants.COMMA;

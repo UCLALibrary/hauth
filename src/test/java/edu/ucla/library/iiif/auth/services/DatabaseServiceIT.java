@@ -134,8 +134,8 @@ public class DatabaseServiceIT {
     final void testGetAccessLevelSetTwice(final VertxTestContext aContext) {
         final String id = "setTwice";
         final int expected = 2;
-        final Future<Void> setTwice = myServiceProxy.setAccessLevel(id, 1)
-                .compose(put -> myServiceProxy.setAccessLevel(id, expected));
+        final Future<Void> setTwice =
+                myServiceProxy.setAccessLevel(id, 1).compose(put -> myServiceProxy.setAccessLevel(id, expected));
 
         setTwice.compose(put -> myServiceProxy.getAccessLevel(id)).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
@@ -209,8 +209,7 @@ public class DatabaseServiceIT {
      * @param aExpected The expected result
      * @param aContext A test context
      */
-    private <T> void completeIfExpectedElseFail(final T aResult, final T aExpected,
-            final VertxTestContext aContext) {
+    private <T> void completeIfExpectedElseFail(final T aResult, final T aExpected, final VertxTestContext aContext) {
         if (aResult.equals(aExpected)) {
             aContext.completeNow();
         } else {

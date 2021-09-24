@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.services;
 
 import static info.freelibrary.util.Constants.SPACE;
