@@ -30,11 +30,10 @@
 
   <properties>
     <!-- Code build properties -->
-    <vertx.version>4.1.0</vertx.version>
-    <graalvm.version>21.0.0</graalvm.version>
+    <graalvm.version>21.2.0</graalvm.version>
 
     <!-- Docker build properties -->
-    <alpine.version>3.13.1</alpine.version>
+    <alpine.version>3.14.2</alpine.version>
     <builder.version>0.0.3</builder.version>
 
     <!-- Whether UPX should be used to compress the application -->
@@ -46,6 +45,10 @@
     <!-- Application dependencies -->
     <freelib.utils.version>2.4.0</freelib.utils.version>
     <slf4j.ext.version>1.7.30</slf4j.ext.version>
+    <vertx.version>4.1.4</vertx.version>
+
+    <!-- Security fixes for transitive dependencies -->
+    <jetty.version>4.1.68.Final</jetty.version>
 
     <!-- Build plugin versions -->
     <jar.plugin.version>3.2.0</jar.plugin.version>
@@ -145,6 +148,13 @@
       <groupId>com.github.veqryn</groupId>
       <artifactId>cidr-ip-trie</artifactId>
       <version>1.0.1</version>
+    </dependency>
+
+    <!-- Security fixes for transitive dependencies -->
+    <dependency> <!-- Used by Vert.x -->
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec</artifactId>
+      <version>${jetty.version}</version>
     </dependency>
 
     <!-- Below is a dependency that needs updating due to security issue (may be able to remove in future) -->
@@ -276,7 +286,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <!-- Incremental compilation causes problems with vertx-codegen; see example config at:
-               https://github.com/vert-x3/vertx-codegen/blob/0974676c45c95a4410d0d1620ada4f64514688ee/README.md#processor-configuration -->
+          https://github.com/vert-x3/vertx-codegen/blob/0974676c45c95a4410d0d1620ada4f64514688ee/README.md#processor-configuration -->
           <useIncrementalCompilation>false</useIncrementalCompilation>
         </configuration>
       </plugin>
@@ -302,6 +312,9 @@
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>io.fabric8</groupId>
@@ -409,7 +422,7 @@
                 <env>
                   <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                  <!--  Default Docker bridge host IP -->
+                  <!-- Default Docker bridge host IP -->
                   <DB_HOST>172.17.0.1</DB_HOST>
                   <DB_PORT>${test.db.port}</DB_PORT>
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>

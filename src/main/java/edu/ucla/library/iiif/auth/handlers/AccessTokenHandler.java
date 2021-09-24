@@ -3,6 +3,10 @@ package edu.ucla.library.iiif.auth.handlers;
 
 import java.util.Base64;
 
+import info.freelibrary.util.HTTP;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
+
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
 import edu.ucla.library.iiif.auth.MessageCodes;
@@ -12,10 +16,6 @@ import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.AccessCookieServiceError;
 import edu.ucla.library.iiif.auth.services.AccessCookieServiceImpl;
 import edu.ucla.library.iiif.auth.utils.MediaType;
-
-import info.freelibrary.util.HTTP;
-import info.freelibrary.util.Logger;
-import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
