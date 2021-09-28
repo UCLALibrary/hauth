@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,8 +32,8 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetCookie(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_COOKIE_PATH,
-                URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
+        final String requestUri =
+                StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
 
         myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
             if (get.succeeded()) {

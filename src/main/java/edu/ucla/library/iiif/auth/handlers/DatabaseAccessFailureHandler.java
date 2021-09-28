@@ -1,3 +1,4 @@
+
 package edu.ucla.library.iiif.auth.handlers;
 
 import edu.ucla.library.iiif.auth.MessageCodes;
@@ -26,8 +27,8 @@ public class DatabaseAccessFailureHandler implements Handler<RoutingContext> {
     /**
      * The handler's logger.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseAccessFailureHandler.class,
-            MessageCodes.BUNDLE);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(DatabaseAccessFailureHandler.class, MessageCodes.BUNDLE);
 
     @Override
     public void handle(final RoutingContext aContext) {

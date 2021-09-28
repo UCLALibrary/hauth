@@ -1,6 +1,11 @@
+
 package edu.ucla.library.iiif.auth.handlers;
 
 import java.util.Base64;
+
+import info.freelibrary.util.HTTP;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
@@ -11,10 +16,6 @@ import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.AccessCookieServiceError;
 import edu.ucla.library.iiif.auth.services.AccessCookieServiceImpl;
 import edu.ucla.library.iiif.auth.utils.MediaType;
-
-import info.freelibrary.util.HTTP;
-import info.freelibrary.util.Logger;
-import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -78,9 +79,9 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
 
             // if the IP addresses match, send back the access token
             if (clientIpAddress.equals(cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS))) {
-                final JsonObject accessTokenUnencoded = new JsonObject()
-                        .put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
-                        .put(TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
+                final JsonObject accessTokenUnencoded =
+                        new JsonObject().put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION)).put(
+                                TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
                 final String accessToken = Base64.getEncoder().encodeToString(accessTokenUnencoded.encode().getBytes());
 
                 data.put(ResponseJsonKeys.ACCESS_TOKEN, accessToken).put(ResponseJsonKeys.EXPIRES_IN, myExpiresIn);
@@ -88,8 +89,8 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
                 response.setStatusCode(HTTP.OK);
             } else {
                 final String responseMessage = LOGGER.getMessage(MessageCodes.AUTH_011);
-                data.put(ResponseJsonKeys.ERROR, AccessCookieServiceError.INVALID_COOKIE)
-                        .put(ResponseJsonKeys.MESSAGE, responseMessage);
+                data.put(ResponseJsonKeys.ERROR, AccessCookieServiceError.INVALID_COOKIE).put(ResponseJsonKeys.MESSAGE,
+                        responseMessage);
 
                 response.setStatusCode(HTTP.BAD_REQUEST);
 

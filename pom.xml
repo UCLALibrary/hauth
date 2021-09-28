@@ -5,7 +5,7 @@
 
   <groupId>edu.ucla.library</groupId>
   <artifactId>hauth</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>${revision}</version>
   <name>Hauth</name>
   <description>A IIIF authentication layer for IIIF image servers</description>
   <url>https://github.com/uclalibrary/hauth</url>
@@ -30,11 +30,10 @@
 
   <properties>
     <!-- Code build properties -->
-    <vertx.version>4.1.0</vertx.version>
-    <graalvm.version>21.0.0</graalvm.version>
+    <graalvm.version>21.2.0</graalvm.version>
 
     <!-- Docker build properties -->
-    <alpine.version>3.13.1</alpine.version>
+    <alpine.version>3.14.2</alpine.version>
     <builder.version>0.0.3</builder.version>
 
     <!-- Whether UPX should be used to compress the application -->
@@ -46,6 +45,12 @@
     <!-- Application dependencies -->
     <freelib.utils.version>2.4.0</freelib.utils.version>
     <slf4j.ext.version>1.7.30</slf4j.ext.version>
+    <cidr.ip.version>1.0.1</cidr.ip.version>
+    <vertx.version>4.1.4</vertx.version>
+
+
+    <!-- Security fixes for transitive dependencies -->
+    <jetty.version>4.1.68.Final</jetty.version>
 
     <!-- Build plugin versions -->
     <jar.plugin.version>3.2.0</jar.plugin.version>
@@ -57,6 +62,10 @@
     <!-- Test dependency versions -->
     <mockito.version>3.11.1</mockito.version>
     <junit.version>5.8.0-M1</junit.version>
+    <redis.version>6.2.5-alpine</redis.version>
+    <postgres.version>12.7-alpine</postgres.version>
+    <cantaloupe.version>5.0.3-0</cantaloupe.version>
+    <auth.delegate.version>0.0.1-SNAPSHOT</auth.delegate.version>
 
     <!-- Name of the main Vert.x verticle -->
     <main.verticle>edu.ucla.library.iiif.auth.verticles.MainVerticle</main.verticle>
@@ -144,7 +153,14 @@
     <dependency>
       <groupId>com.github.veqryn</groupId>
       <artifactId>cidr-ip-trie</artifactId>
-      <version>1.0.1</version>
+      <version>${cidr.ip.version}</version>
+    </dependency>
+
+    <!-- Security fixes for transitive dependencies -->
+    <dependency> <!-- Used by Vert.x -->
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec</artifactId>
+      <version>${jetty.version}</version>
     </dependency>
 
     <!-- Below is a dependency that needs updating due to security issue (may be able to remove in future) -->
@@ -267,7 +283,7 @@
             <configuration>
               <snapshot.artifact>cantaloupe-auth-delegate</snapshot.artifact>
               <snapshot.group>edu.ucla.library</snapshot.group>
-              <snapshot.version>0.0.1-SNAPSHOT</snapshot.version>
+              <snapshot.version>${auth.delegate.version}</snapshot.version>
             </configuration>
           </execution>
         </executions>
@@ -276,7 +292,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <!-- Incremental compilation causes problems with vertx-codegen; see example config at:
-               https://github.com/vert-x3/vertx-codegen/blob/0974676c45c95a4410d0d1620ada4f64514688ee/README.md#processor-configuration -->
+          https://github.com/vert-x3/vertx-codegen/blob/0974676c45c95a4410d0d1620ada4f64514688ee/README.md#processor-configuration -->
           <useIncrementalCompilation>false</useIncrementalCompilation>
         </configuration>
       </plugin>
@@ -304,13 +320,16 @@
         <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
       <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+      <plugin>
         <groupId>io.fabric8</groupId>
         <artifactId>docker-maven-plugin</artifactId>
         <version>${docker.maven.plugin.version}</version>
         <configuration>
           <imagesMap>
             <hauth_pgsql>
-              <name>postgres:12.7-alpine</name>
+              <name>postgres:${postgres.version}</name>
               <run>
                 <containerNamePattern>hauth_pgsql</containerNamePattern>
                 <ports>
@@ -330,7 +349,7 @@
               </run>
             </hauth_pgsql>
             <hauth_redis>
-              <name>redis:6.2.5-alpine</name>
+              <name>redis:${redis.version}</name>
               <run>
                 <containerNamePattern>hauth_redis</containerNamePattern>
                 <ports>
@@ -342,7 +361,7 @@
               </run>
             </hauth_redis>
             <hauth_cantaloupe>
-              <name>uclalibrary/cantaloupe:5.0.3-0</name>
+              <name>uclalibrary/cantaloupe:${cantaloupe.version}</name>
               <run>
                 <containerNamePattern>hauth_cantaloupe</containerNamePattern>
                 <ports>
@@ -409,7 +428,7 @@
                 <env>
                   <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                  <!--  Default Docker bridge host IP -->
+                  <!-- Default Docker bridge host IP -->
                   <DB_HOST>172.17.0.1</DB_HOST>
                   <DB_PORT>${test.db.port}</DB_PORT>
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
@@ -542,6 +561,10 @@
         <configuration>
           <skip>true</skip>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
@@ -700,10 +723,21 @@
     </profile>
   </profiles>
 
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
   <parent>
     <artifactId>freelib-parent</artifactId>
     <groupId>info.freelibrary</groupId>
-    <version>6.9.2</version>
+    <version>7.0.1</version>
   </parent>
 
 </project>
