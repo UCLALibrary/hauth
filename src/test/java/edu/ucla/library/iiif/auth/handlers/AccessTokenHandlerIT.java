@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -56,9 +57,12 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
                                     TokenJsonKeys.CAMPUS_NETWORK, cookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
                     final String expectedAccessToken =
                             Base64.getEncoder().encodeToString(expectedAccessTokenDecoded.encode().getBytes());
-                    final int expectedExpiresIn = myConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN, 3600);
-                    final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_TOKEN, expectedAccessToken)
-                            .put(ResponseJsonKeys.EXPIRES_IN, expectedExpiresIn);
+                    final Optional<Integer> expectedExpiresIn =
+                            Optional.ofNullable(myConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN));
+                    final JsonObject expected =
+                            new JsonObject().put(ResponseJsonKeys.ACCESS_TOKEN, expectedAccessToken);
+
+                    expectedExpiresIn.ifPresent(expiry -> expected.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
                     assertEquals(HTTP.OK, response.statusCode());
                     assertEquals(MediaType.APPLICATION_JSON.toString(),
