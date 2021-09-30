@@ -28,7 +28,6 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import io.vertx.serviceproxy.ServiceBinder;
-import io.vertx.serviceproxy.ServiceException;
 
 /**
  * Main verticle that starts the application.
@@ -77,12 +76,40 @@ public class MainVerticle extends AbstractVerticle {
 
     @Override
     public void start(final Promise<Void> aPromise) {
-        ConfigRetriever.create(vertx).getConfig().onSuccess(config -> {
+        ConfigRetriever.create(vertx).getConfig().compose(config -> {
+            final String apiSpec = config.getString(Config.API_SPEC, DEFAULT_API_SPEC);
+            final String host = config.getString(Config.HTTP_HOST, DEFAULT_HOST);
+            final int port = config.getInteger(Config.HTTP_PORT, DEFAULT_PORT);
+            final ServiceBinder serviceBinder = new ServiceBinder(getVertx());
+
+            // Register the services on the event bus, and keep references to them so they can be unregistered later
             try {
-                configureServer(config.mergeIn(config()), aPromise);
-            } catch (final ServiceException details) {
-                aPromise.fail(details);
+                myAccessCookieService = serviceBinder.setAddress(AccessCookieService.ADDRESS)
+                        .register(AccessCookieService.class, AccessCookieService.create(config));
+            } catch (final GeneralSecurityException details) {
+                return Future.failedFuture(details);
             }
+            myDatabaseService = serviceBinder.setAddress(DatabaseService.ADDRESS).register(DatabaseService.class,
+                    DatabaseService.create(getVertx(), config));
+
+            // Load the OpenAPI specification
+            return RouterBuilder.create(vertx, apiSpec).compose(routerBuilder -> {
+                final HttpServerOptions serverOptions = new HttpServerOptions().setPort(port).setHost(host);
+                final HttpServer server = getVertx().createHttpServer(serverOptions);
+
+                // Associate handlers with operation IDs from the OpenAPI spec
+                routerBuilder.operation(Op.GET_STATUS).handler(new StatusHandler(getVertx()));
+                routerBuilder.operation(Op.GET_ACCESS_LEVEL).handler(new AccessLevelHandler(getVertx()))
+                        .failureHandler(new DatabaseAccessFailureHandler());
+                routerBuilder.operation(Op.GET_COOKIE).handler(new AccessCookieHandler(getVertx(), config));
+                routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), config));
+
+                // Finally, spin up the HTTP server
+                return server.requestHandler(routerBuilder.createRouter()).listen();
+            });
+        }).onSuccess(server -> {
+            LOGGER.info(MessageCodes.AUTH_001, server.actualPort());
+            aPromise.complete();
         }).onFailure(aPromise::fail);
     }
 
@@ -93,54 +120,5 @@ public class MainVerticle extends AbstractVerticle {
                         .compose(result -> myServer.close());
 
         stopAll.onSuccess(aPromise::complete).onFailure(aPromise::fail);
-    }
-
-    /**
-     * Configure the application server.
-     *
-     * @param aConfig A JSON configuration
-     * @param aPromise A startup promise
-     * @throws ServiceException if any of the service implementations aren't configured properly
-     */
-    private void configureServer(final JsonObject aConfig, final Promise<Void> aPromise) {
-        final String apiSpec = aConfig.getString(Config.API_SPEC, DEFAULT_API_SPEC);
-        final String host = aConfig.getString(Config.HTTP_HOST, DEFAULT_HOST);
-        final int port = aConfig.getInteger(Config.HTTP_PORT, DEFAULT_PORT);
-        final ServiceBinder serviceBinder = new ServiceBinder(getVertx());
-
-        // Register the services on the event bus, and keep a reference to them so they can be unregistered later
-        try {
-            myAccessCookieService = serviceBinder.setAddress(AccessCookieService.ADDRESS)
-                    .register(AccessCookieService.class, AccessCookieService.create(aConfig));
-        } catch (final GeneralSecurityException details) {
-            aPromise.fail(details.getMessage());
-            return;
-        }
-        myDatabaseService = serviceBinder.setAddress(DatabaseService.ADDRESS).register(DatabaseService.class,
-                DatabaseService.create(getVertx(), aConfig));
-
-        RouterBuilder.create(vertx, apiSpec).onComplete(routerConfig -> {
-            if (routerConfig.succeeded()) {
-                final HttpServerOptions serverOptions = new HttpServerOptions().setPort(port).setHost(host);
-                final RouterBuilder routerBuilder = routerConfig.result();
-
-                final DatabaseAccessFailureHandler dbAccessFailureHandler = new DatabaseAccessFailureHandler();
-
-                // Associate handlers with operation IDs from the application's OpenAPI specification
-                routerBuilder.operation(Op.GET_STATUS).handler(new StatusHandler(getVertx()));
-                routerBuilder.operation(Op.GET_ACCESS_LEVEL).handler(new AccessLevelHandler(getVertx()))
-                        .failureHandler(dbAccessFailureHandler);
-                routerBuilder.operation(Op.GET_COOKIE).handler(new AccessCookieHandler(getVertx(), aConfig));
-                routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), aConfig));
-
-                myServer = getVertx().createHttpServer(serverOptions).requestHandler(routerBuilder.createRouter());
-                myServer.listen().onSuccess(result -> {
-                    LOGGER.info(MessageCodes.AUTH_001, port);
-                    aPromise.complete();
-                }).onFailure(error -> aPromise.fail(error));
-            } else {
-                aPromise.fail(routerConfig.cause());
-            }
-        });
     }
 }

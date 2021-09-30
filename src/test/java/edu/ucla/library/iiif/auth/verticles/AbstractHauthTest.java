@@ -17,7 +17,6 @@ import edu.ucla.library.iiif.auth.MessageCodes;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -43,13 +42,12 @@ public abstract class AbstractHauthTest {
     public void setUp(final Vertx aVertx, final VertxTestContext aContext) {
         final DeploymentOptions options = new DeploymentOptions();
 
-        ConfigRetriever.create(aVertx).getConfig().onSuccess(config -> {
+        ConfigRetriever.create(aVertx).getConfig().compose(config -> {
             myPort = PortUtils.getPort();
             options.setConfig(config.put(Config.HTTP_PORT, myPort));
 
-            aVertx.deployVerticle(MainVerticle.class.getName(), options).onSuccess(result -> aContext.completeNow())
-                    .onFailure(error -> aContext.failNow(error));
-        }).onFailure(error -> aContext.failNow(error));
+            return aVertx.deployVerticle(MainVerticle.class.getName(), options);
+        }).onSuccess(result -> aContext.completeNow()).onFailure(aContext::failNow);
     }
 
     /**
@@ -67,18 +65,13 @@ public abstract class AbstractHauthTest {
      * @return A future removal of the verticle
      */
     protected Future<Void> undeployVerticle(final Vertx aVertx, final String aVerticleName) {
-        final Promise<Void> promise = Promise.promise();
-
-        aVertx.sharedData().getLocalAsyncMap(MainVerticle.VERTICLES_MAP).onSuccess(map -> {
-            map.get(aVerticleName).onSuccess(deploymentID -> {
-                aVertx.undeploy(deploymentID.toString()).onSuccess(result -> {
-                    getLogger().debug(MessageCodes.AUTH_002, aVerticleName, deploymentID);
-                    promise.complete();
-                }).onFailure(error -> promise.fail(error));
-            }).onFailure(error -> promise.fail(error));
-        }).onFailure(error -> promise.fail(error));
-
-        return promise.future();
+        return aVertx.sharedData().getLocalAsyncMap(MainVerticle.VERTICLES_MAP).compose(map -> {
+            return map.get(aVerticleName);
+        }).compose(deploymentID -> {
+            return aVertx.undeploy(deploymentID.toString()).onSuccess(result -> {
+                getLogger().debug(MessageCodes.AUTH_002, aVerticleName, deploymentID);
+            });
+        });
     }
 
     /**

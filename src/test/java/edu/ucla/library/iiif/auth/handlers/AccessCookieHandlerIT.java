@@ -16,7 +16,7 @@ import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.junit5.VertxTestContext;
 
 /**
@@ -34,20 +34,15 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
     public void testGetCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestUri =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
+        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
 
-        myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
-            if (get.succeeded()) {
-                final HttpResponse<?> response = get.result();
+        getCookie.send().onSuccess(response -> {
+            assertEquals(HTTP.OK, response.statusCode());
+            assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            assertEquals(1, response.cookies().size());
 
-                assertEquals(HTTP.OK, response.statusCode());
-                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-                assertEquals(1, response.cookies().size());
-
-                aContext.completeNow();
-            } else {
-                aContext.failNow(get.cause());
-            }
-        });
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
     }
 
     /**
@@ -60,14 +55,11 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
     public void testGetCookieUnknownOrigin(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestUri = StringUtils.format(GET_COOKIE_PATH,
                 URLEncoder.encode("https://iiif.unknown.library.ucla.edu", StandardCharsets.UTF_8));
+        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
 
-        myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
-            if (get.succeeded()) {
-                assertEquals(HTTP.INTERNAL_SERVER_ERROR, get.result().statusCode());
-                aContext.completeNow();
-            } else {
-                aContext.failNow(get.cause());
-            }
-        });
+        getCookie.send().onSuccess(response -> {
+            assertEquals(HTTP.INTERNAL_SERVER_ERROR, response.statusCode());
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
     }
 }
