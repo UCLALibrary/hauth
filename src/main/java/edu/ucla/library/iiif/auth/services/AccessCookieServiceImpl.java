@@ -178,6 +178,9 @@ public class AccessCookieServiceImpl implements AccessCookieService {
             return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR, details.getMessage()));
         }
 
+        LOGGER.debug("IPs should match: {} - {}", aClientIpAddress,
+                cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS));
+
         if (!aClientIpAddress.equals(cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS))) {
             // Cookie was stolen
             return Future
