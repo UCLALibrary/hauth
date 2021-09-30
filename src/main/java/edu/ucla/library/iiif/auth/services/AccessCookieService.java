@@ -70,7 +70,9 @@ public interface AccessCookieService {
      * Decrypts a cookie value's encrypted secret.
      *
      * @param aCookieValue An encrypted cookie value returned from {@link Cookie#getValue()}
-     * @return A Future that resolves to the decrypted cookie data unless the cookie has been tampered with
+     * @param aClientIpAddress The IP address of the client, which a vaild (encrypted) cookie value will contain
+     * @return A Future that resolves to the decrypted cookie data unless the cookie has been tampered with (invalid
+     *         JSON), stolen (IP address mismatch), or otherwise invalidated
      */
-    Future<JsonObject> decryptCookie(String aCookieValue);
+    Future<JsonObject> decryptCookie(String aCookieValue, String aClientIpAddress);
 }

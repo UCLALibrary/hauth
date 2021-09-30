@@ -536,6 +536,8 @@
             <configuration>
               <environmentVariables>
                 <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
+                <!-- Default Docker bridge host IP -->
+                <HTTP_HOST>172.17.0.1</HTTP_HOST>
                 <HTTP_PORT>${test.http.port}</HTTP_PORT>
                 <DB_PORT>${test.db.port}</DB_PORT>
                 <DB_PASSWORD>${test.db.password}</DB_PASSWORD>

@@ -46,8 +46,9 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
             final String cookieValue = cookieHeader.split("=")[1];
+            final String clientIpAddress = myConfig.getString(Config.HTTP_HOST);
 
-            return myAccessCookieService.decryptCookie(cookieValue).compose(cookie -> {
+            return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
                 final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, GET_TOKEN_PATH)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);
 

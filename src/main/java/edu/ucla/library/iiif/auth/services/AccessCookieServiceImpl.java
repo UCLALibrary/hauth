@@ -157,7 +157,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     }
 
     @Override
-    public Future<JsonObject> decryptCookie(final String aCookieValue) {
+    public Future<JsonObject> decryptCookie(final String aCookieValue, final String aClientIpAddress) {
         final JsonObject cookieData;
 
         try {
@@ -178,7 +178,13 @@ public class AccessCookieServiceImpl implements AccessCookieService {
             return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR, details.getMessage()));
         }
 
-        return Future.succeededFuture(cookieData);
+        if (!aClientIpAddress.equals(cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS))) {
+            // Cookie was stolen
+            return Future
+                    .failedFuture(new ServiceException(INVALID_COOKIE_ERROR, LOGGER.getMessage(MessageCodes.AUTH_011)));
+        } else {
+            return Future.succeededFuture(cookieData);
+        }
     }
 
     /**

@@ -75,32 +75,19 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
 
         aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
 
-        myAccessCookieService.decryptCookie(cookieValue).onSuccess(cookieData -> {
+        myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).onSuccess(cookieData -> {
             final JsonObject data = new JsonObject();
+            final JsonObject accessTokenUnencoded =
+                    new JsonObject().put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
+                            .put(TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
+            final String accessToken = Base64.getEncoder().encodeToString(accessTokenUnencoded.encode().getBytes());
 
-            // if the IP addresses match, send back the access token
-            if (clientIpAddress.equals(cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS))) {
-                final JsonObject accessTokenUnencoded =
-                        new JsonObject().put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION)).put(
-                                TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
-                final String accessToken = Base64.getEncoder().encodeToString(accessTokenUnencoded.encode().getBytes());
+            data.put(ResponseJsonKeys.ACCESS_TOKEN, accessToken);
 
-                data.put(ResponseJsonKeys.ACCESS_TOKEN, accessToken);
+            // Token expiry is optional
+            myExpiresIn.ifPresent(expiry -> data.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
-                // Token expiry is optional
-                myExpiresIn.ifPresent(expiry -> data.put(ResponseJsonKeys.EXPIRES_IN, expiry));
-
-                response.setStatusCode(HTTP.OK);
-            } else {
-                final String responseMessage = LOGGER.getMessage(MessageCodes.AUTH_011);
-                data.put(ResponseJsonKeys.ERROR, AccessCookieServiceError.INVALID_COOKIE).put(ResponseJsonKeys.MESSAGE,
-                        responseMessage);
-
-                response.setStatusCode(HTTP.BAD_REQUEST);
-
-                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
-            }
-            response.end(data.encodePrettily());
+            response.setStatusCode(HTTP.OK).end(data.encodePrettily());
         }).onFailure(failure -> {
             final ServiceException error = (ServiceException) failure;
             final String responseMessage;
