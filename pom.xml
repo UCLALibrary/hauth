@@ -231,6 +231,12 @@
               <goal>reserve-network-port</goal>
             </goals>
           </execution>
+          <execution>
+            <id>get-local-ip</id>
+            <goals>
+              <goal>local-ip</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -332,15 +338,17 @@
               <name>postgres:${postgres.version}</name>
               <run>
                 <containerNamePattern>hauth_pgsql</containerNamePattern>
-                <ports>
-                  <port>${test.db.port}:5432</port>
-                </ports>
+                <network>
+                  <mode>container</mode>
+                  <name>hauth</name>
+                </network>
                 <volumes>
                   <bind>
                     <volume>${project.basedir}/src/test/resources/db/:/docker-entrypoint-initdb.d/</volume>
                   </bind>
                 </volumes>
                 <env>
+                  <PGPORT>${test.db.port}</PGPORT>
                   <POSTGRES_PASSWORD>${test.db.password}</POSTGRES_PASSWORD>
                 </env>
                 <wait>
@@ -352,9 +360,10 @@
               <name>redis:${redis.version}</name>
               <run>
                 <containerNamePattern>hauth_redis</containerNamePattern>
-                <ports>
-                  <port>${test.db.cache.port}:6379</port>
-                </ports>
+                <network>
+                  <mode>container</mode>
+                  <name>hauth</name>
+                </network>
                 <wait>
                   <log>Ready to accept connections</log>
                 </wait>
@@ -364,9 +373,10 @@
               <name>uclalibrary/cantaloupe:${cantaloupe.version}</name>
               <run>
                 <containerNamePattern>hauth_cantaloupe</containerNamePattern>
-                <ports>
-                  <port>${test.iiif.images.port}:8182</port>
-                </ports>
+                <network>
+                  <mode>container</mode>
+                  <name>hauth</name>
+                </network>
                 <volumes>
                   <bind>
                     <volume>${project.basedir}/src/test/resources/images/:/imageroot/</volume>
@@ -377,6 +387,7 @@
                   <CANTALOUPE_ENDPOINT_ADMIN_ENABLED>true</CANTALOUPE_ENDPOINT_ADMIN_ENABLED>
                   <CANTALOUPE_DELEGATE_SCRIPT_ENABLED>true</CANTALOUPE_DELEGATE_SCRIPT_ENABLED>
                   <CANTALOUPE_DELEGATE_SCRIPT_PATHNAME>delegate.jar</CANTALOUPE_DELEGATE_SCRIPT_PATHNAME>
+                  <CANTALOUPE_HTTP_PORT>${test.iiif.images.port}</CANTALOUPE_HTTP_PORT>
                   <DELEGATE_URL>${snapshot.url}</DELEGATE_URL>
                 </env>
                 <wait>
@@ -418,21 +429,20 @@
               </build>
               <run>
                 <containerNamePattern>hauth</containerNamePattern>
-                <ports>
-                  <!-- Start test container on an available host port -->
-                  <port>${test.http.port}:8888</port>
-                </ports>
+                <network>
+                  <mode>host</mode>
+                </network>
                 <volumes>
                   <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
                 </volumes>
                 <env>
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
                   <!-- Default Docker bridge host IP -->
-                  <DB_HOST>172.17.0.1</DB_HOST>
+                  <HTTP_PORT>${test.http.port}</HTTP_PORT>
                   <DB_PORT>${test.db.port}</DB_PORT>
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                   <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
-                  <CAMPUS_NETWORK_SUBNETS>172.17.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
+                  <CAMPUS_NETWORK_SUBNETS>${local.ip}/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
                   <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
                   <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
                 </env>
@@ -536,8 +546,7 @@
             <configuration>
               <environmentVariables>
                 <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                <!-- Default Docker bridge host IP -->
-                <HTTP_HOST>172.17.0.1</HTTP_HOST>
+                <HTTP_HOST>127.0.0.1</HTTP_HOST>
                 <HTTP_PORT>${test.http.port}</HTTP_PORT>
                 <DB_PORT>${test.db.port}</DB_PORT>
                 <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
