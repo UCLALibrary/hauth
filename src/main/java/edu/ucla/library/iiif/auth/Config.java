@@ -22,7 +22,7 @@ public final class Config {
     public static final String HTTP_HOST = "HTTP_HOST";
 
     /**
-     * The number of seconds after which an access token will cease to be valid.
+     * The optional ENV property for the number of seconds after which an access token will cease to be valid.
      */
     public static final String ACCESS_TOKEN_EXPIRES_IN = "ACCESS_TOKEN_EXPIRES_IN";
 

@@ -426,7 +426,6 @@
                   <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
                 </volumes>
                 <env>
-                  <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
                   <!-- Default Docker bridge host IP -->
                   <DB_HOST>172.17.0.1</DB_HOST>
@@ -536,7 +535,6 @@
             </goals>
             <configuration>
               <environmentVariables>
-                <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
                 <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
                 <HTTP_PORT>${test.http.port}</HTTP_PORT>
                 <DB_PORT>${test.db.port}</DB_PORT>
@@ -717,6 +715,49 @@
                 <jvmArg>-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory</jvmArg>
               </jvmArgs>
             </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- A provile for setting optional environment variables for application configuration -->
+    <profile>
+      <id>optional-env-vars</id>
+      <activation>
+        <property>
+          <name>optionalEnvVars</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <version>${docker.maven.plugin.version}</version>
+            <configuration>
+              <imagesMap>
+                <hauth>
+                  <run>
+                    <env>
+                      <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
+                    </env>
+                  </run>
+                </hauth>
+              </imagesMap>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>integration-tests</id>
+                <configuration>
+                  <environmentVariables>
+                    <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
+                  </environmentVariables>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>

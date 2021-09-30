@@ -2,6 +2,7 @@
 package edu.ucla.library.iiif.auth.handlers;
 
 import java.util.Base64;
+import java.util.Optional;
 
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
@@ -45,7 +46,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
     /**
      * See {@link Config#ACCESS_TOKEN_EXPIRES_IN}.
      */
-    private final int myExpiresIn;
+    private final Optional<Integer> myExpiresIn;
 
     /**
      * The service proxy for accessing the secret key.
@@ -60,7 +61,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
      */
     public AccessTokenHandler(final Vertx aVertx, final JsonObject aConfig) {
         myConfig = aConfig;
-        myExpiresIn = aConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN, 3600);
+        myExpiresIn = Optional.ofNullable(aConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN));
         myAccessCookieService = AccessCookieService.createProxy(aVertx);
     }
 
@@ -84,7 +85,10 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
                                 TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
                 final String accessToken = Base64.getEncoder().encodeToString(accessTokenUnencoded.encode().getBytes());
 
-                data.put(ResponseJsonKeys.ACCESS_TOKEN, accessToken).put(ResponseJsonKeys.EXPIRES_IN, myExpiresIn);
+                data.put(ResponseJsonKeys.ACCESS_TOKEN, accessToken);
+
+                // Token expiry is optional
+                myExpiresIn.ifPresent(expiry -> data.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
                 response.setStatusCode(HTTP.OK);
             } else {

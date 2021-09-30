@@ -20,6 +20,10 @@ To build the project, run:
 
 This will run the build and all the unit and integration tests.
 
+To run the integration tests with optional environment variables set, run:
+
+    mvn -Poptional-env-vars verify
+
 ## Running in Developer Mode
 
 To bring up the server locally for testing or development purposes, run:
