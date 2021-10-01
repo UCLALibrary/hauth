@@ -53,6 +53,7 @@
     <jetty.version>4.1.68.Final</jetty.version>
 
     <!-- Build plugin versions -->
+    <clean.plugin.version>3.1.0</clean.plugin.version>
     <jar.plugin.version>3.2.0</jar.plugin.version>
     <vertx.plugin.version>1.0.24</vertx.plugin.version>
     <freelib.maven.version>0.3.0</freelib.maven.version>
@@ -294,6 +295,18 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>${clean.plugin.version}</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/main/generated</directory>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
