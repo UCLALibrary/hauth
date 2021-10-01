@@ -339,16 +339,15 @@
               <name>postgres:${postgres.version}</name>
               <run>
                 <containerNamePattern>hauth_pgsql</containerNamePattern>
-                <network>
-                  <mode>host</mode>
-                </network>
+                <ports>
+                  <port>${test.db.port}:5432</port>
+                </ports>
                 <volumes>
                   <bind>
                     <volume>${project.basedir}/src/test/resources/db/:/docker-entrypoint-initdb.d/</volume>
                   </bind>
                 </volumes>
                 <env>
-                  <PGPORT>${test.db.port}</PGPORT>
                   <POSTGRES_PASSWORD>${test.db.password}</POSTGRES_PASSWORD>
                 </env>
                 <wait>
@@ -360,9 +359,9 @@
               <name>redis:${redis.version}</name>
               <run>
                 <containerNamePattern>hauth_redis</containerNamePattern>
-                <network>
-                  <mode>host</mode>
-                </network>
+                <ports>
+                  <port>${test.db.cache.port}:6379</port>
+                </ports>
                 <wait>
                   <log>Ready to accept connections</log>
                 </wait>
@@ -372,9 +371,9 @@
               <name>uclalibrary/cantaloupe:${cantaloupe.version}</name>
               <run>
                 <containerNamePattern>hauth_cantaloupe</containerNamePattern>
-                <network>
-                  <mode>host</mode>
-                </network>
+                <ports>
+                  <port>${test.iiif.images.port}:8182</port>
+                </ports>
                 <volumes>
                   <bind>
                     <volume>${project.basedir}/src/test/resources/images/:/imageroot/</volume>
@@ -385,7 +384,6 @@
                   <CANTALOUPE_ENDPOINT_ADMIN_ENABLED>true</CANTALOUPE_ENDPOINT_ADMIN_ENABLED>
                   <CANTALOUPE_DELEGATE_SCRIPT_ENABLED>true</CANTALOUPE_DELEGATE_SCRIPT_ENABLED>
                   <CANTALOUPE_DELEGATE_SCRIPT_PATHNAME>delegate.jar</CANTALOUPE_DELEGATE_SCRIPT_PATHNAME>
-                  <CANTALOUPE_HTTP_PORT>${test.iiif.images.port}</CANTALOUPE_HTTP_PORT>
                   <DELEGATE_URL>${snapshot.url}</DELEGATE_URL>
                 </env>
                 <wait>
@@ -427,9 +425,10 @@
               </build>
               <run>
                 <containerNamePattern>hauth</containerNamePattern>
-                <network>
-                  <mode>host</mode>
-                </network>
+                <ports>
+                  <!-- Start test container on an available host port -->
+                  <port>${test.http.port}:${test.http.port}</port>
+                </ports>
                 <volumes>
                   <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
                 </volumes>
@@ -437,6 +436,8 @@
                   <!-- This particular choice of subnets is arbitrary -->
                   <CAMPUS_NETWORK_SUBNETS>127.0.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
                   <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
+                  <!-- Default Docker bridge host IP -->
+                  <DB_HOST>172.17.0.1</DB_HOST>
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                   <DB_PORT>${test.db.port}</DB_PORT>
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
