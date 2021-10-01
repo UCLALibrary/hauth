@@ -427,7 +427,7 @@
                 <containerNamePattern>hauth</containerNamePattern>
                 <ports>
                   <!-- Start test container on an available host port -->
-                  <port>${test.http.port}:${test.http.port}</port>
+                  <port>${test.http.port}:8888</port>
                 </ports>
                 <env>
                   <!-- This particular choice of subnets is arbitrary -->
@@ -438,7 +438,6 @@
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                   <DB_PORT>${test.db.port}</DB_PORT>
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                  <HTTP_PORT>${test.http.port}</HTTP_PORT>
                   <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
                   <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
                 </env>
