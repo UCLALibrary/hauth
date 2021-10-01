@@ -429,9 +429,6 @@
                   <!-- Start test container on an available host port -->
                   <port>${test.http.port}:${test.http.port}</port>
                 </ports>
-                <volumes>
-                  <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
-                </volumes>
                 <env>
                   <!-- This particular choice of subnets is arbitrary -->
                   <CAMPUS_NETWORK_SUBNETS>127.0.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
