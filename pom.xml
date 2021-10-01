@@ -443,7 +443,7 @@
                   <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
                 </volumes>
                 <env>
-                  <!-- This particular choise of subnets is arbitrary -->
+                  <!-- This particular choice of subnets is arbitrary -->
                   <CAMPUS_NETWORK_SUBNETS>127.0.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
                   <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
