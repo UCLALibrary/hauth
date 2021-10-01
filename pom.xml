@@ -443,13 +443,13 @@
                   <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
                 </volumes>
                 <env>
-                  <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                  <HTTP_PORT>${test.http.port}</HTTP_PORT>
-                  <DB_PORT>${test.db.port}</DB_PORT>
-                  <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
-                  <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
                   <!-- This particular choise of subnets is arbitrary -->
                   <CAMPUS_NETWORK_SUBNETS>127.0.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
+                  <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
+                  <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
+                  <DB_PORT>${test.db.port}</DB_PORT>
+                  <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
+                  <HTTP_PORT>${test.http.port}</HTTP_PORT>
                   <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
                   <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
                 </env>
@@ -552,11 +552,11 @@
             </goals>
             <configuration>
               <environmentVariables>
+                <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
+                <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
+                <DB_PORT>${test.db.port}</DB_PORT>
                 <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
                 <HTTP_PORT>${test.http.port}</HTTP_PORT>
-                <DB_PORT>${test.db.port}</DB_PORT>
-                <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
-                <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
               </environmentVariables>
               <includes>
                 <include>**/*IT.java</include>
