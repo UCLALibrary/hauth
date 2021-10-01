@@ -444,12 +444,12 @@
                 </volumes>
                 <env>
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                  <!-- Default Docker bridge host IP -->
                   <HTTP_PORT>${test.http.port}</HTTP_PORT>
                   <DB_PORT>${test.db.port}</DB_PORT>
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                   <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
-                  <CAMPUS_NETWORK_SUBNETS>${local.ip}/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
+                  <!-- This particular choise of subnets is arbitrary -->
+                  <CAMPUS_NETWORK_SUBNETS>127.0.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
                   <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
                   <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
                 </env>
@@ -553,7 +553,6 @@
             <configuration>
               <environmentVariables>
                 <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                <HTTP_HOST>127.0.0.1</HTTP_HOST>
                 <HTTP_PORT>${test.http.port}</HTTP_PORT>
                 <DB_PORT>${test.db.port}</DB_PORT>
                 <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
