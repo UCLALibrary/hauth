@@ -238,12 +238,6 @@
               <goal>reserve-network-port</goal>
             </goals>
           </execution>
-          <execution>
-            <id>get-local-ip</id>
-            <goals>
-              <goal>local-ip</goal>
-            </goals>
-          </execution>
         </executions>
       </plugin>
       <plugin>
