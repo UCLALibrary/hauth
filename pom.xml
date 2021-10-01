@@ -346,8 +346,7 @@
               <run>
                 <containerNamePattern>hauth_pgsql</containerNamePattern>
                 <network>
-                  <mode>container</mode>
-                  <name>hauth</name>
+                  <mode>host</mode>
                 </network>
                 <volumes>
                   <bind>
@@ -368,8 +367,7 @@
               <run>
                 <containerNamePattern>hauth_redis</containerNamePattern>
                 <network>
-                  <mode>container</mode>
-                  <name>hauth</name>
+                  <mode>host</mode>
                 </network>
                 <wait>
                   <log>Ready to accept connections</log>
@@ -381,8 +379,7 @@
               <run>
                 <containerNamePattern>hauth_cantaloupe</containerNamePattern>
                 <network>
-                  <mode>container</mode>
-                  <name>hauth</name>
+                  <mode>host</mode>
                 </network>
                 <volumes>
                   <bind>
