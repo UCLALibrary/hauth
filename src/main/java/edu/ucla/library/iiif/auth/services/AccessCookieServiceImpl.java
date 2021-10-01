@@ -159,6 +159,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     @Override
     public Future<JsonObject> decryptCookie(final String aCookieValue, final String aClientIpAddress) {
         final JsonObject cookieData;
+        final String expectedClientIpAddress;
 
         try {
             final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(aCookieValue)));
@@ -178,11 +179,11 @@ public class AccessCookieServiceImpl implements AccessCookieService {
             return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR, details.getMessage()));
         }
 
-        LOGGER.debug("IPs should match: {} - {}", aClientIpAddress,
-                cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS));
+        expectedClientIpAddress = cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS);
 
-        if (!aClientIpAddress.equals(cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS))) {
+        if (!aClientIpAddress.equals(expectedClientIpAddress)) {
             // Cookie was stolen
+            LOGGER.error(MessageCodes.AUTH_013, aClientIpAddress, expectedClientIpAddress);
             return Future
                     .failedFuture(new ServiceException(INVALID_COOKIE_ERROR, LOGGER.getMessage(MessageCodes.AUTH_011)));
         } else {
