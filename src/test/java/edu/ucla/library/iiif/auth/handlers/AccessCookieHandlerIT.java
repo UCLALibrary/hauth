@@ -59,6 +59,8 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
 
         getCookie.send().onSuccess(response -> {
             assertEquals(HTTP.INTERNAL_SERVER_ERROR, response.statusCode());
+            assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+
             aContext.completeNow();
         }).onFailure(aContext::failNow);
     }

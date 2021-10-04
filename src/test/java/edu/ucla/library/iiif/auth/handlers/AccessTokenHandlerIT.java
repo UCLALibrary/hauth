@@ -92,6 +92,8 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
 
         getToken.send().onSuccess(response -> {
             assertEquals(HTTP.BAD_REQUEST, response.statusCode());
+            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+
             aContext.completeNow();
         }).onFailure(aContext::failNow);
     }
