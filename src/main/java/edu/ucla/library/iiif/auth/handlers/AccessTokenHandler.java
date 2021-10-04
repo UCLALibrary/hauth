@@ -70,7 +70,6 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
         final String clientIpAddress = aContext.request().remoteAddress().hostAddress();
         final Cookie cookie = aContext.getCookie("iiif-access");
         final String cookieValue = cookie.getValue();
-        final HttpServerRequest request = aContext.request();
         final HttpServerResponse response = aContext.response();
 
         aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
@@ -88,27 +87,49 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
             myExpiresIn.ifPresent(expiry -> data.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
             response.setStatusCode(HTTP.OK).end(data.encodePrettily());
-        }).onFailure(failure -> {
-            final ServiceException error = (ServiceException) failure;
-            final String responseMessage;
-            final JsonObject data = new JsonObject();
-            final AccessCookieServiceError errorCode = AccessCookieServiceImpl.getError(error);
+        }).onFailure(aContext::fail);
+    }
 
-            switch (errorCode) {
-                case INVALID_COOKIE:
-                    response.setStatusCode(HTTP.BAD_REQUEST);
-                    responseMessage = LOGGER.getMessage(MessageCodes.AUTH_011);
-                    break;
-                case CONFIGURATION:
-                default:
-                    response.setStatusCode(HTTP.INTERNAL_SERVER_ERROR);
-                    responseMessage = LOGGER.getMessage(MessageCodes.AUTH_012);
-                    break;
-            }
-            data.put(ResponseJsonKeys.ERROR, errorCode).put(ResponseJsonKeys.MESSAGE, responseMessage);
-            response.end(data.encodePrettily());
+    /**
+     * Handle failure events sent by {@link #handle}.
+     *
+     * @param aContext the failure event to handle
+     */
+    public static void handleFailure(final RoutingContext aContext) {
+        final ServiceException error;
+        final HttpServerRequest request;
+        final HttpServerResponse response;
+        final String responseMessage;
+        final JsonObject data;
+        final AccessCookieServiceError errorCode;
 
-            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
-        });
+        try {
+            error = (ServiceException) aContext.failure();
+        } catch (final ClassCastException details) {
+            aContext.fail(HTTP.INTERNAL_SERVER_ERROR, details);
+            LOGGER.error(MessageCodes.AUTH_010, details);
+            return;
+        }
+
+        request = aContext.request();
+        response = aContext.response();
+        data = new JsonObject();
+        errorCode = AccessCookieServiceImpl.getError(error);
+
+        switch (errorCode) {
+            case INVALID_COOKIE:
+                response.setStatusCode(HTTP.BAD_REQUEST);
+                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_011);
+                break;
+            case CONFIGURATION:
+            default:
+                response.setStatusCode(HTTP.INTERNAL_SERVER_ERROR);
+                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_012);
+                break;
+        }
+        data.put(ResponseJsonKeys.ERROR, errorCode).put(ResponseJsonKeys.MESSAGE, responseMessage);
+        response.end(data.encodePrettily());
+
+        LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
     }
 }

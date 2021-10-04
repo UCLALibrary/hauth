@@ -101,7 +101,8 @@ public class MainVerticle extends AbstractVerticle {
                 routerBuilder.operation(Op.GET_ACCESS_LEVEL).handler(new AccessLevelHandler(getVertx()))
                         .failureHandler(AccessLevelHandler::handleFailure);
                 routerBuilder.operation(Op.GET_COOKIE).handler(new AccessCookieHandler(getVertx(), config));
-                routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), config));
+                routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), config))
+                        .failureHandler(AccessTokenHandler::handleFailure);
 
                 // Finally, spin up the HTTP server
                 return server.requestHandler(routerBuilder.createRouter()).listen();
