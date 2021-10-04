@@ -117,10 +117,11 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                 return myHtmlTemplateEngine.render(htmlTemplateData.getMap(), "templates/cookie.hbs");
             });
         }).onSuccess(renderedHtmlTeplate -> {
-            aContext.response().setStatusCode(HTTP.OK)
-                    .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString()).end(renderedHtmlTeplate);
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString())
+                    .setStatusCode(HTTP.OK).end(renderedHtmlTeplate);
         }).onFailure(error -> {
-            aContext.fail(HTTP.INTERNAL_SERVER_ERROR, error);
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString())
+                    .setStatusCode(HTTP.INTERNAL_SERVER_ERROR).end();
         });
     }
 

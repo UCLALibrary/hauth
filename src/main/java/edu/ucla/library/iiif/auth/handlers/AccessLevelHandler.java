@@ -55,9 +55,8 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
             final JsonObject data =
                     new JsonObject().put(ResponseJsonKeys.ID, id).put(ResponseJsonKeys.RESTRICTED, isRestricted);
 
-            aContext.response().setStatusCode(HTTP.OK)
-                    .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
-                    .end(data.encodePrettily());
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .setStatusCode(HTTP.OK).end(data.encodePrettily());
         }).onFailure(aContext::fail);
     }
 

@@ -70,9 +70,6 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
         final String clientIpAddress = aContext.request().remoteAddress().hostAddress();
         final Cookie cookie = aContext.getCookie("iiif-access");
         final String cookieValue = cookie.getValue();
-        final HttpServerResponse response = aContext.response();
-
-        aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
 
         myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).onSuccess(cookieData -> {
             final JsonObject data = new JsonObject();
@@ -86,7 +83,8 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
             // Token expiry is optional
             myExpiresIn.ifPresent(expiry -> data.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
-            response.setStatusCode(HTTP.OK).end(data.encodePrettily());
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .setStatusCode(HTTP.OK).end(data.encodePrettily());
         }).onFailure(aContext::fail);
     }
 
@@ -128,7 +126,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
                 break;
         }
         data.put(ResponseJsonKeys.ERROR, errorCode).put(ResponseJsonKeys.MESSAGE, responseMessage);
-        response.end(data.encodePrettily());
+        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
 
         LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
     }
