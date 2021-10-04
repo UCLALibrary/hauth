@@ -75,7 +75,8 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
         for (final String subnet : aConfig.getString(Config.CAMPUS_NETWORK_SUBNETS).split(COMMA)) {
             final Cidr4 cidr = new Cidr4(subnet);
 
-            // The value of the key doesn't particularly matter, since the methods we call on the Trie don't use it
+            // The value associated with each key doesn't particularly matter, since the methods we call on the Trie
+            // don't use it
             myCampusNetworkSubnets.put(cidr, cidr.getAddressRange());
         }
     }

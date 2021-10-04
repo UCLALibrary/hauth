@@ -41,7 +41,7 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
     @Test
     public void testGetToken(final Vertx aVertx, final VertxTestContext aContext) {
         final String getCookieRequestUri =
-                StringUtils.format("/cookie?origin={}", URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
+                StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestUri);
 
         getCookie.send().compose(result -> {
