@@ -3,11 +3,12 @@ package edu.ucla.library.iiif.auth.handlers;
 
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.utils.MediaType;
+
 import info.freelibrary.util.HTTP;
+
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
@@ -32,14 +33,12 @@ public class StatusHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(final RoutingContext aContext) {
-        final HttpServerResponse response = aContext.response();
         final JsonObject status = new JsonObject();
 
         status.put(ResponseJsonKeys.STATUS, "ok");
 
-        response.setStatusCode(HTTP.OK);
-        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
-                .end(status.encodePrettily());
+        aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .setStatusCode(HTTP.OK).end(status.encodePrettily());
     }
 
     /**

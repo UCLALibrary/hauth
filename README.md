@@ -24,37 +24,37 @@ To run the integration tests with optional environment variables set, run:
 
     mvn -Poptional-env-vars verify
 
+You can also, optionally, supply `-Ddocker.showLogs` if you want to see the containers' logs as the integration tests are running.
+
 ## Running in Developer Mode
 
 To bring up the server locally for testing or development purposes, run:
 
-    mvn -Plive integration-test
+    mvn initialize docker:build docker:run
 
-This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloupe Docker containers. You can also, optionally, supply `-Ddocker.showLogs` if you want to see the containers' logs.
+This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloupe Docker containers.
 
 ## Environmental Properties
 
-These are a work in progress. None of these need to be supplied when running in developer mode. Randomized ports and passwords are created on the fly. The port numbers can be seen in the Maven output.
+These are a work in progress. Randomized ports and passwords are created on the fly. The port numbers can be seen in the Maven output.
 
 | ENV Property | Default Value | Required |
 | --- | --- | --- |
-| HTTP_PORT | 8888 | No |
-| HTTP_HOST | 0.0.0.0 | No |
 | ACCESS_TOKEN_EXPIRES_IN | 3600 | No |
 | API_SPEC | hauth.yaml | No |
-| DB_HOST | localhost | No |
-| DB_PORT | 5432 | No |
-| DB_NAME | postgres | No |
-| DB_USER | postgres | No |
-| DB_PASSWORD | XXX | Yes |
-| DB_CONNECTION_POOL_MAX_SIZE | 5 | No |
-| DB_RECONNECT_ATTEMPTS | 2 | No |
-| DB_RECONNECT_INTERVAL | 1000 | No |
+| CAMPUS_NETWORK_SUBNETS | XXX | Yes |
 | DB_CACHE_HOST | localhost | No |
 | DB_CACHE_PORT | 6379 | No |
-| IIIF_SERVER_HOST | XXX | Yes |
-| IIIF_SERVER_PORT | 8182 | No |
+| DB_CONNECTION_POOL_MAX_SIZE | 5 | No |
+| DB_HOST | localhost | No |
+| DB_NAME | postgres | No |
+| DB_PASSWORD | XXX | Yes |
+| DB_PORT | 5432 | No |
+| DB_RECONNECT_ATTEMPTS | 2 | No |
+| DB_RECONNECT_INTERVAL | 1000 | No |
+| DB_USER | postgres | No |
 | HAUTH_VERSION | XXX | Yes |
+| HTTP_HOST | 0.0.0.0 | No |
+| HTTP_PORT | 8888 | No |
 | SECRET_KEY_GENERATION_PASSWORD | XXX | Yes |
 | SECRET_KEY_GENERATION_SALT | XXX | Yes |
-| --- | --- | --- |

@@ -22,7 +22,7 @@ import info.freelibrary.util.StringUtils;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.junit5.VertxTestContext;
 
 /**
@@ -45,22 +45,18 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
     public void testGetAccessLevel(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestUri =
                 StringUtils.format(GET_ACCESS_LEVEL_PATH, URLEncoder.encode(TEST_ID, StandardCharsets.UTF_8));
+        final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
 
-        myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
-            if (get.succeeded()) {
-                final HttpResponse<?> response = get.result();
-                final JsonObject expected =
-                        new JsonObject().put(ResponseJsonKeys.ID, TEST_ID).put(ResponseJsonKeys.RESTRICTED, false);
+        getAccessLevel.send().onSuccess(response -> {
+            final JsonObject expected =
+                    new JsonObject().put(ResponseJsonKeys.ID, TEST_ID).put(ResponseJsonKeys.RESTRICTED, false);
 
-                assertEquals(HTTP.OK, response.statusCode());
-                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-                assertEquals(expected, response.bodyAsJsonObject());
+            assertEquals(HTTP.OK, response.statusCode());
+            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            assertEquals(expected, response.bodyAsJsonObject());
 
-                aContext.completeNow();
-            } else {
-                aContext.failNow(get.cause());
-            }
-        });
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
     }
 
     /**
@@ -74,24 +70,20 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
         final String id = "ark:/21198/unknown";
         final String requestUri =
                 StringUtils.format(GET_ACCESS_LEVEL_PATH, URLEncoder.encode(id, StandardCharsets.UTF_8));
+        final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
 
-        myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri).send(get -> {
-            if (get.succeeded()) {
-                final HttpResponse<?> response = get.result();
-                final JsonObject responseBody = response.bodyAsJsonObject();
-                final JsonObject expected =
-                        new JsonObject().put(ResponseJsonKeys.ERROR, DatabaseServiceError.NOT_FOUND.toString())
-                                .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_004, id))
-                                .put(ResponseJsonKeys.ID, id);
+        getAccessLevel.send().onSuccess(response -> {
+            final JsonObject responseBody = response.bodyAsJsonObject();
+            final JsonObject expected =
+                    new JsonObject().put(ResponseJsonKeys.ERROR, DatabaseServiceError.NOT_FOUND.toString())
+                            .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_004, id))
+                            .put(ResponseJsonKeys.ID, id);
 
-                assertEquals(HTTP.NOT_FOUND, response.statusCode());
-                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-                assertEquals(expected, responseBody);
+            assertEquals(HTTP.NOT_FOUND, response.statusCode());
+            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            assertEquals(expected, responseBody);
 
-                aContext.completeNow();
-            } else {
-                aContext.failNow(get.cause());
-            }
-        });
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
     }
 }

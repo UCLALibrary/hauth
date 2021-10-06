@@ -70,58 +70,64 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
         final String clientIpAddress = aContext.request().remoteAddress().hostAddress();
         final Cookie cookie = aContext.getCookie("iiif-access");
         final String cookieValue = cookie.getValue();
-        final HttpServerRequest request = aContext.request();
-        final HttpServerResponse response = aContext.response();
 
-        aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
-
-        myAccessCookieService.decryptCookie(cookieValue).onSuccess(cookieData -> {
+        myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).onSuccess(cookieData -> {
             final JsonObject data = new JsonObject();
+            final JsonObject accessTokenUnencoded =
+                    new JsonObject().put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
+                            .put(TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
+            final String accessToken = Base64.getEncoder().encodeToString(accessTokenUnencoded.encode().getBytes());
 
-            // if the IP addresses match, send back the access token
-            if (clientIpAddress.equals(cookieData.getString(CookieJsonKeys.CLIENT_IP_ADDRESS))) {
-                final JsonObject accessTokenUnencoded =
-                        new JsonObject().put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION)).put(
-                                TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
-                final String accessToken = Base64.getEncoder().encodeToString(accessTokenUnencoded.encode().getBytes());
+            data.put(ResponseJsonKeys.ACCESS_TOKEN, accessToken);
 
-                data.put(ResponseJsonKeys.ACCESS_TOKEN, accessToken);
+            // Token expiry is optional
+            myExpiresIn.ifPresent(expiry -> data.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
-                // Token expiry is optional
-                myExpiresIn.ifPresent(expiry -> data.put(ResponseJsonKeys.EXPIRES_IN, expiry));
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .setStatusCode(HTTP.OK).end(data.encodePrettily());
+        }).onFailure(aContext::fail);
+    }
 
-                response.setStatusCode(HTTP.OK);
-            } else {
-                final String responseMessage = LOGGER.getMessage(MessageCodes.AUTH_011);
-                data.put(ResponseJsonKeys.ERROR, AccessCookieServiceError.INVALID_COOKIE).put(ResponseJsonKeys.MESSAGE,
-                        responseMessage);
+    /**
+     * Handle failure events sent by {@link #handle}.
+     *
+     * @param aContext the failure event to handle
+     */
+    public static void handleFailure(final RoutingContext aContext) {
+        final ServiceException error;
+        final HttpServerRequest request;
+        final HttpServerResponse response;
+        final String responseMessage;
+        final JsonObject data;
+        final AccessCookieServiceError errorCode;
 
+        try {
+            error = (ServiceException) aContext.failure();
+        } catch (final ClassCastException details) {
+            aContext.fail(HTTP.INTERNAL_SERVER_ERROR, details);
+            LOGGER.error(MessageCodes.AUTH_010, details);
+            return;
+        }
+
+        request = aContext.request();
+        response = aContext.response();
+        data = new JsonObject();
+        errorCode = AccessCookieServiceImpl.getError(error);
+
+        switch (errorCode) {
+            case INVALID_COOKIE:
                 response.setStatusCode(HTTP.BAD_REQUEST);
+                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_011);
+                break;
+            case CONFIGURATION:
+            default:
+                response.setStatusCode(HTTP.INTERNAL_SERVER_ERROR);
+                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_012);
+                break;
+        }
+        data.put(ResponseJsonKeys.ERROR, errorCode).put(ResponseJsonKeys.MESSAGE, responseMessage);
+        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
 
-                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
-            }
-            response.end(data.encodePrettily());
-        }).onFailure(failure -> {
-            final ServiceException error = (ServiceException) failure;
-            final String responseMessage;
-            final JsonObject data = new JsonObject();
-            final AccessCookieServiceError errorCode = AccessCookieServiceImpl.getError(error);
-
-            switch (errorCode) {
-                case INVALID_COOKIE:
-                    response.setStatusCode(HTTP.BAD_REQUEST);
-                    responseMessage = LOGGER.getMessage(MessageCodes.AUTH_011);
-                    break;
-                case CONFIGURATION:
-                default:
-                    response.setStatusCode(HTTP.INTERNAL_SERVER_ERROR);
-                    responseMessage = LOGGER.getMessage(MessageCodes.AUTH_012);
-                    break;
-            }
-            data.put(ResponseJsonKeys.ERROR, errorCode).put(ResponseJsonKeys.MESSAGE, responseMessage);
-            response.end(data.encodePrettily());
-
-            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
-        });
+        LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
     }
 }

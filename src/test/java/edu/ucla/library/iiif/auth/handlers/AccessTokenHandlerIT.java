@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 
+import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
 
 import edu.ucla.library.iiif.auth.Config;
@@ -40,14 +41,16 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
     @Test
     public void testGetToken(final Vertx aVertx, final VertxTestContext aContext) {
         final String getCookieRequestUri =
-                StringUtils.format("/cookie?origin={}", URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
+                StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestUri);
 
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
             final String cookieValue = cookieHeader.split("=")[1];
+            final String clientIpAddress =
+                    Jsoup.parse(result.bodyAsString()).getElementById("client-ip-address").text();
 
-            return myAccessCookieService.decryptCookie(cookieValue).compose(cookie -> {
+            return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
                 final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, GET_TOKEN_PATH)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);
 
@@ -71,7 +74,7 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
 
                     aContext.completeNow();
                 }).onFailure(aContext::failNow);
-            }).onFailure(aContext::failNow);
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -89,6 +92,8 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
 
         getToken.send().onSuccess(response -> {
             assertEquals(HTTP.BAD_REQUEST, response.statusCode());
+            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+
             aContext.completeNow();
         }).onFailure(aContext::failNow);
     }

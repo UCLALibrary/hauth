@@ -75,7 +75,8 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
         for (final String subnet : aConfig.getString(Config.CAMPUS_NETWORK_SUBNETS).split(COMMA)) {
             final Cidr4 cidr = new Cidr4(subnet);
 
-            // The value of the key doesn't particularly matter, since the methods we call on the Trie don't use it
+            // The value associated with each key doesn't particularly matter, since the methods we call on the Trie
+            // don't use it
             myCampusNetworkSubnets.put(cidr, cidr.getAddressRange());
         }
     }
@@ -83,39 +84,45 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
     @Override
     public void handle(final RoutingContext aContext) {
         final HttpServerRequest request = aContext.request();
+        final Ip4 clientIpAddress;
+        final URI origin;
+        final boolean isOnCampusNetwork;
 
         try {
-            final Ip4 clientIpAddress = new Ip4(request.remoteAddress().hostAddress());
-            final URI origin = URI.create(request.getParam(Param.ORIGIN));
-            final boolean isOnCampusNetwork = isOnNetwork(clientIpAddress, myCampusNetworkSubnets);
-
-            myDatabaseServiceProxy.getDegradedAllowed(origin.toString()).compose(isDegradedAllowed -> {
-                final Future<String> cookieGeneration = myAccessCookieService
-                        .generateCookie(clientIpAddress.getAddress(), isOnCampusNetwork, isDegradedAllowed);
-
-                return cookieGeneration.compose(cookieValue -> {
-                    final Cookie cookie = Cookie.cookie("iiif-access", cookieValue);
-
-                    // Along with the origin, pass all the cookie data to the HTML template
-                    final JsonObject htmlTemplateData = new JsonObject().put(Param.ORIGIN, origin)
-                            .put(CookieJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
-                            .put(CookieJsonKeys.CLIENT_IP_ADDRESS, clientIpAddress)
-                            .put(CookieJsonKeys.CAMPUS_NETWORK, isOnCampusNetwork)
-                            .put(CookieJsonKeys.DEGRADED_ALLOWED, isDegradedAllowed);
-
-                    aContext.addCookie(cookie);
-
-                    return myHtmlTemplateEngine.render(htmlTemplateData.getMap(), "templates/cookie.hbs");
-                });
-            }).onSuccess(renderedHtmlTeplate -> {
-                aContext.response().setStatusCode(HTTP.OK)
-                        .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString()).end(renderedHtmlTeplate);
-            }).onFailure(error -> {
-                aContext.fail(HTTP.INTERNAL_SERVER_ERROR, error);
-            });
+            clientIpAddress = new Ip4(request.remoteAddress().hostAddress());
+            origin = URI.create(request.getParam(Param.ORIGIN));
         } catch (final IllegalArgumentException details) {
             aContext.fail(HTTP.BAD_REQUEST, details);
+            return;
         }
+
+        isOnCampusNetwork = isOnNetwork(clientIpAddress, myCampusNetworkSubnets);
+
+        myDatabaseServiceProxy.getDegradedAllowed(origin.toString()).compose(isDegradedAllowed -> {
+            final Future<String> cookieGeneration = myAccessCookieService.generateCookie(clientIpAddress.getAddress(),
+                    isOnCampusNetwork, isDegradedAllowed);
+
+            return cookieGeneration.compose(cookieValue -> {
+                final Cookie cookie = Cookie.cookie("iiif-access", cookieValue);
+
+                // Along with the origin, pass all the cookie data to the HTML template
+                final JsonObject htmlTemplateData = new JsonObject().put(Param.ORIGIN, origin)
+                        .put(CookieJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
+                        .put(CookieJsonKeys.CLIENT_IP_ADDRESS, clientIpAddress)
+                        .put(CookieJsonKeys.CAMPUS_NETWORK, isOnCampusNetwork)
+                        .put(CookieJsonKeys.DEGRADED_ALLOWED, isDegradedAllowed);
+
+                aContext.addCookie(cookie);
+
+                return myHtmlTemplateEngine.render(htmlTemplateData.getMap(), "templates/cookie.hbs");
+            });
+        }).onSuccess(renderedHtmlTeplate -> {
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString())
+                    .setStatusCode(HTTP.OK).end(renderedHtmlTeplate);
+        }).onFailure(error -> {
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString())
+                    .setStatusCode(HTTP.INTERNAL_SERVER_ERROR).end();
+        });
     }
 
     /**

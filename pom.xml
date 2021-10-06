@@ -66,6 +66,7 @@
     <postgres.version>12.7-alpine</postgres.version>
     <cantaloupe.version>5.0.3-0</cantaloupe.version>
     <auth.delegate.version>0.0.1-SNAPSHOT</auth.delegate.version>
+    <jsoup.version>1.14.3</jsoup.version>
 
     <!-- Name of the main Vert.x verticle -->
     <main.verticle>edu.ucla.library.iiif.auth.verticles.MainVerticle</main.verticle>
@@ -197,6 +198,12 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
       <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>${jsoup.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -422,17 +429,15 @@
                   <!-- Start test container on an available host port -->
                   <port>${test.http.port}:8888</port>
                 </ports>
-                <volumes>
-                  <!-- <bind> <volume>${image.root}:/images/</volume> </bind> -->
-                </volumes>
                 <env>
-                  <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
+                  <!-- This particular choice of subnets is arbitrary -->
+                  <CAMPUS_NETWORK_SUBNETS>127.0.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
+                  <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
                   <!-- Default Docker bridge host IP -->
                   <DB_HOST>172.17.0.1</DB_HOST>
-                  <DB_PORT>${test.db.port}</DB_PORT>
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
-                  <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
-                  <CAMPUS_NETWORK_SUBNETS>172.17.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
+                  <DB_PORT>${test.db.port}</DB_PORT>
+                  <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
                   <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
                   <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
                 </env>
@@ -535,11 +540,11 @@
             </goals>
             <configuration>
               <environmentVariables>
+                <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
+                <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
+                <DB_PORT>${test.db.port}</DB_PORT>
                 <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
                 <HTTP_PORT>${test.http.port}</HTTP_PORT>
-                <DB_PORT>${test.db.port}</DB_PORT>
-                <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
-                <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
               </environmentVariables>
               <includes>
                 <include>**/*IT.java</include>
@@ -651,73 +656,6 @@
           <classifier>linux-x86_64</classifier>
         </dependency>
       </dependencies>
-    </profile>
-
-    <!-- A profile for running the server in a live test mode -->
-    <profile>
-      <id>live</id>
-      <properties>
-        <maven.test.skip>true</maven.test.skip>
-        <jacoco.skip>true</jacoco.skip>
-        <skip.hauth.container>true</skip.hauth.container>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-logging-config-for-testing</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${basedir}/target/classes/</outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>${basedir}/src/main/resources</directory>
-                      <filtering>true</filtering>
-                      <includes>
-                        <include>templates/*</include>
-                      </includes>
-                    </resource>
-                    <resource>
-                      <directory>${basedir}</directory>
-                      <filtering>true</filtering>
-                      <includes>
-                        <include>logback-test.xml</include>
-                      </includes>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>io.reactiverse</groupId>
-            <artifactId>vertx-maven-plugin</artifactId>
-            <version>${vertx.plugin.version}</version>
-            <executions>
-              <execution>
-                <id>test-vertx-startup</id>
-                <phase>integration-test</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <verticle>${main.verticle}</verticle>
-              <redeploy>${live.test.reloads}</redeploy>
-              <jvmArgs>
-                <jvmArg>-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory</jvmArg>
-              </jvmArgs>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
 
     <!-- A provile for setting optional environment variables for application configuration -->

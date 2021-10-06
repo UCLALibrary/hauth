@@ -116,7 +116,7 @@ public class AccessCookieServiceTest {
                 assertTrue(decodedCookie.containsKey(key));
             }
 
-            return myServiceProxy.decryptCookie(cookie);
+            return myServiceProxy.decryptCookie(cookie, clientIpAddress);
         }).onSuccess(decryptedCookie -> {
             final JsonObject expected = new JsonObject().put(CookieJsonKeys.CLIENT_IP_ADDRESS, clientIpAddress)
                     .put(CookieJsonKeys.CAMPUS_NETWORK, isCampusNetwork)
@@ -150,7 +150,7 @@ public class AccessCookieServiceTest {
             decodedCookie.put(CookieJsonKeys.SECRET, secret);
             tamperedCookie = Base64.getEncoder().encodeToString(decodedCookie.encode().getBytes());
 
-            return myServiceProxy.decryptCookie(tamperedCookie);
+            return myServiceProxy.decryptCookie(tamperedCookie, clientIpAddress);
         }).onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
