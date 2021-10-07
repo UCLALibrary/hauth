@@ -114,7 +114,6 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -541,6 +540,17 @@
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-surefire-provider</artifactId>
             <version>1.0.1</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>maven-surefire-common</artifactId>
+            <version>${maven.failsafe.plugin.version}</version>
+            <exclusions>
+              <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-jdk14</artifactId>
+              </exclusion>
+            </exclusions>
           </dependency>
         </dependencies>
         <configuration>
