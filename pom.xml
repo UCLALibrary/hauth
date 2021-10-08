@@ -463,7 +463,7 @@
         </configuration>
         <executions>
 
-          <!-- Builds the Docker images -->
+          <!-- Builds the Hauth Docker image -->
           <execution>
             <id>docker-build</id>
             <phase>pre-integration-test</phase>
@@ -493,7 +493,7 @@
             </configuration>
           </execution>
 
-          <!-- Deploys the Docker image -->
+          <!-- Deploys the Hauth Docker image -->
           <execution>
             <id>docker-deploy</id>
             <phase>deploy</phase>
