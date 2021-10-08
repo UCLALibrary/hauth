@@ -58,8 +58,7 @@
     <freelib.maven.version>0.3.0</freelib.maven.version>
     <deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
     <docker.maven.plugin.version>0.36.0</docker.maven.plugin.version>
-    <!-- Running with Failsafe 3.0.0-M5 causes an IllegalAccessError with JUnit 5 -->
-    <maven.failsafe.plugin.version>2.19.1</maven.failsafe.plugin.version>
+    <maven.failsafe.plugin.version>2.22.0</maven.failsafe.plugin.version>
 
     <!-- Test dependency versions -->
     <mockito.version>3.11.1</mockito.version>
@@ -114,6 +113,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -534,25 +534,6 @@
       <!-- A plugin for running integration tests -->
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <dependencies>
-          <!-- https://stackoverflow.com/a/47079107 -->
-          <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-surefire-provider</artifactId>
-            <version>1.0.1</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>maven-surefire-common</artifactId>
-            <version>${maven.failsafe.plugin.version}</version>
-            <exclusions>
-              <exclusion>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-jdk14</artifactId>
-              </exclusion>
-            </exclusions>
-          </dependency>
-        </dependencies>
         <configuration>
           <argLine>${jacoco.agent.arg}</argLine>
           <environmentVariables>
