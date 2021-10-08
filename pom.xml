@@ -59,6 +59,8 @@
     <freelib.maven.version>0.3.0</freelib.maven.version>
     <deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
     <docker.maven.plugin.version>0.36.0</docker.maven.plugin.version>
+    <!-- Failsafe 3.x has compatibility issues with JUnit 5: https://stackoverflow.com/a/51837961 -->
+    <maven.failsafe.plugin.version>2.22.0</maven.failsafe.plugin.version>
 
     <!-- Test dependency versions -->
     <mockito.version>3.11.1</mockito.version>
@@ -474,7 +476,7 @@
         </configuration>
         <executions>
 
-          <!-- Builds the Docker image -->
+          <!-- Builds the Hauth Docker image -->
           <execution>
             <id>docker-build</id>
             <phase>pre-integration-test</phase>
@@ -483,7 +485,7 @@
             </goals>
           </execution>
 
-          <!-- Starts the Docker container for integration testing -->
+          <!-- Creates and starts the Docker containers for integration testing -->
           <execution>
             <id>docker-start</id>
             <phase>pre-integration-test</phase>
@@ -492,7 +494,7 @@
             </goals>
           </execution>
 
-          <!-- Stops the integration tests' Docker container -->
+          <!-- Stops and removes the integration tests' Docker containers -->
           <execution>
             <id>docker-stop</id>
             <phase>post-integration-test</phase>
@@ -501,11 +503,10 @@
             </goals>
             <configuration>
               <allContainers>true</allContainers>
-              <stopNamePattern>hauth*</stopNamePattern>
             </configuration>
           </execution>
 
-          <!-- Deploys the Docker image -->
+          <!-- Deploys the Hauth Docker image -->
           <execution>
             <id>docker-deploy</id>
             <phase>deploy</phase>
@@ -543,31 +544,25 @@
             <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.SLF4JLogDelegateFactory</vertx.logger-delegate-factory-class-name>
           </systemPropertyVariables>
         </configuration>
-        <executions>
-          <!-- Vertx's unit framework doesn't like Failsafe, so just use Surefire for integration tests too -->
-          <execution>
-            <id>integration-tests</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <environmentVariables>
-                <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
-                <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
-                <DB_PORT>${test.db.port}</DB_PORT>
-                <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                <HTTP_PORT>${test.http.port}</HTTP_PORT>
-              </environmentVariables>
-              <includes>
-                <include>**/*IT.java</include>
-              </includes>
-              <excludes>
-                <exclude>**/*Test.java</exclude>
-              </excludes>
-            </configuration>
-          </execution>
-        </executions>
+      </plugin>
+      <!-- A plugin for running integration tests -->
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <argLine>${jacoco.agent.arg}</argLine>
+          <environmentVariables>
+            <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
+            <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
+            <DB_PORT>${test.db.port}</DB_PORT>
+            <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
+            <HTTP_PORT>${test.http.port}</HTTP_PORT>
+            <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
+            <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
+          </environmentVariables>
+          <systemPropertyVariables>
+            <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.SLF4JLogDelegateFactory</vertx.logger-delegate-factory-class-name>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
       <!-- Disable standard deploy; we publish a Docker image, not Jar file -->
       <plugin>
@@ -698,17 +693,12 @@
             </configuration>
           </plugin>
           <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>integration-tests</id>
-                <configuration>
-                  <environmentVariables>
-                    <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
-                  </environmentVariables>
-                </configuration>
-              </execution>
-            </executions>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <environmentVariables>
+                <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
+              </environmentVariables>
+            </configuration>
           </plugin>
         </plugins>
       </build>
