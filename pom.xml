@@ -58,6 +58,7 @@
     <freelib.maven.version>0.3.0</freelib.maven.version>
     <deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
     <docker.maven.plugin.version>0.36.0</docker.maven.plugin.version>
+    <!-- Failsafe 3.x has compatibility issues with JUnit 5: https://stackoverflow.com/a/51837961 -->
     <maven.failsafe.plugin.version>2.22.0</maven.failsafe.plugin.version>
 
     <!-- Test dependency versions -->
