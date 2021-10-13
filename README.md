@@ -1,6 +1,6 @@
 # Hauth
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f0e9885893cb47499767112f20050cdc)](https://app.codacy.com/gh/UCLALibrary/hauth?utm_source=github.com&utm_medium=referral&utm_content=UCLALibrary/hauth&utm_campaign=Badge_Grade_Settings)
+[![Maven Build](https://github.com/uclalibrary/hauth/workflows/Maven%20PR%20Build/badge.svg)](https://github.com/UCLALibrary/hauth/actions) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f0e9885893cb47499767112f20050cdc)](https://app.codacy.com/gh/UCLALibrary/hauth?utm_source=github.com&utm_medium=referral&utm_content=UCLALibrary/hauth&utm_campaign=Badge_Grade_Settings)
 
 A IIIF Auth implementation for limiting access by IP address.
 
