@@ -8,9 +8,9 @@ Still in development.
 
 To build Hauth, you need the following things installed and configured on your local machine:
 
-* [Java](https://adoptopenjdk.net/) &gt;= JDK 11
-* [Maven](https://maven.apache.org/download.cgi) &gt;= 3.8.x
-* [Docker](https://www.docker.com/products/container-runtime) &gt;= 20.10.x
+  * [Java](https://adoptopenjdk.net/) &gt;= JDK 11
+  * [Maven](https://maven.apache.org/download.cgi) &gt;= 3.8.x
+  * [Docker](https://www.docker.com/products/container-runtime) &gt;= 20.10.x
 
 ## Building
 
