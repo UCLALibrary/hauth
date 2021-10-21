@@ -43,9 +43,6 @@ paths:
                   message:
                     type: string
                     example: The requested ID was not found
-                  id:
-                    type: string
-                    example: ark:/21198/zz002dvwr6
         '500':
           description: There was an internal server error
           content:
