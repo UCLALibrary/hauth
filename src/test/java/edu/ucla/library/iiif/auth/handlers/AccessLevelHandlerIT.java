@@ -8,16 +8,16 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
+import info.freelibrary.util.HTTP;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
+import info.freelibrary.util.StringUtils;
+
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.services.DatabaseServiceError;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 import edu.ucla.library.iiif.auth.utils.TestConstants;
-
-import info.freelibrary.util.HTTP;
-import info.freelibrary.util.Logger;
-import info.freelibrary.util.LoggerFactory;
-import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -48,8 +48,7 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
         final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
 
         getAccessLevel.send().onSuccess(response -> {
-            final JsonObject expected =
-                    new JsonObject().put(ResponseJsonKeys.ID, TEST_ID).put(ResponseJsonKeys.RESTRICTED, false);
+            final JsonObject expected = new JsonObject().put(ResponseJsonKeys.RESTRICTED, false);
 
             assertEquals(HTTP.OK, response.statusCode());
             assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));

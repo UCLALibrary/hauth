@@ -116,9 +116,9 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
 
                 return myHtmlTemplateEngine.render(htmlTemplateData.getMap(), "templates/cookie.hbs");
             });
-        }).onSuccess(renderedHtmlTeplate -> {
+        }).onSuccess(renderedHtmlTemplate -> {
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString())
-                    .setStatusCode(HTTP.OK).end(renderedHtmlTeplate);
+                    .setStatusCode(HTTP.OK).end(renderedHtmlTemplate);
         }).onFailure(error -> {
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString())
                     .setStatusCode(HTTP.INTERNAL_SERVER_ERROR).end();

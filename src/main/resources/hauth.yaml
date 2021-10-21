@@ -27,13 +27,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: string
-                    example: ark:/21198/zz002dvwr6
                   restricted:
                     type: boolean
                     example: true
-
         '404':
           description: Notification that the supplied ID couldn't be found
           content:
