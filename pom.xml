@@ -46,11 +46,7 @@
     <freelib.utils.version>2.4.0</freelib.utils.version>
     <slf4j.ext.version>1.7.30</slf4j.ext.version>
     <cidr.ip.version>1.0.1</cidr.ip.version>
-    <vertx.version>4.1.4</vertx.version>
-
-
-    <!-- Security fixes for transitive dependencies -->
-    <jetty.version>4.1.68.Final</jetty.version>
+    <vertx.version>4.1.5</vertx.version>
 
     <!-- Build plugin versions -->
     <clean.plugin.version>3.1.0</clean.plugin.version>
@@ -158,13 +154,6 @@
       <groupId>com.github.veqryn</groupId>
       <artifactId>cidr-ip-trie</artifactId>
       <version>${cidr.ip.version}</version>
-    </dependency>
-
-    <!-- Security fixes for transitive dependencies -->
-    <dependency> <!-- Used by Vert.x -->
-      <groupId>io.netty</groupId>
-      <artifactId>netty-codec</artifactId>
-      <version>${jetty.version}</version>
     </dependency>
 
     <!-- Below is a dependency that needs updating due to security issue (may be able to remove in future) -->

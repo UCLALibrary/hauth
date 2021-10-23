@@ -51,9 +51,7 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
         final String id = aContext.request().getParam(Param.ID);
 
         myDatabaseServiceProxy.getAccessLevel(id).onSuccess(accessLevel -> {
-            final boolean isRestricted = accessLevel == 0 ? false : true;
-            final JsonObject data =
-                    new JsonObject().put(ResponseJsonKeys.ID, id).put(ResponseJsonKeys.RESTRICTED, isRestricted);
+            final JsonObject data = new JsonObject().put(ResponseJsonKeys.RESTRICTED, accessLevel != 0);
 
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .setStatusCode(HTTP.OK).end(data.encodePrettily());
@@ -91,7 +89,6 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
                 final String id = error.getMessage();
                 response.setStatusCode(HTTP.NOT_FOUND);
                 responseMessage = LOGGER.getMessage(MessageCodes.AUTH_004, id);
-                data.put(ResponseJsonKeys.ID, id);
                 break;
             case INTERNAL:
             default:
@@ -99,6 +96,7 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
                 responseMessage = LOGGER.getMessage(MessageCodes.AUTH_005);
                 break;
         }
+
         data.put(ResponseJsonKeys.ERROR, errorCode).put(ResponseJsonKeys.MESSAGE, responseMessage);
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
 
