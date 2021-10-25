@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MAVEN_CACHE_KEY: ${{ secrets.MAVEN_CACHE_KEY }}
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      UCLALIBRARY_SNYK_ORG: ${{ secrets.UCLALIBRARY_SNYK_ORG }}
     strategy:
       matrix:
         java: [ 11 ]

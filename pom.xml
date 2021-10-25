@@ -570,6 +570,29 @@
   </build>
 
   <profiles>
+    <!-- An explicit Snyk plugin configuration for UCLA projects. -->
+    <profile>
+      <id>synk-check</id>
+      <activation>
+        <property>
+          <name>env.SNYK_TOKEN</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.snyk</groupId>
+            <artifactId>snyk-maven-plugin</artifactId>
+            <configuration>
+              <args>
+                <arg>--org=${env.UCLALIBRARY_SNYK_ORG}</arg>
+              </args>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- A profile to use to build an executable Jar file -->
     <profile>
       <id>uber-jar-compile</id>
@@ -708,7 +731,7 @@
   <parent>
     <artifactId>freelib-parent</artifactId>
     <groupId>info.freelibrary</groupId>
-    <version>7.0.1</version>
+    <version>7.1.0</version>
   </parent>
 
 </project>
