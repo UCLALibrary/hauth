@@ -572,7 +572,7 @@
   <profiles>
     <!-- An explicit Snyk plugin configuration for UCLA projects. -->
     <profile>
-      <id>synk-check</id>
+      <id>snyk-check</id>
       <activation>
         <property>
           <name>env.SNYK_TOKEN</name>
