@@ -149,15 +149,16 @@ public class DatabaseServiceIT extends AbstractServiceTest {
         final String url = "https://library.ucla.edu";
         final String expected = NULL;
 
-        myServiceProxy.getDegradedAllowed(url).onSuccess(result -> {
-            completeIfExpectedElseFail(result, expected, aContext);
-        }).onFailure(details -> {
+        myServiceProxy.getDegradedAllowed(url).onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
             assertEquals(DatabaseServiceError.NOT_FOUND, DatabaseServiceImpl.getError(error));
             assertEquals(url, error.getMessage());
 
             aContext.completeNow();
+        }).onSuccess(result -> {
+            // The following will always fail
+            completeIfExpectedElseFail(result, expected, aContext);
         });
     }
 
