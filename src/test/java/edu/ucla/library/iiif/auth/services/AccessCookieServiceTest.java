@@ -34,7 +34,7 @@ import io.vertx.serviceproxy.ServiceException;
  * Tests the {@link AccessCookieService}.
  */
 @ExtendWith(VertxExtension.class)
-public class AccessCookieServiceTest {
+public class AccessCookieServiceTest extends AbstractServiceTest {
 
     /**
      * The logger used by these tests.
@@ -174,21 +174,5 @@ public class AccessCookieServiceTest {
 
     protected Logger getLogger() {
         return LOGGER;
-    }
-
-    /**
-     * Completes the context if the actual result and the expected result are equal, otherwise fails the context.
-     *
-     * @param <T> The type of result
-     * @param aResult The actual result
-     * @param aExpected The expected result
-     * @param aContext A test context
-     */
-    private <T> void completeIfExpectedElseFail(final T aResult, final T aExpected, final VertxTestContext aContext) {
-        if (aResult.equals(aExpected)) {
-            aContext.completeNow();
-        } else {
-            aContext.failNow(LOGGER.getMessage(MessageCodes.AUTH_007, aResult, aExpected));
-        }
     }
 }

@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -18,7 +17,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.serviceproxy.ServiceException;
@@ -26,8 +24,7 @@ import io.vertx.serviceproxy.ServiceException;
 /**
  * A test of the database connection.
  */
-@ExtendWith(VertxExtension.class)
-public class DatabaseServiceIT {
+public class DatabaseServiceIT extends AbstractServiceTest {
 
     /**
      * The logger used by these tests.
@@ -126,7 +123,7 @@ public class DatabaseServiceIT {
     }
 
     /**
-     * Tests reading an item whose "access level" that has been set more than once.
+     * Tests reading an item whose "access level" has been set more than once.
      *
      * @param aContext A test context
      */
@@ -199,21 +196,5 @@ public class DatabaseServiceIT {
 
     protected Logger getLogger() {
         return LOGGER;
-    }
-
-    /**
-     * Completes the context if the actual result and the expected result are equal, otherwise fails the context.
-     *
-     * @param <T> The type of result
-     * @param aResult The actual result
-     * @param aExpected The expected result
-     * @param aContext A test context
-     */
-    private <T> void completeIfExpectedElseFail(final T aResult, final T aExpected, final VertxTestContext aContext) {
-        if (aResult.equals(aExpected)) {
-            aContext.completeNow();
-        } else {
-            aContext.failNow(LOGGER.getMessage(MessageCodes.AUTH_007, aResult, aExpected));
-        }
     }
 }
