@@ -76,7 +76,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     private static final int NOT_FOUND_ERROR = DatabaseServiceError.NOT_FOUND.ordinal();
 
     /**
-     * The underlying SQL client.
+     * The underlying PostgreSQL connection pool.
      */
     private final PgPool myDbConnectionPool;
 
