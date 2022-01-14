@@ -37,6 +37,11 @@ public final class ResponseJsonKeys {
     public static final String EXPIRES_IN = "expiresIn";
 
     /**
+     * The message ID key.
+     */
+    public static final String MESSAGE_ID = Param.MESSAGE_ID;
+
+    /**
      * Private constructor for utility class.
      */
     private ResponseJsonKeys() {

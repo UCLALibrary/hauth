@@ -17,6 +17,11 @@ public final class Param {
     public static final String ORIGIN = "origin";
 
     /**
+     * The message ID parameter.
+     */
+    public static final String MESSAGE_ID = "messageId";
+
+    /**
      * Creates a new constants class for HTTP parameters.
      */
     private Param() {

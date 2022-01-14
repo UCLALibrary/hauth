@@ -35,9 +35,9 @@ public abstract class AbstractHandlerIT {
     protected static final String GET_STATUS_PATH = "/status";
 
     /**
-     * The URI path for access token requests.
+     * The URI path template for access token requests.
      */
-    protected static final String GET_TOKEN_PATH = "/token";
+    protected static final String GET_TOKEN_PATH = "/token?{}";
 
     /**
      * The URI path template for access level requests.

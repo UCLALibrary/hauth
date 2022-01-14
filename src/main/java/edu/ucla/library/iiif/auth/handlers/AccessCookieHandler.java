@@ -11,8 +11,8 @@ import com.github.veqryn.net.Cidr4;
 import com.github.veqryn.net.Ip4;
 
 import edu.ucla.library.iiif.auth.Config;
-import edu.ucla.library.iiif.auth.CookieJsonKeys;
 import edu.ucla.library.iiif.auth.Param;
+import edu.ucla.library.iiif.auth.TemplateKeys;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.utils.MediaType;
@@ -106,11 +106,11 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                 final Cookie cookie = Cookie.cookie("iiif-access", cookieValue);
 
                 // Along with the origin, pass all the cookie data to the HTML template
-                final JsonObject htmlTemplateData = new JsonObject().put(Param.ORIGIN, origin)
-                        .put(CookieJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
-                        .put(CookieJsonKeys.CLIENT_IP_ADDRESS, clientIpAddress)
-                        .put(CookieJsonKeys.CAMPUS_NETWORK, isOnCampusNetwork)
-                        .put(CookieJsonKeys.DEGRADED_ALLOWED, isDegradedAllowed);
+                final JsonObject htmlTemplateData = new JsonObject().put(TemplateKeys.ORIGIN, origin)
+                        .put(TemplateKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
+                        .put(TemplateKeys.CLIENT_IP_ADDRESS, clientIpAddress)
+                        .put(TemplateKeys.CAMPUS_NETWORK, isOnCampusNetwork)
+                        .put(TemplateKeys.DEGRADED_ALLOWED, isDegradedAllowed);
 
                 aContext.addCookie(cookie);
 
@@ -121,7 +121,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                     .setStatusCode(HTTP.OK).end(renderedHtmlTemplate);
         }).onFailure(error -> {
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString())
-                    .setStatusCode(HTTP.INTERNAL_SERVER_ERROR).end();
+                    .setStatusCode(HTTP.INTERNAL_SERVER_ERROR).end(error.getMessage());
         });
     }
 
