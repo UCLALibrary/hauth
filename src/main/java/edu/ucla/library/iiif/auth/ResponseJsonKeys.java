@@ -2,7 +2,7 @@
 package edu.ucla.library.iiif.auth;
 
 /**
- * Valid JSON keys for the response schemas defined in the Hauth OpenAPI specification.
+ * A constants class for JSON keys for the response schemas that are defined in the Hauth OpenAPI specification.
  */
 public final class ResponseJsonKeys {
 

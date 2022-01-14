@@ -61,6 +61,11 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
     private final String myTokenResponseTemplate = "src/main/resources/templates/token.hbs";
 
     /**
+     * The id of the HTML element that contains the client IP address that was put in the cookie.
+     */
+    private final String myClientIpAddressID = "client-ip-address";
+
+    /**
      * Tests that a browser client can use a valid access cookie to obtain an access token.
      *
      * @param aVertx A Vert.x instance
@@ -76,7 +81,7 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
             final String cookieHeader = result.cookies().get(0);
             final String cookieValue = cookieHeader.split(EQUALS)[1];
             final String clientIpAddress =
-                    Jsoup.parse(result.bodyAsString()).getElementById(TemplateKeys.CLIENT_IP_ADDRESS).text();
+                    Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
 
             return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
                 final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
@@ -131,7 +136,7 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
             final String cookieHeader = result.cookies().get(0);
             final String cookieValue = cookieHeader.split(EQUALS)[1];
             final String clientIpAddress =
-                    Jsoup.parse(result.bodyAsString()).getElementById(TemplateKeys.CLIENT_IP_ADDRESS).text();
+                    Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
 
             return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
                 final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, EMPTY);

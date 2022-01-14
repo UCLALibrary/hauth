@@ -2,39 +2,39 @@
 package edu.ucla.library.iiif.auth;
 
 /**
- * Valid keys for Handlebars templates.
+ * A constants class for valid keys for passing values to Handlebars templates.
  */
 public final class TemplateKeys {
 
     /**
      * The access token object key.
      */
-    public static final String ACCESS_TOKEN_OBJECT = "access-token-object";
+    public static final String ACCESS_TOKEN_OBJECT = "accessTokenObject";
 
     /**
      * The campus network key.
      */
-    public static final String CAMPUS_NETWORK = CookieJsonKeys.CAMPUS_NETWORK;
+    public static final String CAMPUS_NETWORK = "campusNetwork";
 
     /**
      * The client IP address key.
      */
-    public static final String CLIENT_IP_ADDRESS = CookieJsonKeys.CLIENT_IP_ADDRESS;
+    public static final String CLIENT_IP_ADDRESS = "clientIpAddress";
 
     /**
      * The degraded allowed key.
      */
-    public static final String DEGRADED_ALLOWED = CookieJsonKeys.DEGRADED_ALLOWED;
+    public static final String DEGRADED_ALLOWED = "degradedAllowed";
 
     /**
      * The origin key.
      */
-    public static final String ORIGIN = Param.ORIGIN;
+    public static final String ORIGIN = "origin";
 
     /**
      * The version key.
      */
-    public static final String VERSION = CookieJsonKeys.VERSION;
+    public static final String VERSION = "version";
 
     /**
      * Private constructor for utility class.
