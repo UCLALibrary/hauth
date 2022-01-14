@@ -32,9 +32,9 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetCookie(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri =
+        final String requestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
+        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
 
         getCookie.send().onSuccess(response -> {
             assertEquals(HTTP.OK, response.statusCode());
@@ -53,9 +53,9 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetCookieUnknownOrigin(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_COOKIE_PATH,
+        final String requestURI = StringUtils.format(GET_COOKIE_PATH,
                 URLEncoder.encode("https://iiif.unknown.library.ucla.edu", StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
+        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
 
         getCookie.send().onSuccess(response -> {
             assertEquals(HTTP.INTERNAL_SERVER_ERROR, response.statusCode());

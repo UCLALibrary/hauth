@@ -68,9 +68,9 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetTokenBrowser(final Vertx aVertx, final VertxTestContext aContext) {
-        final String getCookieRequestUri =
+        final String getCookieRequestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestUri);
+        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestURI);
 
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
@@ -79,8 +79,8 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
                     Jsoup.parse(result.bodyAsString()).getElementById(TemplateKeys.CLIENT_IP_ADDRESS).text();
 
             return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
-                final String getTokenRequestUri = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
-                final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestUri)
+                final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
+                final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);
 
                 return getToken.send().onSuccess(response -> {
@@ -123,9 +123,9 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetTokenNonBrowser(final Vertx aVertx, final VertxTestContext aContext) {
-        final String getCookieRequestUri =
+        final String getCookieRequestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestUri);
+        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestURI);
 
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
@@ -134,8 +134,8 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
                     Jsoup.parse(result.bodyAsString()).getElementById(TemplateKeys.CLIENT_IP_ADDRESS).text();
 
             return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
-                final String getTokenRequestUri = StringUtils.format(GET_TOKEN_PATH, EMPTY);
-                final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestUri)
+                final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, EMPTY);
+                final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);
 
                 return getToken.send().onSuccess(response -> {
@@ -170,8 +170,8 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetTokenBrowserInvalidCookie(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri)
+        final String requestURI = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
+        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI)
                 .putHeader(HttpHeaders.COOKIE.toString(), myInvalidCookieHeader);
 
         getToken.send().onSuccess(response -> {
@@ -190,8 +190,8 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetTokenNonBrowserInvalidCookie(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri = StringUtils.format(GET_TOKEN_PATH, EMPTY);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri)
+        final String requestURI = StringUtils.format(GET_TOKEN_PATH, EMPTY);
+        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI)
                 .putHeader(HttpHeaders.COOKIE.toString(), myInvalidCookieHeader);
 
         getToken.send().onSuccess(response -> {

@@ -43,9 +43,9 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testGetAccessLevel(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestUri =
+        final String requestURI =
                 StringUtils.format(GET_ACCESS_LEVEL_PATH, URLEncoder.encode(TEST_ID, StandardCharsets.UTF_8));
-        final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
+        final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
 
         getAccessLevel.send().onSuccess(response -> {
             final JsonObject expected = new JsonObject().put(ResponseJsonKeys.RESTRICTED, false);
@@ -67,9 +67,9 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
     @Test
     public void testGetAccessLevelUnknownItem(final Vertx aVertx, final VertxTestContext aContext) {
         final String id = "ark:/21198/unknown";
-        final String requestUri =
+        final String requestURI =
                 StringUtils.format(GET_ACCESS_LEVEL_PATH, URLEncoder.encode(id, StandardCharsets.UTF_8));
-        final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
+        final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
 
         getAccessLevel.send().onSuccess(response -> {
             final JsonObject responseBody = response.bodyAsJsonObject();
