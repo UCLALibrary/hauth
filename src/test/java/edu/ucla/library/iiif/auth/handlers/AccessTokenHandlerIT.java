@@ -33,13 +33,13 @@ import io.vertx.junit5.VertxTestContext;
 public final class AccessTokenHandlerIT extends AbstractHandlerIT {
 
     /**
-     * Tests that a client can use a valid access cookie to obtain an access token.
+     * Tests that a non-browser client can use a valid access cookie to obtain an access token.
      *
      * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
     @Test
-    public void testGetToken(final Vertx aVertx, final VertxTestContext aContext) {
+    public void testGetTokenNonBrowser(final Vertx aVertx, final VertxTestContext aContext) {
         final String getCookieRequestUri =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestUri);
@@ -79,13 +79,13 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
     }
 
     /**
-     * Tests that a client can't use an invalid access cookie to obtain an access token.
+     * Tests that a non-browser client can't use an invalid access cookie to obtain an access token.
      *
      * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
     @Test
-    public void testGetTokenInvalidCookie(final Vertx aVertx, final VertxTestContext aContext) {
+    public void testGetTokenNonBrowserInvalidCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String cookieHeader = "iiif-access=invalid";
         final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, GET_TOKEN_PATH)
                 .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);
