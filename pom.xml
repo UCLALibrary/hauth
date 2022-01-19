@@ -67,6 +67,9 @@
     <auth.delegate.version>0.0.1-SNAPSHOT</auth.delegate.version>
     <jsoup.version>1.14.3</jsoup.version>
 
+    <!-- Version overrides to address vulnerabilities -->
+    <logback.version>1.2.10</logback.version><!-- https://security.snyk.io/vuln/SNYK-JAVA-CHQOSLOGBACK-1726923 -->
+
     <!-- Name of the main Vert.x verticle -->
     <main.verticle>edu.ucla.library.iiif.auth.verticles.MainVerticle</main.verticle>
 
