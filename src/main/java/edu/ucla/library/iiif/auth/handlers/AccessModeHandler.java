@@ -25,12 +25,12 @@ import io.vertx.serviceproxy.ServiceException;
 /**
  * Handler that handles item access mode requests.
  */
-public class AccessLevelHandler implements Handler<RoutingContext> {
+public class AccessModeHandler implements Handler<RoutingContext> {
 
     /**
      * The handler's logger.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessLevelHandler.class, MessageCodes.BUNDLE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessModeHandler.class, MessageCodes.BUNDLE);
 
     /**
      * The service proxy for accessing the database.
@@ -42,7 +42,7 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
      *
      * @param aVertx The Vert.x instance
      */
-    public AccessLevelHandler(final Vertx aVertx) {
+    public AccessModeHandler(final Vertx aVertx) {
         myDatabaseServiceProxy = DatabaseService.createProxy(aVertx);
     }
 

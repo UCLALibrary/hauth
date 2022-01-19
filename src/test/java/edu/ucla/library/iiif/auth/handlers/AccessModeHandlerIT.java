@@ -26,14 +26,14 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Tests {@link AccessLevelHandler#handle}.
+ * Tests {@link AccessModeHandler#handle}.
  */
-public final class AccessLevelHandlerIT extends AbstractHandlerIT {
+public final class AccessModeHandlerIT extends AbstractHandlerIT {
 
     /**
      * The test's logger.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessLevelHandlerIT.class, MessageCodes.BUNDLE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessModeHandlerIT.class, MessageCodes.BUNDLE);
 
     /**
      * Tests that a client can get the access mode of an item with open access.
