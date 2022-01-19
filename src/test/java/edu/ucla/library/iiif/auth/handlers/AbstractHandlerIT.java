@@ -41,9 +41,9 @@ public abstract class AbstractHandlerIT {
     protected static final String GET_TOKEN_PATH = "/token?{}";
 
     /**
-     * The URI path template for access level requests.
+     * The URI path template for access mode requests.
      */
-    protected static final String GET_ACCESS_LEVEL_PATH = "/access/{}";
+    protected static final String GET_ACCESS_MODE_PATH = "/access/{}";
 
     /**
      * The URI path template for access cookie requests.
@@ -100,8 +100,8 @@ public abstract class AbstractHandlerIT {
     public void setUp(final Vertx aVertx, final VertxTestContext aContext) {
         ConfigRetriever.create(aVertx).getConfig().compose(config -> {
             final DatabaseService db = DatabaseService.create(aVertx, config);
-            final List<Future> dbOps = List.of(db.setAccessLevel(TEST_ID_OPEN_ACCESS, 0),
-                    db.setAccessLevel(TEST_ID_TIERED_ACCESS, 1), db.setAccessLevel(TEST_ID_ALL_OR_NOTHING_ACCESS, 2),
+            final List<Future> dbOps = List.of(db.setAccessMode(TEST_ID_OPEN_ACCESS, 0),
+                    db.setAccessMode(TEST_ID_TIERED_ACCESS, 1), db.setAccessMode(TEST_ID_ALL_OR_NOTHING_ACCESS, 2),
                     db.setDegradedAllowed(TEST_ORIGIN, false));
 
             myConfig = config;

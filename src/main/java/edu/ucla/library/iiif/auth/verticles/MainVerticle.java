@@ -98,7 +98,7 @@ public class MainVerticle extends AbstractVerticle {
 
                 // Associate handlers with operation IDs from the OpenAPI spec
                 routerBuilder.operation(Op.GET_STATUS).handler(new StatusHandler(getVertx()));
-                routerBuilder.operation(Op.GET_ACCESS_LEVEL).handler(new AccessLevelHandler(getVertx()))
+                routerBuilder.operation(Op.GET_ACCESS_MODE).handler(new AccessLevelHandler(getVertx()))
                         .failureHandler(AccessLevelHandler::handleFailure);
                 routerBuilder.operation(Op.GET_COOKIE).handler(new AccessCookieHandler(getVertx(), config));
                 routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), config))

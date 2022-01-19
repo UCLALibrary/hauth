@@ -79,20 +79,20 @@ public class DatabaseServiceIT extends AbstractServiceTest {
     public final void tearDown(final Vertx aVertx, final VertxTestContext aContext) {
         // Close the service proxy, then unregister the service (order important)
         myServiceProxy.close().compose(result -> myService.unregister()).onSuccess(success -> aContext.completeNow())
-                .onFailure(aContext::failNow);
+        .onFailure(aContext::failNow);
     }
 
     /**
-     * Tests reading an item whose "access level" has not been set.
+     * Tests reading an item whose "access mode" has not been set.
      *
      * @param aContext A test context
      */
     @Test
-    final void testGetAccessLevelUnset(final VertxTestContext aContext) {
+    final void testGetAccessModeUnset(final VertxTestContext aContext) {
         final String id = "unset";
         final String expected = NULL;
 
-        myServiceProxy.getAccessLevel(id).onFailure(details -> {
+        myServiceProxy.getAccessMode(id).onFailure(details -> {
             // The get should fail since nothing has been set for the id
             final ServiceException error = (ServiceException) details;
 
@@ -107,34 +107,34 @@ public class DatabaseServiceIT extends AbstractServiceTest {
     }
 
     /**
-     * Tests reading an item whose "access level" has been set once.
+     * Tests reading an item whose "access mode" has been set once.
      *
      * @param aContext A test context
      */
     @Test
-    final void testGetAccessLevelSetOnce(final VertxTestContext aContext) {
+    final void testGetAccessModeSetOnce(final VertxTestContext aContext) {
         final String id = "setOnce";
         final int expected = 1;
-        final Future<Void> setOnce = myServiceProxy.setAccessLevel(id, expected);
+        final Future<Void> setOnce = myServiceProxy.setAccessMode(id, expected);
 
-        setOnce.compose(put -> myServiceProxy.getAccessLevel(id)).onSuccess(result -> {
+        setOnce.compose(put -> myServiceProxy.getAccessMode(id)).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
         }).onFailure(aContext::failNow);
     }
 
     /**
-     * Tests reading an item whose "access level" has been set more than once.
+     * Tests reading an item whose "access mode" has been set more than once.
      *
      * @param aContext A test context
      */
     @Test
-    final void testGetAccessLevelSetTwice(final VertxTestContext aContext) {
+    final void testGetAccessModeSetTwice(final VertxTestContext aContext) {
         final String id = "setTwice";
         final int expected = 2;
         final Future<Void> setTwice =
-                myServiceProxy.setAccessLevel(id, 1).compose(put -> myServiceProxy.setAccessLevel(id, expected));
+                myServiceProxy.setAccessMode(id, 1).compose(put -> myServiceProxy.setAccessMode(id, expected));
 
-        setTwice.compose(put -> myServiceProxy.getAccessLevel(id)).onSuccess(result -> {
+        setTwice.compose(put -> myServiceProxy.getAccessMode(id)).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
         }).onFailure(aContext::failNow);
     }

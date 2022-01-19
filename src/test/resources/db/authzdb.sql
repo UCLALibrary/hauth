@@ -38,7 +38,7 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.items (
     uid text NOT NULL,
-    access_level smallint DEFAULT 0 NOT NULL
+    access_mode smallint DEFAULT 0 NOT NULL
 );
 
 CREATE TABLE public.origins (
@@ -57,10 +57,10 @@ ALTER TABLE public.origins OWNER TO postgres;
 COMMENT ON COLUMN public.items.uid IS 'The unique identifier of the requested object';
 
 --
--- Name: COLUMN items.access_level; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN items.access_mode; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.items.access_level IS 'The access level of the requested item: 0 is open, 1 is restricted to UCLA affiliates';
+COMMENT ON COLUMN public.items.access_mode IS 'The access mode of the requested item: 0 is open, 1 is restricted to UCLA affiliates';
 
 --
 -- Name: COLUMN origins.url; Type: COMMENT; Schema: public; Owner: postgres
@@ -79,7 +79,7 @@ COMMENT ON COLUMN public.origins.degraded_allowed IS 'Whether this origin allows
 -- Name: items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.items (uid, access_level) FROM stdin;
+COPY public.items (uid, access_mode) FROM stdin;
 \.
 
 --

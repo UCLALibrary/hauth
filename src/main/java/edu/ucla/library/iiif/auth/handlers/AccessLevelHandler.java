@@ -50,9 +50,9 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
     public void handle(final RoutingContext aContext) {
         final String id = aContext.request().getParam(Param.ID);
 
-        myDatabaseServiceProxy.getAccessLevel(id).onSuccess(accessLevel -> {
+        myDatabaseServiceProxy.getAccessMode(id).onSuccess(accessMode -> {
             final JsonObject data =
-                    new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.values()[accessLevel]);
+                    new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.values()[accessMode]);
 
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .setStatusCode(HTTP.OK).end(data.encodePrettily());

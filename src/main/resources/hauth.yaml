@@ -9,27 +9,27 @@ servers:
 paths:
   /access/{id}:
     get:
-      summary: Get Supplied ID's Access Control Level
-      description: Whether the supplied ID has open or restricted access
-      operationId: getAccessLevel
+      summary: Get Supplied ID's access mode
+      description: Whether the supplied ID's access mode is open, tiered, or all-or-nothing
+      operationId: getAccessMode
       parameters:
         - in: path
           name: id
-          description: The ID whose access level we want to check
+          description: The ID whose access mode we want to check
           schema:
             type: string
           required: true
       responses:
         '200':
-          description: The information about the supplied ID's access control level
+          description: The information about the supplied ID's access mode
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  restricted:
-                    type: boolean
-                    example: true
+                  accessMode:
+                    type: string
+                    example: OPEN
         '404':
           description: Notification that the supplied ID couldn't be found
           content:
@@ -55,7 +55,7 @@ paths:
                     example: INTERNAL
                   message:
                     type: string
-                    example: The service failed to connect to its access control database
+                    example: The service failed to connect to its database
   /cookie:
     get:
       summary: Get Authentication Cookie
@@ -73,7 +73,7 @@ paths:
           description: The cookie gets set in the response that includes Javascript to close the open tab/window
           headers:
             Set-Cookie:
-              description: An encrypted cookie value that contains the supplied origin and level of allowed access
+              description: An encrypted cookie value that contains the supplied origin and access mode
               schema:
                 type: string
                 example: iiifauth=asrvaaDe43AAqw34QpOoPJR4j5b1; Path=/; HttpOnly
