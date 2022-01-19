@@ -23,7 +23,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
- * Handler that handles item access level requests.
+ * Handler that handles item access mode requests.
  */
 public class AccessLevelHandler implements Handler<RoutingContext> {
 
@@ -38,7 +38,7 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
     private final DatabaseService myDatabaseServiceProxy;
 
     /**
-     * Creates a handler that checks the access level of an ID.
+     * Creates a handler that checks the access mode of an ID.
      *
      * @param aVertx The Vert.x instance
      */
@@ -51,7 +51,8 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
         final String id = aContext.request().getParam(Param.ID);
 
         myDatabaseServiceProxy.getAccessLevel(id).onSuccess(accessLevel -> {
-            final JsonObject data = new JsonObject().put(ResponseJsonKeys.RESTRICTED, accessLevel != 0);
+            final JsonObject data =
+                    new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.values()[accessLevel]);
 
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .setStatusCode(HTTP.OK).end(data.encodePrettily());
@@ -101,5 +102,12 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
 
         LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
+    }
+
+    /**
+     * FIXME
+     */
+    public enum AccessMode {
+        OPEN, TIERED, ALL_OR_NOTHING;
     }
 }

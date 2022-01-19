@@ -36,19 +36,65 @@ public final class AccessLevelHandlerIT extends AbstractHandlerIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessLevelHandlerIT.class, MessageCodes.BUNDLE);
 
     /**
-     * Tests that a client can get an item's access level.
+     * Tests that a client can get the access mode of an item with open access.
      *
      * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
     @Test
-    public void testGetAccessLevel(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestURI =
-                StringUtils.format(GET_ACCESS_LEVEL_PATH, URLEncoder.encode(TEST_ID, StandardCharsets.UTF_8));
+    public void testGetAccessLevelOpen(final Vertx aVertx, final VertxTestContext aContext) {
+        final String requestURI = StringUtils.format(GET_ACCESS_LEVEL_PATH,
+                URLEncoder.encode(TEST_ID_OPEN_ACCESS, StandardCharsets.UTF_8));
         final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
 
         getAccessLevel.send().onSuccess(response -> {
-            final JsonObject expected = new JsonObject().put(ResponseJsonKeys.RESTRICTED, false);
+            final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, "OPEN"); // FIXME
+
+            assertEquals(HTTP.OK, response.statusCode());
+            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            assertEquals(expected, response.bodyAsJsonObject());
+
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
+    }
+
+    /**
+     * Tests that a client can get the access mode of an item with tiered access.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public void testGetAccessLevelTiered(final Vertx aVertx, final VertxTestContext aContext) {
+        final String requestUri = StringUtils.format(GET_ACCESS_LEVEL_PATH,
+                URLEncoder.encode(TEST_ID_TIERED_ACCESS, StandardCharsets.UTF_8));
+        final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
+
+        getAccessLevel.send().onSuccess(response -> {
+            final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, "TIERED");
+
+            assertEquals(HTTP.OK, response.statusCode());
+            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            assertEquals(expected, response.bodyAsJsonObject());
+
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
+    }
+
+    /**
+     * Tests that a client can get the access mode of an item with all-or-nothing access.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public void testGetAccessLevelAllOrNothing(final Vertx aVertx, final VertxTestContext aContext) {
+        final String requestUri = StringUtils.format(GET_ACCESS_LEVEL_PATH,
+                URLEncoder.encode(TEST_ID_ALL_OR_NOTHING_ACCESS, StandardCharsets.UTF_8));
+        final HttpRequest<?> getAccessLevel = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
+
+        getAccessLevel.send().onSuccess(response -> {
+            final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, "ALL_OR_NOTHING");
 
             assertEquals(HTTP.OK, response.statusCode());
             assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
