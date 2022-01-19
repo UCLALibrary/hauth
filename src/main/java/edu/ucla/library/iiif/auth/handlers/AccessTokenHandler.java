@@ -78,7 +78,7 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
     @Override
     public void handle(final RoutingContext aContext) {
         final String clientIpAddress = aContext.request().remoteAddress().hostAddress();
-        final Cookie cookie = aContext.getCookie("iiif-access");
+        final Cookie cookie = aContext.request().getCookie("iiif-access");
         final String cookieValue = cookie.getValue();
 
         myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).onSuccess(cookieData -> {
