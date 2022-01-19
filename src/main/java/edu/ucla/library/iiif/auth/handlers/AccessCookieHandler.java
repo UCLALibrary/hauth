@@ -112,7 +112,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                         .put(TemplateKeys.CAMPUS_NETWORK, isOnCampusNetwork)
                         .put(TemplateKeys.DEGRADED_ALLOWED, isDegradedAllowed);
 
-                aContext.addCookie(cookie);
+                aContext.response().addCookie(cookie);
 
                 return myHtmlTemplateEngine.render(htmlTemplateData.getMap(), "templates/cookie.hbs");
             });
