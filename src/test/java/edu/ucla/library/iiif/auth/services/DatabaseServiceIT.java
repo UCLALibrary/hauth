@@ -79,7 +79,7 @@ public class DatabaseServiceIT extends AbstractServiceTest {
     public final void tearDown(final Vertx aVertx, final VertxTestContext aContext) {
         // Close the service proxy, then unregister the service (order important)
         myServiceProxy.close().compose(result -> myService.unregister()).onSuccess(success -> aContext.completeNow())
-        .onFailure(aContext::failNow);
+                .onFailure(aContext::failNow);
     }
 
     /**

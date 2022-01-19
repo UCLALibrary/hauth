@@ -51,8 +51,7 @@ public class AccessModeHandler implements Handler<RoutingContext> {
         final String id = aContext.request().getParam(Param.ID);
 
         myDatabaseServiceProxy.getAccessMode(id).onSuccess(accessMode -> {
-            final JsonObject data =
-                    new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.values()[accessMode]);
+            final JsonObject data = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.values()[accessMode]);
 
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .setStatusCode(HTTP.OK).end(data.encodePrettily());
