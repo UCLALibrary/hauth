@@ -2,7 +2,7 @@
 package edu.ucla.library.iiif.auth;
 
 /**
- * Valid JSON keys for the response schemas defined in the Hauth OpenAPI specification.
+ * A constants class for JSON keys for the response schemas that are defined in the Hauth OpenAPI specification.
  */
 public final class ResponseJsonKeys {
 
@@ -35,6 +35,11 @@ public final class ResponseJsonKeys {
      * The expires-in key.
      */
     public static final String EXPIRES_IN = "expiresIn";
+
+    /**
+     * The message ID key.
+     */
+    public static final String MESSAGE_ID = Param.MESSAGE_ID;
 
     /**
      * Private constructor for utility class.

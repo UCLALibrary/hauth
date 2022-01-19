@@ -11,7 +11,7 @@
         hosted at: <em id="origin">{{origin}}</em>
     <p>
     <p>
-        {{#if degraded-allowed}}
+        {{#if degradedAllowed}}
         Degraded versions of the content are accessible
         {{else}}
         The content is not accessible
@@ -20,19 +20,19 @@
         to users outside of the Campus Network.
     </p>
     <p>
-        Your current IP address: <em id="client-ip-address">{{client-ip-address}}</em>
+        Your current IP address: <em id="client-ip-address">{{clientIpAddress}}</em>
     </p>
     <p>
         Campus Network:
 
-        {{#if campus-network}}
+        {{#if campusNetwork}}
         <span class="green">connected</span>
         {{else}}
         <span class="red">not connected</span>
         {{/if}}
     </p>
 
-    {{#unless campus-network}}
+    {{#unless campusNetwork}}
     <p>
         For full access to IIIF content, please connect to the Campus Network:
         <ul>

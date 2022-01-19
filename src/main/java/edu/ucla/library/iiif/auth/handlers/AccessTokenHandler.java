@@ -10,8 +10,11 @@ import info.freelibrary.util.LoggerFactory;
 
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
+import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.MessageCodes;
+import edu.ucla.library.iiif.auth.Param;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
+import edu.ucla.library.iiif.auth.TemplateKeys;
 import edu.ucla.library.iiif.auth.TokenJsonKeys;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.AccessCookieServiceError;
@@ -26,6 +29,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
@@ -54,6 +58,11 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
     private final AccessCookieService myAccessCookieService;
 
     /**
+     * The template engine for rendering the response.
+     */
+    private final HandlebarsTemplateEngine myHtmlTemplateEngine;
+
+    /**
      * Creates a handler that exchanges access cookies for access tokens.
      *
      * @param aVertx The Vert.x instance
@@ -63,28 +72,54 @@ public class AccessTokenHandler implements Handler<RoutingContext> {
         myConfig = aConfig;
         myExpiresIn = Optional.ofNullable(aConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN));
         myAccessCookieService = AccessCookieService.createProxy(aVertx);
+        myHtmlTemplateEngine = HandlebarsTemplateEngine.create(aVertx);
     }
 
     @Override
     public void handle(final RoutingContext aContext) {
         final String clientIpAddress = aContext.request().remoteAddress().hostAddress();
-        final Cookie cookie = aContext.getCookie("iiif-access");
+        final Cookie cookie = aContext.request().getCookie("iiif-access");
         final String cookieValue = cookie.getValue();
 
         myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).onSuccess(cookieData -> {
-            final JsonObject data = new JsonObject();
+            final String messageID = aContext.request().getParam(Param.MESSAGE_ID);
+            final String origin = aContext.request().getParam(Param.ORIGIN);
+            final JsonObject jsonWrapper = new JsonObject();
             final JsonObject accessTokenUnencoded =
                     new JsonObject().put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
                             .put(TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
             final String accessToken = Base64.getEncoder().encodeToString(accessTokenUnencoded.encode().getBytes());
+            // Unless e.g. the Handlebars template rendering fails, we'll return HTTP 200
+            final HttpServerResponse response = aContext.response().setStatusCode(HTTP.OK);
 
-            data.put(ResponseJsonKeys.ACCESS_TOKEN, accessToken);
+            jsonWrapper.put(ResponseJsonKeys.ACCESS_TOKEN, accessToken);
 
             // Token expiry is optional
-            myExpiresIn.ifPresent(expiry -> data.put(ResponseJsonKeys.EXPIRES_IN, expiry));
+            myExpiresIn.ifPresent(expiry -> jsonWrapper.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
-            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
-                    .setStatusCode(HTTP.OK).end(data.encodePrettily());
+            if (messageID != null && origin != null) {
+                // Browser-based client
+                final JsonObject templateData = new JsonObject();
+
+                jsonWrapper.put(ResponseJsonKeys.MESSAGE_ID, messageID);
+                templateData.put(TemplateKeys.ORIGIN, origin).put(TemplateKeys.ACCESS_TOKEN_OBJECT, jsonWrapper);
+
+                response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString());
+
+                myHtmlTemplateEngine.render(templateData, "templates/token.hbs").onSuccess(html -> {
+                    response.end(html);
+                }).onFailure(details -> {
+                    final JsonObject error = new JsonObject().put(ResponseJsonKeys.ERROR, Error.HTML_RENDERING_ERROR)
+                            .put(ResponseJsonKeys.MESSAGE, details.getMessage());
+
+                    response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                            .setStatusCode(HTTP.INTERNAL_SERVER_ERROR).end(error.encodePrettily());
+                });
+            } else {
+                // Non browser-based client
+                response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                        .end(jsonWrapper.encodePrettily());
+            }
         }).onFailure(aContext::fail);
     }
 

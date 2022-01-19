@@ -9,7 +9,7 @@ package edu.ucla.library.iiif.auth;
  * <pre>
  * {
  *   "version": 0.0.0-SNAPSHOT,
- *   "campus-network": true
+ *   "campusNetwork": true
  * }
  * </pre>
  */
@@ -18,12 +18,12 @@ public final class TokenJsonKeys {
     /**
      * The JSON key for the Hauth version identifier.
      */
-    public static final String VERSION = CookieJsonKeys.VERSION;
+    public static final String VERSION = "version";
 
     /**
      * The JSON key for whether the client IP address is on the campus network.
      */
-    public static final String CAMPUS_NETWORK = CookieJsonKeys.CAMPUS_NETWORK;
+    public static final String CAMPUS_NETWORK = "campusNetwork";
 
     /**
      * Private constructor for utility class.
