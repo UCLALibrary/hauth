@@ -148,9 +148,9 @@ public class AccessCookieServiceImpl implements AccessCookieService {
             return Future.failedFuture(new ServiceException(CONFIGURATION_ERROR, details.getMessage()));
         }
 
+        // Vert.x JsonObject knows how to encode/decode byte arrays, so we can use them as-is
         unencodedCookie = new JsonObject().put(CookieJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
                 .put(CookieJsonKeys.SECRET, encryptedCookieData).put(CookieJsonKeys.NONCE, myCipher.getIV());
-        // Vert.x JsonObject automatically base64-encodes binary data
         cookie = Base64.getEncoder().encodeToString(unencodedCookie.encode().getBytes());
 
         return Future.succeededFuture(cookie);

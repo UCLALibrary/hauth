@@ -23,14 +23,14 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
- * Handler that handles item access level requests.
+ * Handler that handles item access mode requests.
  */
-public class AccessLevelHandler implements Handler<RoutingContext> {
+public class AccessModeHandler implements Handler<RoutingContext> {
 
     /**
      * The handler's logger.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessLevelHandler.class, MessageCodes.BUNDLE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessModeHandler.class, MessageCodes.BUNDLE);
 
     /**
      * The service proxy for accessing the database.
@@ -38,11 +38,11 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
     private final DatabaseService myDatabaseServiceProxy;
 
     /**
-     * Creates a handler that checks the access level of an ID.
+     * Creates a handler that checks the access mode of an ID.
      *
      * @param aVertx The Vert.x instance
      */
-    public AccessLevelHandler(final Vertx aVertx) {
+    public AccessModeHandler(final Vertx aVertx) {
         myDatabaseServiceProxy = DatabaseService.createProxy(aVertx);
     }
 
@@ -50,8 +50,8 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
     public void handle(final RoutingContext aContext) {
         final String id = aContext.request().getParam(Param.ID);
 
-        myDatabaseServiceProxy.getAccessLevel(id).onSuccess(accessLevel -> {
-            final JsonObject data = new JsonObject().put(ResponseJsonKeys.RESTRICTED, accessLevel != 0);
+        myDatabaseServiceProxy.getAccessMode(id).onSuccess(accessMode -> {
+            final JsonObject data = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.values()[accessMode]);
 
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .setStatusCode(HTTP.OK).end(data.encodePrettily());
@@ -101,5 +101,12 @@ public class AccessLevelHandler implements Handler<RoutingContext> {
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
 
         LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
+    }
+
+    /**
+     * FIXME
+     */
+    public enum AccessMode {
+        OPEN, TIERED, ALL_OR_NOTHING;
     }
 }

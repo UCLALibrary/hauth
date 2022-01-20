@@ -52,21 +52,21 @@ public interface DatabaseService {
     Future<Void> close();
 
     /**
-     * Gets the "access level" of the item with the given identifier.
+     * Gets the "access mode" of the item with the given identifier.
      *
      * @param aID The item identifier
-     * @return A Future that resolves to the access level once it's been fetched
+     * @return A Future that resolves to the access mode once it's been fetched
      */
-    Future<Integer> getAccessLevel(String aID);
+    Future<Integer> getAccessMode(String aID);
 
     /**
-     * Sets the given "access level" of the item with the given identifier.
+     * Sets the given "access mode" of the item with the given identifier.
      *
      * @param aID The item identifier
-     * @param aAccessLevel The access level to set for the item
-     * @return A Future that resolves once the access level has been set
+     * @param aAccessMode The access mode to set for the item
+     * @return A Future that resolves once the access mode has been set
      */
-    Future<Void> setAccessLevel(String aID, int aAccessLevel);
+    Future<Void> setAccessMode(String aID, int aAccessMode);
 
     /**
      * Gets the "degraded allowed" for content hosted at the given origin.

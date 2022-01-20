@@ -2,6 +2,7 @@
 package edu.ucla.library.iiif.auth.handlers;
 
 import java.security.GeneralSecurityException;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,9 +41,9 @@ public abstract class AbstractHandlerIT {
     protected static final String GET_TOKEN_PATH = "/token?{}";
 
     /**
-     * The URI path template for access level requests.
+     * The URI path template for access mode requests.
      */
-    protected static final String GET_ACCESS_LEVEL_PATH = "/access/{}";
+    protected static final String GET_ACCESS_MODE_PATH = "/access/{}";
 
     /**
      * The URI path template for access cookie requests.
@@ -50,9 +51,19 @@ public abstract class AbstractHandlerIT {
     protected static final String GET_COOKIE_PATH = "/cookie?origin={}";
 
     /**
-     * A test id.
+     * A test id for an item with open access.
      */
-    protected static final String TEST_ID = "ark:/21198/00000000";
+    protected static final String TEST_ID_OPEN_ACCESS = "ark:/21198/00000000";
+
+    /**
+     * A test id for an item with tiered access.
+     */
+    protected static final String TEST_ID_TIERED_ACCESS = "ark:/21198/11111111";
+
+    /**
+     * A test id for an item with all-or-nothing access.
+     */
+    protected static final String TEST_ID_ALL_OR_NOTHING_ACCESS = "ark:/21198/22222222";
 
     /**
      * A test origin.
@@ -89,6 +100,9 @@ public abstract class AbstractHandlerIT {
     public void setUp(final Vertx aVertx, final VertxTestContext aContext) {
         ConfigRetriever.create(aVertx).getConfig().compose(config -> {
             final DatabaseService db = DatabaseService.create(aVertx, config);
+            final List<Future> dbOps = List.of(db.setAccessMode(TEST_ID_OPEN_ACCESS, 0),
+                    db.setAccessMode(TEST_ID_TIERED_ACCESS, 1), db.setAccessMode(TEST_ID_ALL_OR_NOTHING_ACCESS, 2),
+                    db.setDegradedAllowed(TEST_ORIGIN, false));
 
             myConfig = config;
             myWebClient = WebClient.create(aVertx);
@@ -101,8 +115,7 @@ public abstract class AbstractHandlerIT {
             }
 
             // Add some database entries
-            return CompositeFuture.all(db.setAccessLevel(TEST_ID, 0), db.setDegradedAllowed(TEST_ORIGIN, false))
-                    .compose(result -> db.close());
+            return CompositeFuture.all(dbOps).compose(result -> db.close());
         }).onSuccess(result -> aContext.completeNow()).onFailure(aContext::failNow);
     }
 

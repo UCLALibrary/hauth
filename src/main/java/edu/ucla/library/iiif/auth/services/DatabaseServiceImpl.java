@@ -39,15 +39,15 @@ public class DatabaseServiceImpl implements DatabaseService {
     private static final String POSTGRES = "postgres";
 
     /**
-     * The PreparedQuery template for selecting an item's "access level".
+     * The PreparedQuery template for selecting an item's "access mode".
      */
-    private static final String SELECT_ACCESS_LEVEL = "SELECT access_level FROM items WHERE uid = $1";
+    private static final String SELECT_ACCESS_MODE = "SELECT access_mode FROM items WHERE uid = $1";
 
     /**
-     * The PreparedQuery template for upserting an item's "access level".
+     * The PreparedQuery template for upserting an item's "access mode".
      */
-    private static final String UPSERT_ACCESS_LEVEL = String.join(SPACE, "INSERT INTO items VALUES ($1, $2)",
-            "ON CONFLICT (uid) DO", "UPDATE SET access_level = EXCLUDED.access_level");
+    private static final String UPSERT_ACCESS_MODE = String.join(SPACE, "INSERT INTO items VALUES ($1, $2)",
+            "ON CONFLICT (uid) DO", "UPDATE SET access_mode = EXCLUDED.access_mode");
 
     /**
      * The PreparedQuery template for selecting an origin's "degraded allowed".
@@ -76,7 +76,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     private static final int NOT_FOUND_ERROR = DatabaseServiceError.NOT_FOUND.ordinal();
 
     /**
-     * The underlying SQL client.
+     * The underlying PostgreSQL connection pool.
      */
     private final PgPool myDbConnectionPool;
 
@@ -103,14 +103,14 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public Future<Integer> getAccessLevel(final String aID) {
+    public Future<Integer> getAccessMode(final String aID) {
         return myDbConnectionPool.withConnection(connection -> {
-            return connection.preparedQuery(SELECT_ACCESS_LEVEL).execute(Tuple.of(aID));
+            return connection.preparedQuery(SELECT_ACCESS_MODE).execute(Tuple.of(aID));
         }).recover(error -> {
             return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
         }).compose(select -> {
             if (hasSingleRow(select)) {
-                return Future.succeededFuture(select.iterator().next().getInteger("access_level"));
+                return Future.succeededFuture(select.iterator().next().getInteger("access_mode"));
             } else {
                 return Future.failedFuture(new ServiceException(NOT_FOUND_ERROR, aID));
             }
@@ -118,9 +118,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public Future<Void> setAccessLevel(final String aID, final int aAccessLevel) {
+    public Future<Void> setAccessMode(final String aID, final int aAccessMode) {
         return myDbConnectionPool.withConnection(connection -> {
-            return connection.preparedQuery(UPSERT_ACCESS_LEVEL).execute(Tuple.of(aID, aAccessLevel));
+            return connection.preparedQuery(UPSERT_ACCESS_MODE).execute(Tuple.of(aID, aAccessMode));
         }).recover(error -> {
             return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
         }).compose(result -> Future.succeededFuture());

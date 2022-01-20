@@ -12,9 +12,9 @@ public final class ResponseJsonKeys {
     public static final String STATUS = "status";
 
     /**
-     * The restricted key.
+     * The access mode key.
      */
-    public static final String RESTRICTED = "restricted";
+    public static final String ACCESS_MODE = "accessMode";
 
     /**
      * The error key.
