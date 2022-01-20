@@ -29,6 +29,7 @@ paths:
                 properties:
                   accessMode:
                     type: string
+                    enum: [ OPEN, TIERED, ALL_OR_NOTHING ]
                     example: OPEN
         '404':
           description: Notification that the supplied ID couldn't be found
@@ -39,6 +40,7 @@ paths:
                 properties:
                   error:
                     type: string
+                    enum: [ NOT_FOUND ]
                     example: NOT_FOUND
                   message:
                     type: string
@@ -52,6 +54,7 @@ paths:
                 properties:
                   error:
                     type: string
+                    enum: [ INTERNAL ]
                     example: INTERNAL
                   message:
                     type: string
@@ -67,6 +70,8 @@ paths:
         description: The origin of the page, consisting of a protocol, hostname and, optionally, port number
         schema:
           type: string
+          format: uri
+          example: https://client.example.com/
         required: true
       responses:
         '200':
@@ -111,6 +116,7 @@ paths:
         description: The origin of the page, consisting of a protocol, hostname and, optionally, port number
         schema:
           type: string
+          format: uri
           example: https://client.example.com/
         required: false
       - in: query
@@ -145,6 +151,7 @@ paths:
                 properties:
                   error:
                     type: string
+                    enum: [ INVALID_COOKIE ]
                     example: INVALID_COOKIE
                   message:
                     type: string
@@ -158,6 +165,7 @@ paths:
                 properties:
                   error:
                     type: string
+                    enum: [ CONFIGURATION ]
                     example: CONFIGURATION
                   message:
                     type: string
