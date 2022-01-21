@@ -48,7 +48,7 @@ public final class AccessModeHandlerIT extends AbstractHandlerIT {
         final HttpRequest<?> getAccessMode = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
 
         getAccessMode.send().onSuccess(response -> {
-            final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, "OPEN"); // FIXME
+            final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, "OPEN");
 
             assertEquals(HTTP.OK, response.statusCode());
             assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));

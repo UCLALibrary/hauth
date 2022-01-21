@@ -60,3 +60,5 @@ These are a work in progress. Randomized ports and passwords are created on the 
 | HTTP_PORT | 8888 | No |
 | SECRET_KEY_GENERATION_PASSWORD | XXX | Yes |
 | SECRET_KEY_GENERATION_SALT | XXX | Yes |
+| SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD | XXX | Yes |
+| SINAI_COOKIE_VALID_PREFIX | XXX | Yes |

@@ -102,7 +102,7 @@ paths:
   /token:
     get:
       summary: Get Authentication Token
-      description: The authentication token service
+      description: The default authentication token service, which determines access based on IP address
       operationId: getToken
       parameters:
       - in: cookie
@@ -166,6 +166,80 @@ paths:
                   error:
                     type: string
                     enum: [ CONFIGURATION ]
+                    example: CONFIGURATION
+                  message:
+                    type: string
+                    example: The access cookie decryption service is not configured properly
+  /token/sinai:
+    get:
+      summary: Get Authentication Token
+      description: The authentication token service that determines access based on Sinai affiliate status
+      operationId: getTokenSinai
+      parameters:
+      - in: cookie
+        name: sinai_authenticated_3day
+        schema:
+          type: string
+          example: sinai_authenticated_3day=5AFF80488740353F8A11B99C7A493D871807521908500772B92E4F8FC919E305A607ADB714B22EF08D2C22FC08C8A6EC
+        required: true
+      - in: cookie
+        name: initialization_vector
+        schema:
+          type: string
+          example: initialization_vector=30313233343536373839414243444546
+        required: true
+      - in: query
+        name: origin
+        description: The origin of the page, consisting of a protocol, hostname and, optionally, port number
+        schema:
+          type: string
+          example: https://client.example.com/
+        required: false
+      - in: query
+        name: messageId
+        description: A string that both prompts the server to respond with a web page instead of JSON, and allows the client to match access token service requests with the messages received
+        schema:
+          type: string
+          example: 1234
+        required: false
+      responses:
+        '200':
+          description: The access token response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  expiresIn:
+                    type: integer
+            text/html:
+              schema:
+                type: string
+                example: '<html><body><script>window.parent.postMessage({"messageId":"1234","accessToken":"TOKEN_HERE","expiresIn": 3600},"https://client.example.com/");</script></body></html>'
+        '400':
+          description: The request didn't contain a valid cookie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: INVALID_COOKIE
+                  message:
+                    type: string
+                    example: The request did not contain a valid cookie
+        '500':
+          description: There was an internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
                     example: CONFIGURATION
                   message:
                     type: string

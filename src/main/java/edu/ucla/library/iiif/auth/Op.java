@@ -27,6 +27,11 @@ public final class Op {
     public static final String GET_TOKEN = "getToken";
 
     /**
+     * Gets a Sinai authentication token.
+     */
+    public static final String GET_TOKEN_SINAI = "getTokenSinai";
+
+    /**
      * Constant class constructors should be private.
      */
     private Op() {

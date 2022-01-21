@@ -26,6 +26,11 @@ public final class TokenJsonKeys {
     public static final String CAMPUS_NETWORK = "campusNetwork";
 
     /**
+     * The JSON key for whether the client has proven affiliation with Sinai.
+     */
+    public static final String SINAI_AFFILIATE = "sinaiAffiliate";
+
+    /**
      * Private constructor for utility class.
      */
     private TokenJsonKeys() {

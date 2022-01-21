@@ -31,6 +31,9 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceException;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+
 /**
  * The implementation of AccessCookieService.
  * <p>
@@ -80,7 +83,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     private final Cipher myCipher;
 
     /**
-     * The secret key used for encryption and decryption.
+     * The secret key used for encryption and decryption of cookies created by this application.
      */
     private final Key mySecretKey;
 
@@ -88,6 +91,16 @@ public class AccessCookieServiceImpl implements AccessCookieService {
      * The RNG used for generating initialization vectors for encryption.
      */
     private final SecureRandom myInitializationVectorRng;
+
+    /**
+     * The secret key used for decrypting Sinai cookies.
+     */
+    private final Key mySecretKeySinai;
+
+    /**
+     * The string that must prefix each decrypted Sinai cookie value.
+     */
+    private final String mySinaiCookieValidPrefix;
 
     /**
      * Creates an instance of the service. For reference material on the key derivation crypto, see RFC 8018:
@@ -124,6 +137,9 @@ public class AccessCookieServiceImpl implements AccessCookieService {
 
         myConfig = aConfig;
         myInitializationVectorRng = new SecureRandom();
+        mySecretKeySinai = new SecretKeySpec(
+                aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD).getBytes(), KEY_ALGORITHM);
+        mySinaiCookieValidPrefix = aConfig.getString(Config.SINAI_COOKIE_VALID_PREFIX);
     }
 
     @Override
@@ -188,6 +204,29 @@ public class AccessCookieServiceImpl implements AccessCookieService {
                     .failedFuture(new ServiceException(INVALID_COOKIE_ERROR, LOGGER.getMessage(MessageCodes.AUTH_011)));
         } else {
             return Future.succeededFuture(cookieData);
+        }
+    }
+
+    @Override
+    public Future<Boolean> validateSinaiCookie(final String aAuthCookieValue, final String aIvCookieValue) {
+        try {
+            final byte[] encryptedCookieData = Hex.decodeHex(aAuthCookieValue);
+            final byte[] nonce = Hex.decodeHex(aIvCookieValue);
+            final byte[] rawCookieData;
+            final String cookieData;
+
+            myCipher.init(Cipher.DECRYPT_MODE, mySecretKeySinai, new IvParameterSpec(nonce));
+
+            rawCookieData = myCipher.doFinal(encryptedCookieData);
+            cookieData = new String(rawCookieData);
+
+            return Future.succeededFuture(cookieData.startsWith(mySinaiCookieValidPrefix));
+        } catch (final IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException details) {
+            // This code should never be reached, assuming we've configured the application properly
+            return Future.failedFuture(new ServiceException(CONFIGURATION_ERROR, details.getMessage()));
+        } catch (final BadPaddingException | ClassCastException | DecoderException | IllegalArgumentException details) {
+            // Cookie was tampered with or is otherwise invalid
+            return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR, details.getMessage()));
         }
     }
 

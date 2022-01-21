@@ -3,6 +3,8 @@ package edu.ucla.library.iiif.auth.services;
 
 import java.security.GeneralSecurityException;
 
+import edu.ucla.library.iiif.auth.Config;
+
 import io.vertx.codegen.annotations.ProxyClose;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
@@ -56,7 +58,7 @@ public interface AccessCookieService {
     Future<Void> close();
 
     /**
-     * Creates a cookie value with an encrypted secret.
+     * Creates an encrypted access cookie value.
      *
      * @param aClientIpAddress The IP address of the client
      * @param aIsOnCampusNetwork If the client is on a campus network subnet
@@ -67,7 +69,7 @@ public interface AccessCookieService {
     Future<String> generateCookie(String aClientIpAddress, boolean aIsOnCampusNetwork, boolean aIsDegradedAllowed);
 
     /**
-     * Decrypts a cookie value's encrypted secret.
+     * Decrypts an access cookie value.
      *
      * @param aCookieValue An encrypted cookie value returned from {@link Cookie#getValue()}
      * @param aClientIpAddress The IP address of the client, which a vaild (encrypted) cookie value will contain
@@ -75,4 +77,15 @@ public interface AccessCookieService {
      *         JSON), stolen (IP address mismatch), or otherwise invalidated
      */
     Future<JsonObject> decryptCookie(String aCookieValue, String aClientIpAddress);
+
+    /**
+     * Validates a Sinai access cookie value.
+     *
+     * @param aCipherText An encrypted cookie value returned from {@link Cookie#getValue()}
+     * @param anInitializationVector The initialization vector used to encrypt {@code aCipherText}
+     * @return A Future that resolves to whether the decrypted cookie value starts with
+     *         {@link Config#SINAI_COOKIE_VALID_PREFIX}, or fails if the cookie has been tampered with, cannot be
+     *         decrypted, or is otherwise invalid
+     */
+    Future<Boolean> validateSinaiCookie(String aCipherText, String anInitializationVector);
 }

@@ -41,6 +41,11 @@ public abstract class AbstractHandlerIT {
     protected static final String GET_TOKEN_PATH = "/token?{}";
 
     /**
+     * The URI path template for Sinai access token requests.
+     */
+    protected static final String GET_TOKEN_SINAI_PATH = "/token/sinai?{}";
+
+    /**
      * The URI path template for access mode requests.
      */
     protected static final String GET_ACCESS_MODE_PATH = "/access/{}";
@@ -102,7 +107,7 @@ public abstract class AbstractHandlerIT {
             final DatabaseService db = DatabaseService.create(aVertx, config);
             final List<Future> dbOps = List.of(db.setAccessMode(TEST_ID_OPEN_ACCESS, 0),
                     db.setAccessMode(TEST_ID_TIERED_ACCESS, 1), db.setAccessMode(TEST_ID_ALL_OR_NOTHING_ACCESS, 2),
-                    db.setDegradedAllowed(TEST_ORIGIN, false));
+                    db.setDegradedAllowed(TEST_ORIGIN, true));
 
             myConfig = config;
             myWebClient = WebClient.create(aVertx);
