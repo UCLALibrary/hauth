@@ -11,6 +11,7 @@ import com.github.veqryn.net.Cidr4;
 import com.github.veqryn.net.Ip4;
 
 import edu.ucla.library.iiif.auth.Config;
+import edu.ucla.library.iiif.auth.CookieNames;
 import edu.ucla.library.iiif.auth.Param;
 import edu.ucla.library.iiif.auth.TemplateKeys;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
@@ -99,11 +100,11 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
         isOnCampusNetwork = isOnNetwork(clientIpAddress, myCampusNetworkSubnets);
 
         myDatabaseServiceProxy.getDegradedAllowed(origin.toString()).compose(isDegradedAllowed -> {
-            final Future<String> cookieGeneration = myAccessCookieService.generateCookie(clientIpAddress.getAddress(),
-                    isOnCampusNetwork, isDegradedAllowed);
+            final Future<String> cookieGeneration = myAccessCookieService
+                    .generateUclaAccessCookie(clientIpAddress.getAddress(), isOnCampusNetwork, isDegradedAllowed);
 
             return cookieGeneration.compose(cookieValue -> {
-                final Cookie cookie = Cookie.cookie("iiif-access", cookieValue);
+                final Cookie cookie = Cookie.cookie(CookieNames.HAUTH, cookieValue);
 
                 // Along with the origin, pass all the cookie data to the HTML template
                 final JsonObject htmlTemplateData = new JsonObject().put(TemplateKeys.ORIGIN, origin)

@@ -3,6 +3,8 @@ package edu.ucla.library.iiif.auth.services;
 
 import java.security.GeneralSecurityException;
 
+import edu.ucla.library.iiif.auth.Config;
+
 import io.vertx.codegen.annotations.ProxyClose;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
@@ -56,7 +58,7 @@ public interface AccessCookieService {
     Future<Void> close();
 
     /**
-     * Creates a cookie value with an encrypted secret.
+     * Creates an encrypted UCLA access cookie value.
      *
      * @param aClientIpAddress The IP address of the client
      * @param aIsOnCampusNetwork If the client is on a campus network subnet
@@ -64,15 +66,27 @@ public interface AccessCookieService {
      * @return A Future that resolves to a value that can be used to create a cookie with
      *         {@link Cookie#cookie(String, String)}
      */
-    Future<String> generateCookie(String aClientIpAddress, boolean aIsOnCampusNetwork, boolean aIsDegradedAllowed);
+    Future<String> generateUclaAccessCookie(String aClientIpAddress, boolean aIsOnCampusNetwork,
+            boolean aIsDegradedAllowed);
 
     /**
-     * Decrypts a cookie value's encrypted secret.
+     * Decrypts a UCLA access cookie value.
      *
      * @param aCookieValue An encrypted cookie value returned from {@link Cookie#getValue()}
      * @param aClientIpAddress The IP address of the client, which a vaild (encrypted) cookie value will contain
      * @return A Future that resolves to the decrypted cookie data unless the cookie has been tampered with (invalid
      *         JSON), stolen (IP address mismatch), or otherwise invalidated
      */
-    Future<JsonObject> decryptCookie(String aCookieValue, String aClientIpAddress);
+    Future<JsonObject> decryptUclaAccessCookie(String aCookieValue, String aClientIpAddress);
+
+    /**
+     * Validates a Sinai access cookie pair.
+     *
+     * @param aCipherText An encrypted cookie value returned from {@link Cookie#getValue()}
+     * @param anInitializationVector The initialization vector used to encrypt {@code aCipherText}
+     * @return A Future that resolves to whether the decrypted cookie value starts with
+     *         {@link Config#SINAI_COOKIE_VALID_PREFIX}, or fails if the cookie has been tampered with, cannot be
+     *         decrypted, or is otherwise invalid
+     */
+    Future<Boolean> validateSinaiAccessCookie(String aCipherText, String anInitializationVector);
 }

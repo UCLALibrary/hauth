@@ -1,6 +1,9 @@
 
 package edu.ucla.library.iiif.auth.services;
 
+import static edu.ucla.library.iiif.auth.utils.TestConstants.TEST_INITIALIZATION_VECTOR;
+import static edu.ucla.library.iiif.auth.utils.TestConstants.TEST_SINAI_AUTHENTICATED_3DAY;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,6 +25,7 @@ import edu.ucla.library.iiif.auth.CookieJsonKeys;
 import edu.ucla.library.iiif.auth.MessageCodes;
 
 import io.vertx.config.ConfigRetriever;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -107,8 +111,10 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
         final String clientIpAddress = LOCALHOST;
         final boolean isCampusNetwork = true;
         final boolean isDegradedAllowed = false;
+        final Future<String> generateCookie =
+                myServiceProxy.generateUclaAccessCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed);
 
-        myServiceProxy.generateCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed).compose(cookie -> {
+        generateCookie.compose(cookie -> {
             // The result is base64-encoded JSON with three keys
             final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(cookie.getBytes())));
 
@@ -116,7 +122,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
                 assertTrue(decodedCookie.containsKey(key));
             }
 
-            return myServiceProxy.decryptCookie(cookie, clientIpAddress);
+            return myServiceProxy.decryptUclaAccessCookie(cookie, clientIpAddress);
         }).onSuccess(decryptedCookie -> {
             final JsonObject expected = new JsonObject().put(CookieJsonKeys.CLIENT_IP_ADDRESS, clientIpAddress)
                     .put(CookieJsonKeys.CAMPUS_NETWORK, isCampusNetwork)
@@ -138,8 +144,10 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
         final String clientIpAddress = LOCALHOST;
         final boolean isCampusNetwork = false;
         final boolean isDegradedAllowed = false;
+        final Future<String> generateCookie =
+                myServiceProxy.generateUclaAccessCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed);
 
-        myServiceProxy.generateCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed).compose(cookie -> {
+        generateCookie.compose(cookie -> {
             final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(cookie.getBytes())));
             final byte[] secret = decodedCookie.getBinary(CookieJsonKeys.SECRET).clone();
             final String tamperedCookie;
@@ -150,7 +158,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
             decodedCookie.put(CookieJsonKeys.SECRET, secret);
             tamperedCookie = Base64.getEncoder().encodeToString(decodedCookie.encode().getBytes());
 
-            return myServiceProxy.decryptCookie(tamperedCookie, clientIpAddress);
+            return myServiceProxy.decryptUclaAccessCookie(tamperedCookie, clientIpAddress);
         }).onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
@@ -170,6 +178,28 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
                 aContext.completeNow();
             }
         });
+    }
+
+    /**
+     * Tests Sinai cookie validation.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public final void testValidateSinaiCookie(final Vertx aVertx, final VertxTestContext aContext) {
+        final Future<Boolean> validateCookie =
+                myServiceProxy.validateSinaiAccessCookie(TEST_SINAI_AUTHENTICATED_3DAY, TEST_INITIALIZATION_VECTOR);
+
+        validateCookie.onSuccess(result -> {
+            try {
+                assertTrue(result);
+
+                aContext.completeNow();
+            } catch (final AssertionError details) {
+                aContext.failNow(details);
+            }
+        }).onFailure(aContext::failNow);
     }
 
     protected Logger getLogger() {
