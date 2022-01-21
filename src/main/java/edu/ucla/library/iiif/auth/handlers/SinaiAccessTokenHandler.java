@@ -15,7 +15,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Handler that handles access token requests for Sinai affiliate-restricted content.
  */
-public class AccessTokenSinaiHandler extends AbstractAccessTokenHandler {
+public class SinaiAccessTokenHandler extends AbstractAccessTokenHandler {
 
     /**
      * Creates a handler that exchanges access cookies for access tokens.
@@ -23,7 +23,7 @@ public class AccessTokenSinaiHandler extends AbstractAccessTokenHandler {
      * @param aVertx The Vert.x instance
      * @param aConfig A configuration
      */
-    public AccessTokenSinaiHandler(final Vertx aVertx, final JsonObject aConfig) {
+    public SinaiAccessTokenHandler(final Vertx aVertx, final JsonObject aConfig) {
         super(aVertx, aConfig);
     }
 

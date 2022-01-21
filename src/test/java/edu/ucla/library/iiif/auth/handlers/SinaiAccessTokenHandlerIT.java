@@ -34,9 +34,9 @@ import io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Tests {@link AccessTokenSinaiHandler#handle}.
+ * Tests {@link SinaiAccessTokenHandler#handle}.
  */
-public final class AccessTokenSinaiHandlerIT extends AbstractHandlerIT {
+public final class SinaiAccessTokenHandlerIT extends AbstractHandlerIT {
 
     /**
      * Obtains a random unsigned integer by zeroing the sign bit of a random signed integer.
