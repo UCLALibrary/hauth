@@ -101,7 +101,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
 
         myDatabaseServiceProxy.getDegradedAllowed(origin.toString()).compose(isDegradedAllowed -> {
             final Future<String> cookieGeneration = myAccessCookieService
-                    .generateUclaAccessCookie(clientIpAddress.getAddress(), isOnCampusNetwork, isDegradedAllowed);
+                    .generateCookie(clientIpAddress.getAddress(), isOnCampusNetwork, isDegradedAllowed);
 
             return cookieGeneration.compose(cookieValue -> {
                 final Cookie cookie = Cookie.cookie(CookieNames.HAUTH, cookieValue);

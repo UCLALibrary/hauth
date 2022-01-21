@@ -58,7 +58,7 @@ public interface AccessCookieService {
     Future<Void> close();
 
     /**
-     * Creates an encrypted UCLA access cookie value.
+     * Creates an encrypted access cookie value.
      *
      * @param aClientIpAddress The IP address of the client
      * @param aIsOnCampusNetwork If the client is on a campus network subnet
@@ -66,21 +66,20 @@ public interface AccessCookieService {
      * @return A Future that resolves to a value that can be used to create a cookie with
      *         {@link Cookie#cookie(String, String)}
      */
-    Future<String> generateUclaAccessCookie(String aClientIpAddress, boolean aIsOnCampusNetwork,
-            boolean aIsDegradedAllowed);
+    Future<String> generateCookie(String aClientIpAddress, boolean aIsOnCampusNetwork, boolean aIsDegradedAllowed);
 
     /**
-     * Decrypts a UCLA access cookie value.
+     * Decrypts an access cookie value.
      *
      * @param aCookieValue An encrypted cookie value returned from {@link Cookie#getValue()}
      * @param aClientIpAddress The IP address of the client, which a vaild (encrypted) cookie value will contain
      * @return A Future that resolves to the decrypted cookie data unless the cookie has been tampered with (invalid
      *         JSON), stolen (IP address mismatch), or otherwise invalidated
      */
-    Future<JsonObject> decryptUclaAccessCookie(String aCookieValue, String aClientIpAddress);
+    Future<JsonObject> decryptCookie(String aCookieValue, String aClientIpAddress);
 
     /**
-     * Validates a Sinai access cookie pair.
+     * Validates a Sinai access cookie value.
      *
      * @param aCipherText An encrypted cookie value returned from {@link Cookie#getValue()}
      * @param anInitializationVector The initialization vector used to encrypt {@code aCipherText}
@@ -88,5 +87,5 @@ public interface AccessCookieService {
      *         {@link Config#SINAI_COOKIE_VALID_PREFIX}, or fails if the cookie has been tampered with, cannot be
      *         decrypted, or is otherwise invalid
      */
-    Future<Boolean> validateSinaiAccessCookie(String aCipherText, String anInitializationVector);
+    Future<Boolean> validateSinaiCookie(String aCipherText, String anInitializationVector);
 }

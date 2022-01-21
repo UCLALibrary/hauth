@@ -88,18 +88,16 @@ public final class Config {
     public static final String CAMPUS_NETWORK_SUBNETS = "CAMPUS_NETWORK_SUBNETS";
 
     /**
-     * The ENV property for the password used to derive the secret key for generating and validating UCLA access
-     * cookies.
+     * The ENV property for the password used to derive the secret key for generating and validating access cookies.
      */
     @SuppressWarnings({ "PMD.LongVariable" })
-    public static final String UCLA_COOKIE_SECRET_KEY_GENERATION_PASSWORD =
-            "UCLA_COOKIE_SECRET_KEY_GENERATION_PASSWORD";
+    public static final String SECRET_KEY_GENERATION_PASSWORD = "SECRET_KEY_GENERATION_PASSWORD";
 
     /**
-     * The ENV property for the salt used to derive the secret key for generating and validating UCLA access cookies.
+     * The ENV property for the salt used to derive the secret key for generating and validating access cookies.
      */
     @SuppressWarnings({ "PMD.LongVariable" })
-    public static final String UCLA_COOKIE_SECRET_KEY_GENERATION_SALT = "UCLA_COOKIE_SECRET_KEY_GENERATION_SALT";
+    public static final String SECRET_KEY_GENERATION_SALT = "SECRET_KEY_GENERATION_SALT";
 
     /**
      * The ENV property for the password used to derive the secret key for validating Sinai cookies. This value must be

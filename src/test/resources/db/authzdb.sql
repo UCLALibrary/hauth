@@ -60,7 +60,7 @@ COMMENT ON COLUMN public.items.uid IS 'The unique identifier of the requested ob
 -- Name: COLUMN items.access_mode; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.items.access_mode IS 'The access mode of the requested item: 0 is open, 1 is restricted to UCLA affiliates';
+COMMENT ON COLUMN public.items.access_mode IS 'The access mode of the requested item: 0 is open, 1 is restricted to campus network users';
 
 --
 -- Name: COLUMN origins.url; Type: COMMENT; Schema: public; Owner: postgres

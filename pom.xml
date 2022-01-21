@@ -451,8 +451,8 @@
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                   <DB_PORT>${test.db.port}</DB_PORT>
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                  <UCLA_COOKIE_SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</UCLA_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
-                  <UCLA_COOKIE_SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</UCLA_COOKIE_SECRET_KEY_GENERATION_SALT>
+                  <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
+                  <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
                   <SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
                   <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
                 </env>
@@ -537,8 +537,8 @@
           <reuseForks>false</reuseForks>
           <argLine>${jacoco.agent.arg}</argLine>
           <environmentVariables>
-            <UCLA_COOKIE_SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</UCLA_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
-            <UCLA_COOKIE_SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</UCLA_COOKIE_SECRET_KEY_GENERATION_SALT>
+            <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
+            <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
             <SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
             <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
           </environmentVariables>
@@ -558,8 +558,8 @@
             <DB_PORT>${test.db.port}</DB_PORT>
             <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
             <HTTP_PORT>${test.http.port}</HTTP_PORT>
-            <UCLA_COOKIE_SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</UCLA_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
-            <UCLA_COOKIE_SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</UCLA_COOKIE_SECRET_KEY_GENERATION_SALT>
+            <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
+            <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
             <SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
             <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
           </environmentVariables>

@@ -83,7 +83,7 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
             final String clientIpAddress =
                     Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
 
-            return myAccessCookieService.decryptUclaAccessCookie(cookieValue, clientIpAddress).compose(cookie -> {
+            return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
                 final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
                 final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);
@@ -138,7 +138,7 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
             final String clientIpAddress =
                     Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
 
-            return myAccessCookieService.decryptUclaAccessCookie(cookieValue, clientIpAddress).compose(cookie -> {
+            return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
                 final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, EMPTY);
                 final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);

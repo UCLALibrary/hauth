@@ -112,7 +112,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
         final boolean isCampusNetwork = true;
         final boolean isDegradedAllowed = false;
         final Future<String> generateCookie =
-                myServiceProxy.generateUclaAccessCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed);
+                myServiceProxy.generateCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed);
 
         generateCookie.compose(cookie -> {
             // The result is base64-encoded JSON with three keys
@@ -122,7 +122,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
                 assertTrue(decodedCookie.containsKey(key));
             }
 
-            return myServiceProxy.decryptUclaAccessCookie(cookie, clientIpAddress);
+            return myServiceProxy.decryptCookie(cookie, clientIpAddress);
         }).onSuccess(decryptedCookie -> {
             final JsonObject expected = new JsonObject().put(CookieJsonKeys.CLIENT_IP_ADDRESS, clientIpAddress)
                     .put(CookieJsonKeys.CAMPUS_NETWORK, isCampusNetwork)
@@ -145,7 +145,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
         final boolean isCampusNetwork = false;
         final boolean isDegradedAllowed = false;
         final Future<String> generateCookie =
-                myServiceProxy.generateUclaAccessCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed);
+                myServiceProxy.generateCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed);
 
         generateCookie.compose(cookie -> {
             final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(cookie.getBytes())));
@@ -158,7 +158,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
             decodedCookie.put(CookieJsonKeys.SECRET, secret);
             tamperedCookie = Base64.getEncoder().encodeToString(decodedCookie.encode().getBytes());
 
-            return myServiceProxy.decryptUclaAccessCookie(tamperedCookie, clientIpAddress);
+            return myServiceProxy.decryptCookie(tamperedCookie, clientIpAddress);
         }).onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
@@ -189,7 +189,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
     @Test
     public final void testValidateSinaiCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final Future<Boolean> validateCookie =
-                myServiceProxy.validateSinaiAccessCookie(TEST_SINAI_AUTHENTICATED_3DAY, TEST_INITIALIZATION_VECTOR);
+                myServiceProxy.validateSinaiCookie(TEST_SINAI_AUTHENTICATED_3DAY, TEST_INITIALIZATION_VECTOR);
 
         validateCookie.onSuccess(result -> {
             try {

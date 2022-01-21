@@ -35,7 +35,7 @@ public final class AccessTokenHandler extends AbstractAccessTokenHandler {
         final Cookie cookie = aContext.request().getCookie(CookieNames.HAUTH);
         final String cookieValue = cookie.getValue();
 
-        return getAccessCookieService().decryptUclaAccessCookie(cookieValue, clientIpAddress).compose(cookieData -> {
+        return getAccessCookieService().decryptCookie(cookieValue, clientIpAddress).compose(cookieData -> {
             final JsonObject unencodedAccessToken =
                     new JsonObject().put(TokenJsonKeys.VERSION, getConfig().getString(Config.HAUTH_VERSION))
                             .put(TokenJsonKeys.CAMPUS_NETWORK, cookieData.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));

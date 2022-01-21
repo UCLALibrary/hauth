@@ -118,8 +118,8 @@ public class AccessCookieServiceImpl implements AccessCookieService {
      */
     AccessCookieServiceImpl(final JsonObject aConfig)
             throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException {
-        final String password = aConfig.getString(Config.UCLA_COOKIE_SECRET_KEY_GENERATION_PASSWORD);
-        final String salt = aConfig.getString(Config.UCLA_COOKIE_SECRET_KEY_GENERATION_SALT);
+        final String password = aConfig.getString(Config.SECRET_KEY_GENERATION_PASSWORD);
+        final String salt = aConfig.getString(Config.SECRET_KEY_GENERATION_SALT);
         final int iterationCount = 65_536;
         final int keyLength = 256;
 
@@ -148,7 +148,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     }
 
     @Override
-    public Future<String> generateUclaAccessCookie(final String aClientIpAddress, final boolean aIsOnCampusNetwork,
+    public Future<String> generateCookie(final String aClientIpAddress, final boolean aIsOnCampusNetwork,
             final boolean aIsDegradedAllowed) {
         final JsonObject cookieData = new JsonObject().put(CookieJsonKeys.CLIENT_IP_ADDRESS, aClientIpAddress)
                 .put(CookieJsonKeys.CAMPUS_NETWORK, aIsOnCampusNetwork)
@@ -173,7 +173,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     }
 
     @Override
-    public Future<JsonObject> decryptUclaAccessCookie(final String aCookieValue, final String aClientIpAddress) {
+    public Future<JsonObject> decryptCookie(final String aCookieValue, final String aClientIpAddress) {
         final JsonObject cookieData;
         final String expectedClientIpAddress;
 
@@ -208,7 +208,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     }
 
     @Override
-    public Future<Boolean> validateSinaiAccessCookie(final String aAuthCookieValue, final String aIvCookieValue) {
+    public Future<Boolean> validateSinaiCookie(final String aAuthCookieValue, final String aIvCookieValue) {
         try {
             final byte[] encryptedCookieData = Hex.decodeHex(aAuthCookieValue);
             final byte[] nonce = Hex.decodeHex(aIvCookieValue);
