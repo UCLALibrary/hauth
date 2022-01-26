@@ -44,7 +44,6 @@
 
     <!-- Application dependencies -->
     <freelib.utils.version>3.0.1</freelib.utils.version>
-    <slf4j.ext.version>1.7.30</slf4j.ext.version>
     <cidr.ip.version>1.0.1</cidr.ip.version>
     <commons.codec.version>1.15</commons.codec.version>
     <vertx.version>4.2.4</vertx.version>
@@ -64,7 +63,7 @@
     <junit.version>5.8.0-M1</junit.version>
     <redis.version>6.2.5-alpine</redis.version>
     <postgres.version>12.7-alpine</postgres.version>
-    <cantaloupe.version>5.0.3-0</cantaloupe.version>
+    <cantaloupe.version>5.0.4-1</cantaloupe.version>
     <auth.delegate.version>0.0.1-SNAPSHOT</auth.delegate.version>
     <jsoup.version>1.14.3</jsoup.version>
 
@@ -163,13 +162,6 @@
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>${commons.codec.version}</version>
-    </dependency>
-
-    <!-- Below is a dependency that needs updating due to security issue (may be able to remove in future) -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-ext</artifactId>
-      <version>${slf4j.ext.version}</version>
     </dependency>
 
     <!-- A Vert.x plug-in for more flexible configuration control -->
@@ -393,6 +385,7 @@
                   </bind>
                 </volumes>
                 <env>
+                  <CANTALOUPE_LOG_APPLICATION_LEVEL>info</CANTALOUPE_LOG_APPLICATION_LEVEL>
                   <CANTALOUPE_ENDPOINT_ADMIN_SECRET>secret</CANTALOUPE_ENDPOINT_ADMIN_SECRET>
                   <CANTALOUPE_ENDPOINT_ADMIN_ENABLED>true</CANTALOUPE_ENDPOINT_ADMIN_ENABLED>
                   <CANTALOUPE_DELEGATE_SCRIPT_ENABLED>true</CANTALOUPE_DELEGATE_SCRIPT_ENABLED>
