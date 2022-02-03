@@ -66,9 +66,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     private static final String DEFAULT_HOSTNAME = "localhost";
 
     /**
-     * The failure code to use for a ServiceException that represents {@link DatabaseServiceError#INTERNAL}.
+     * The failure code to use for a ServiceException that represents {@link DatabaseServiceError#INTERNAL_ERROR}.
      */
-    private static final int INTERNAL_ERROR = DatabaseServiceError.INTERNAL.ordinal();
+    private static final int INTERNAL_ERROR = DatabaseServiceError.INTERNAL_ERROR.ordinal();
 
     /**
      * The failure code to use for a ServiceException that represents {@link DatabaseServiceError#NOT_FOUND}.

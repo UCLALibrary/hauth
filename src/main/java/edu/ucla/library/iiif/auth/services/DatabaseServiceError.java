@@ -6,7 +6,7 @@ package edu.ucla.library.iiif.auth.services;
  */
 public enum DatabaseServiceError {
     // The failure code if the service is unable to query the underlying database.
-    INTERNAL,
+    INTERNAL_ERROR,
 
     // The failure code if the service receives a get request for an unknown id or origin.
     NOT_FOUND;

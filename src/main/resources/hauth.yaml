@@ -54,8 +54,8 @@ paths:
                 properties:
                   error:
                     type: string
-                    enum: [ INTERNAL ]
-                    example: INTERNAL
+                    enum: [ INTERNAL_ERROR ]
+                    example: INTERNAL_ERROR
                   message:
                     type: string
                     example: The service failed to connect to its database
