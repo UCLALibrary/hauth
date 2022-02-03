@@ -90,7 +90,7 @@ public class AccessModeHandler implements Handler<RoutingContext> {
                 response.setStatusCode(HTTP.NOT_FOUND);
                 responseMessage = LOGGER.getMessage(MessageCodes.AUTH_004, id);
                 break;
-            case INTERNAL:
+            case INTERNAL_ERROR:
             default:
                 response.setStatusCode(HTTP.INTERNAL_SERVER_ERROR);
                 responseMessage = LOGGER.getMessage(MessageCodes.AUTH_005);
