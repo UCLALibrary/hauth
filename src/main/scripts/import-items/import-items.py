@@ -27,6 +27,7 @@ def import_items(access_mode, hauth_base_url, input_csv):
     Exits with zero status only if all items are imported successfully.
     """
     request_url = hauth_base_url + '/items'
+    request_headers = {'Content-Type': 'application/json'}
     files = input_csv
     exit_code = 0
 
@@ -34,7 +35,9 @@ def import_items(access_mode, hauth_base_url, input_csv):
         base_name = basename(file.name)
 
         try:
-            post(request_url, data=request_payload(file, AccessMode[access_mode])).raise_for_status()
+            request_data = request_payload(file, AccessMode[access_mode])
+
+            post(request_url, data=request_data, headers=request_headers).raise_for_status()
             click.secho('File {} imported successfully'.format(boldface(base_name)), fg='green')
         except Exception as e:
             click.secho('Error while importing file {}: {}'.format(boldface(base_name), repr(e)), fg='red')
