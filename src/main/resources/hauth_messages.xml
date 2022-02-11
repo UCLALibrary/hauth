@@ -19,5 +19,6 @@
   <entry key="AUTH_011">The request did not contain a valid cookie</entry>
   <entry key="AUTH_012">The access cookie could not be decoded</entry>
   <entry key="AUTH_013">Expected the client's IP address ({}) to match what's in the cookie it sent ({})</entry>
+  <entry key="AUTH_015">Expected adding items to fail, but it succeeded: {}</entry>
 
 </properties>

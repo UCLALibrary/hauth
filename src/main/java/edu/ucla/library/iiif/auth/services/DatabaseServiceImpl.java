@@ -3,15 +3,25 @@ package edu.ucla.library.iiif.auth.services;
 
 import static info.freelibrary.util.Constants.SPACE;
 
-import edu.ucla.library.iiif.auth.Config;
-import edu.ucla.library.iiif.auth.MessageCodes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
+import edu.ucla.library.iiif.auth.Config;
+import edu.ucla.library.iiif.auth.MessageCodes;
+
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
@@ -76,6 +86,11 @@ public class DatabaseServiceImpl implements DatabaseService {
     private static final int NOT_FOUND_ERROR = DatabaseServiceError.NOT_FOUND.ordinal();
 
     /**
+     * The failure code to use for a ServiceException that represents {@link DatabaseServiceError#MALFORMED_INPUT_DATA}.
+     */
+    private static final int MALFORMED_INPUT_DATA_ERROR = DatabaseServiceError.MALFORMED_INPUT_DATA.ordinal();
+
+    /**
      * The underlying PostgreSQL connection pool.
      */
     private final PgPool myDbConnectionPool;
@@ -84,6 +99,11 @@ public class DatabaseServiceImpl implements DatabaseService {
      * The underlying Redis client.
      */
     private final Redis myDbCacheClient;
+
+    /**
+     * For JSON deserialization.
+     */
+    private final ObjectMapper myMapper = new ObjectMapper();
 
     /**
      * Creates an instance of the service.
@@ -123,6 +143,22 @@ public class DatabaseServiceImpl implements DatabaseService {
             return connection.preparedQuery(UPSERT_ACCESS_MODE).execute(Tuple.of(aID, aAccessMode));
         }).recover(error -> {
             return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
+        }).compose(result -> Future.succeededFuture());
+    }
+
+    @Override
+    public Future<Void> setItems(final JsonArray aItems) {
+        return getPreparedQueryTuples(aItems, myMapper).compose(tuples -> {
+            return myDbConnectionPool.withConnection(connection -> {
+                return connection.preparedQuery(UPSERT_ACCESS_MODE).executeBatch(tuples);
+            }).recover(error -> {
+                return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
+            });
+        }).recover(error -> {
+            if (error instanceof ServiceException) {
+                return Future.failedFuture(error);
+            }
+            return Future.failedFuture(new ServiceException(MALFORMED_INPUT_DATA_ERROR, error.getMessage()));
         }).compose(result -> Future.succeededFuture());
     }
 
@@ -219,5 +255,77 @@ public class DatabaseServiceImpl implements DatabaseService {
      */
     private static boolean hasSingleRow(final RowSet<Row> aRowSet) {
         return aRowSet.rowCount() == 1;
+    }
+
+    /**
+     * Gets a list of Tuples for executing a PreparedQuery.
+     *
+     * @param aJsonArray
+     * @param aMapper
+     * @return A Future that either resolves to the list of tuples, or fails if the input data is malformed
+     */
+    private static Future<List<Tuple>> getPreparedQueryTuples(final JsonArray aJsonArray, final ObjectMapper aMapper) {
+        final List<Tuple> itemList = new ArrayList<>();
+
+        for (final Object item : aJsonArray.stream().collect(Collectors.toList())) {
+            try {
+                itemList.add(Item.create((JsonObject) item, aMapper).toPreparedQueryTuple());
+            } catch (final JsonProcessingException details) {
+                return Future.failedFuture(details);
+            }
+        }
+
+        return Future.succeededFuture(itemList);
+    }
+
+    /**
+     * Representation of a record in the items table.
+     */
+    private static final class Item {
+
+        /**
+         * Member variable corresponding to the `uid` column of the items table.
+         */
+        private final String myUID;
+
+        /**
+         * Member variable corresponding to the `access_mode` column of the items table.
+         */
+        private final int myAccessMode;
+
+        /**
+         * Creates an item.
+         *
+         * @param aUID The item identifier
+         * @param anAccessMode The access mode to use for the item
+         */
+        @JsonCreator
+        private Item(@JsonProperty(value = "uid", required = true) final String aUID,
+                @JsonProperty(value = "accessMode", required = true) final int anAccessMode) {
+            myUID = aUID;
+            myAccessMode = anAccessMode;
+        }
+
+        /**
+         * Instantiates a new item from its JSON representation.
+         *
+         * @param aJsonObject A JSON representation of an item
+         * @param aMapper An {@link ObjectMapper}
+         * @return The item
+         * @throws JsonProcessingException If the JSON representation is invalid
+         */
+        public static Item create(final JsonObject aJsonObject, final ObjectMapper aMapper)
+                throws JsonProcessingException {
+            return aMapper.readValue(aJsonObject.toString(), Item.class);
+        }
+
+        /**
+         * Converts the item to a Tuple for use in a PreparedQuery.
+         *
+         * @return The item as a Tuple
+         */
+        public Tuple toPreparedQueryTuple() {
+            return Tuple.of(myUID, myAccessMode);
+        }
     }
 }

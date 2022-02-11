@@ -9,5 +9,8 @@ public enum DatabaseServiceError {
     INTERNAL_ERROR,
 
     // The failure code if the service receives a get request for an unknown id or origin.
-    NOT_FOUND;
+    NOT_FOUND,
+
+    // The failure code if the service receives a post request with malformed data.
+    MALFORMED_INPUT_DATA;
 }

@@ -6,6 +6,7 @@ import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceProxyBuilder;
 
@@ -67,6 +68,14 @@ public interface DatabaseService {
      * @return A Future that resolves once the access mode has been set
      */
     Future<Void> setAccessMode(String aID, int aAccessMode);
+
+    /**
+     * Sets the given items.
+     *
+     * @param aItems An array of objects that can be deserialized to a list of {@link DatabaseServiceImpl.Item}
+     * @return A Future that resolves once the items have been set
+     */
+    Future<Void> setItems(JsonArray aItems);
 
     /**
      * Gets the "degraded allowed" for content hosted at the given origin.
