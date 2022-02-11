@@ -15,10 +15,10 @@ class AccessMode(Enum):
     ALL_OR_NOTHING = 2
 
 @click.command()
-@click.option('--access-mode', '-m', required=True,
+@click.option('--access-mode', '-m', help='The access mode to use for all items in each INPUT_CSV.', required=True,
               type=click.Choice([name for name, member in AccessMode.__members__.items()], case_sensitive=False))
 @click.argument('hauth-base-url', nargs=1)
-@click.argument('input-csv', nargs=-1, type=click.File('r'))
+@click.argument('input-csv', required=True, nargs=-1, type=click.File('r'))
 def import_items(access_mode, hauth_base_url, input_csv):
     """
     Import items into Hauth.
