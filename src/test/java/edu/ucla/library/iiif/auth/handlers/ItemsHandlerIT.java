@@ -77,10 +77,11 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
         postItems.sendJson(json).compose(response -> {
             final String getAccessModeRequestUri1 =
                     StringUtils.format(GET_ACCESS_MODE_PATH, URLEncoder.encode(TEST_ID_1, StandardCharsets.UTF_8));
-            final HttpRequest<?> getAccessMode1 =
-                    myWebClient.get(myPort, TestConstants.INADDR_ANY, getAccessModeRequestUri1);
             final String getAccessModeRequestUri2 =
                     StringUtils.format(GET_ACCESS_MODE_PATH, URLEncoder.encode(TEST_ID_2, StandardCharsets.UTF_8));
+
+            final HttpRequest<?> getAccessMode1 =
+                    myWebClient.get(myPort, TestConstants.INADDR_ANY, getAccessModeRequestUri1);
             final HttpRequest<?> getAccessMode2 =
                     myWebClient.get(myPort, TestConstants.INADDR_ANY, getAccessModeRequestUri2);
 
