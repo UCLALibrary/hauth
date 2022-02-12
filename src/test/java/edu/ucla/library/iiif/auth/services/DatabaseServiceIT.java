@@ -160,7 +160,7 @@ public class DatabaseServiceIT extends AbstractServiceTest {
                 id2, expected2);
         final Future<Void> setItems = myServiceProxy.setItems(new JsonArray(items));
 
-        setItems.compose(multi -> {
+        setItems.compose(result -> {
             return CompositeFuture.all(myServiceProxy.getAccessMode(id1), myServiceProxy.getAccessMode(id2));
         }).onSuccess(compositeResult -> {
             completeIfExpectedElseFail(
