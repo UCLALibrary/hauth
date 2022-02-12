@@ -58,7 +58,9 @@ public class ItemsHandler implements Handler<RoutingContext> {
             final JsonObject error = new JsonObject() //
                     .put(ResponseJsonKeys.ERROR, Error.INVALID_JSONARRAY_ERROR) //
                     .put(ResponseJsonKeys.MESSAGE, details.getMessage());
-            aContext.response().setStatusCode(HTTP.BAD_REQUEST).end(error.encodePrettily());
+
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .setStatusCode(HTTP.BAD_REQUEST).end(error.encodePrettily());
             return;
         }
 
