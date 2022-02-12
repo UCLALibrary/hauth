@@ -132,9 +132,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         }).compose(select -> {
             if (hasSingleRow(select)) {
                 return Future.succeededFuture(select.iterator().next().getInteger("access_mode"));
-            } else {
-                return Future.failedFuture(new ServiceException(NOT_FOUND_ERROR, aID));
             }
+            return Future.failedFuture(new ServiceException(NOT_FOUND_ERROR, aID));
         });
     }
 
@@ -172,9 +171,8 @@ public class DatabaseServiceImpl implements DatabaseService {
         }).compose(select -> {
             if (hasSingleRow(select)) {
                 return Future.succeededFuture(select.iterator().next().getBoolean("degraded_allowed"));
-            } else {
-                return Future.failedFuture(new ServiceException(NOT_FOUND_ERROR, aOrigin));
             }
+            return Future.failedFuture(new ServiceException(NOT_FOUND_ERROR, aOrigin));
         });
     }
 
