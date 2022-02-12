@@ -18,6 +18,7 @@ import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
+import edu.ucla.library.iiif.auth.RequestJsonKeys;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -300,8 +301,8 @@ public class DatabaseServiceImpl implements DatabaseService {
          * @param anAccessMode The access mode to use for the item
          */
         @JsonCreator
-        private Item(@JsonProperty(value = "uid", required = true) final String aUID,
-                @JsonProperty(value = "accessMode", required = true) final int anAccessMode) {
+        private Item(@JsonProperty(value = RequestJsonKeys.UID, required = true) final String aUID,
+                @JsonProperty(value = RequestJsonKeys.ACCESS_MODE, required = true) final int anAccessMode) {
             myUID = aUID;
             myAccessMode = anAccessMode;
         }

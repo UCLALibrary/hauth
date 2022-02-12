@@ -12,6 +12,7 @@ import edu.ucla.library.iiif.auth.Op;
 import edu.ucla.library.iiif.auth.handlers.AccessCookieHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessModeHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessTokenHandler;
+import edu.ucla.library.iiif.auth.handlers.ItemsHandler;
 import edu.ucla.library.iiif.auth.handlers.SinaiAccessTokenHandler;
 import edu.ucla.library.iiif.auth.handlers.StatusHandler;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
@@ -106,6 +107,8 @@ public class MainVerticle extends AbstractVerticle {
                         .failureHandler(AccessTokenHandler::handleFailure);
                 routerBuilder.operation(Op.GET_TOKEN_SINAI).handler(new SinaiAccessTokenHandler(getVertx(), config))
                         .failureHandler(SinaiAccessTokenHandler::handleFailure);
+                routerBuilder.operation(Op.POST_ITEMS).handler(new ItemsHandler(getVertx()))
+                        .failureHandler(ItemsHandler::handleFailure);
 
                 // Finally, spin up the HTTP server
                 return server.requestHandler(routerBuilder.createRouter()).listen();

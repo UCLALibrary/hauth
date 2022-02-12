@@ -56,6 +56,11 @@ public abstract class AbstractHandlerIT {
     protected static final String GET_COOKIE_PATH = "/cookie?origin={}";
 
     /**
+     * The URI path for items requests.
+     */
+    protected static final String POST_ITEMS_PATH = "/items";
+
+    /**
      * A test id for an item with open access.
      */
     protected static final String TEST_ID_OPEN_ACCESS = "ark:/21198/00000000";

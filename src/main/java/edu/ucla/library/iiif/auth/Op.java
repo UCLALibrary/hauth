@@ -32,6 +32,11 @@ public final class Op {
     public static final String GET_TOKEN_SINAI = "getTokenSinai";
 
     /**
+     * Sets items.
+     */
+    public static final String POST_ITEMS = "postItems";
+
+    /**
      * Constant class constructors should be private.
      */
     private Op() {

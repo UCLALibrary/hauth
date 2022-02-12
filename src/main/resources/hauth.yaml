@@ -263,3 +263,41 @@ paths:
                     example: ok
         '500':
           description: There was an internal server error
+  /items:
+    post:
+      summary: Add Items
+      description: Adds items to the database
+      operationId: postItems
+      requestBody:
+        content:
+          application/json:
+            example: [ { "uid": "ark:/21198/00000000", "accessMode": 0 }, { "uid": "ark:/21198/11111111", "accessMode": 1 } ]
+      responses:
+        '201':
+          description: The items have been successfully added
+        '400':
+          description: The request didn't contain valid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [ INVALID_JSONARRAY_ERROR, MALFORMED_INPUT_DATA ]
+                    example: MALFORMED_INPUT_DATA
+                  message:
+                    type: string
+        '500':
+          description: There was an internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [ INTERNAL_ERROR ]
+                    example: INTERNAL_ERROR
+                  message:
+                    type: string
