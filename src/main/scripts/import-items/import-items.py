@@ -9,6 +9,7 @@ from os.path import basename
 from requests import post
 
 class AccessMode(Enum):
+
     """The access mode choices."""
     OPEN = 0
     TIERED = 1
@@ -20,8 +21,7 @@ class AccessMode(Enum):
 @click.argument('hauth-base-url', nargs=1)
 @click.argument('input-csv', required=True, nargs=-1, type=click.File('r'))
 def import_items(access_mode, hauth_base_url, input_csv):
-    """
-    Import items into Hauth.
+    """Import items into Hauth.
 
     Instructs the Hauth instance at HAUTH_BASE_URL to use the specified access mode for all items in each INPUT_CSV.
     Exits with zero status only if all items are imported successfully.
