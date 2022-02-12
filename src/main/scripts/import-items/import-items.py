@@ -62,4 +62,4 @@ def boldface(text: str) -> str:
     return '\033[1m' + text + '\033[22m'
 
 if __name__ == '__main__':
-    import_items()
+    import_items() # pylint: disable=no-value-for-parameter
