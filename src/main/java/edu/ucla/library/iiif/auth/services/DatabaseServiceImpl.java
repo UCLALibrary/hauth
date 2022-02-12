@@ -249,16 +249,6 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     /**
-     * Checks if the given RowSet consists of a single row or not.
-     *
-     * @param aRowSet A RowSet representing the response to a database query
-     * @return true if it has a single row, false otherwise
-     */
-    private static boolean hasSingleRow(final RowSet<Row> aRowSet) {
-        return aRowSet.rowCount() == 1;
-    }
-
-    /**
      * Gets a list of Tuples for executing a PreparedQuery.
      *
      * @param aJsonArray A JSON representation of a list of items
@@ -276,6 +266,16 @@ public class DatabaseServiceImpl implements DatabaseService {
         }
 
         return Future.succeededFuture(itemList);
+    }
+
+    /**
+     * Checks if the given RowSet consists of a single row or not.
+     *
+     * @param aRowSet A RowSet representing the response to a database query
+     * @return true if it has a single row, false otherwise
+     */
+    private static boolean hasSingleRow(final RowSet<Row> aRowSet) {
+        return aRowSet.rowCount() == 1;
     }
 
     /**
