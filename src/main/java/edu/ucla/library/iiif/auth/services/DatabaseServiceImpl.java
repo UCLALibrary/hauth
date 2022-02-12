@@ -149,7 +149,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public Future<Void> setItems(final JsonArray aItems) {
-        return getPreparedQueryTuples(aItems, myMapper).compose(tuples -> {
+        return getPreparedQueryTuples(aItems).compose(tuples -> {
             return myDbConnectionPool.withConnection(connection -> {
                 return connection.preparedQuery(UPSERT_ACCESS_MODE).executeBatch(tuples);
             }).recover(error -> {
@@ -261,16 +261,15 @@ public class DatabaseServiceImpl implements DatabaseService {
     /**
      * Gets a list of Tuples for executing a PreparedQuery.
      *
-     * @param aJsonArray
-     * @param aMapper
+     * @param aJsonArray A JSON representation of a list of items
      * @return A Future that either resolves to the list of tuples, or fails if the input data is malformed
      */
-    private static Future<List<Tuple>> getPreparedQueryTuples(final JsonArray aJsonArray, final ObjectMapper aMapper) {
+    private Future<List<Tuple>> getPreparedQueryTuples(final JsonArray aJsonArray) {
         final List<Tuple> itemList = new ArrayList<>();
 
         for (final Object item : aJsonArray.stream().collect(Collectors.toList())) {
             try {
-                itemList.add(Item.create((JsonObject) item, aMapper).toPreparedQueryTuple());
+                itemList.add(Item.create((JsonObject) item, myMapper).toPreparedQueryTuple());
             } catch (final JsonProcessingException details) {
                 return Future.failedFuture(details);
             }
