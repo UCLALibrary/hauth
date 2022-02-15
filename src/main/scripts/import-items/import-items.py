@@ -7,6 +7,7 @@ from io import TextIOBase
 from json import dumps
 from os.path import basename
 from requests import post
+from typing import List, Dict
 
 class AccessMode(Enum):
 
@@ -31,32 +32,36 @@ def import_items(access_mode, api_key, hauth_base_url, input_csv):
     request_headers = {'Content-Type': 'application/json', 'X-API-KEY': api_key}
     files = input_csv
     exit_code = 0
+    total_item_count = 0
 
     for file in files:
         base_name = basename(file.name)
 
         try:
             request_data = request_payload(file, AccessMode[access_mode])
+            item_count = len(request_data)
 
-            post(request_url, data=request_data, headers=request_headers).raise_for_status()
-            click.secho('File {} imported successfully'.format(boldface(base_name)), fg='green')
+            post(request_url, data=dumps(request_data), headers=request_headers).raise_for_status()
+            click.secho('File {} imported successfully ({} items)'.format(boldface(base_name), item_count), fg='green')
+            total_item_count += item_count
         except Exception as e:
             click.secho('Error while importing file {}: {}'.format(boldface(base_name), repr(e)), fg='red')
             exit_code = 1
 
+    if (len(files) > 1):
+        click.echo('Total items: {}'.format(total_item_count))
+
     exit(exit_code)
 
-def request_payload(file: TextIOBase, access_mode: AccessMode) -> str:
+def request_payload(file: TextIOBase, access_mode: AccessMode) -> List[Dict]:
     """Constructs a JSON array to send to the Hauth API endpoint for importing items."""
-    return dumps(
-        [
-            {
-                'uid': uid,
-                'accessMode': access_mode.value
-            }
-            for uid in [row['Item ARK'] for row in DictReader(file)]
-        ]
-    )
+    return [
+        {
+            'uid': uid,
+            'accessMode': access_mode.value
+        }
+        for uid in [row['Item ARK'] for row in DictReader(file)]
+    ]
 
 def boldface(text: str) -> str:
     """Uses ANSI escape codes to enable printing the given text in boldface."""
