@@ -5,8 +5,8 @@ import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.MessageCodes;
-import edu.ucla.library.iiif.auth.Param;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.services.DatabaseServiceError;
@@ -18,19 +18,21 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
- * Handler that handles item access mode requests.
+ * Handler that handles items requests.
  */
-public class AccessModeHandler implements Handler<RoutingContext> {
+public class ItemsHandler implements Handler<RoutingContext> {
 
     /**
      * The handler's logger.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessModeHandler.class, MessageCodes.BUNDLE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ItemsHandler.class, MessageCodes.BUNDLE);
 
     /**
      * The service proxy for accessing the database.
@@ -38,23 +40,32 @@ public class AccessModeHandler implements Handler<RoutingContext> {
     private final DatabaseService myDatabaseServiceProxy;
 
     /**
-     * Creates a handler that checks the access mode of an ID.
+     * Creates a handler that adds items to the database.
      *
      * @param aVertx The Vert.x instance
      */
-    public AccessModeHandler(final Vertx aVertx) {
+    public ItemsHandler(final Vertx aVertx) {
         myDatabaseServiceProxy = DatabaseService.createProxy(aVertx);
     }
 
     @Override
     public void handle(final RoutingContext aContext) {
-        final String id = aContext.request().getParam(Param.ID);
+        final JsonArray requestData;
 
-        myDatabaseServiceProxy.getAccessMode(id).onSuccess(accessMode -> {
-            final JsonObject data = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.values()[accessMode]);
+        try {
+            requestData = aContext.getBodyAsJsonArray();
+        } catch (final DecodeException details) {
+            final JsonObject error = new JsonObject() //
+                    .put(ResponseJsonKeys.ERROR, Error.INVALID_JSONARRAY) //
+                    .put(ResponseJsonKeys.MESSAGE, details.getMessage());
 
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
-                    .setStatusCode(HTTP.OK).end(data.encodePrettily());
+                    .setStatusCode(HTTP.BAD_REQUEST).end(error.encodePrettily());
+            return;
+        }
+
+        myDatabaseServiceProxy.setItems(requestData).onSuccess(result -> {
+            aContext.response().setStatusCode(HTTP.CREATED).end();
         }).onFailure(aContext::fail);
     }
 
@@ -84,10 +95,10 @@ public class AccessModeHandler implements Handler<RoutingContext> {
         errorCode = DatabaseServiceImpl.getError(error);
 
         switch (errorCode) {
-            case NOT_FOUND:
-                final String id = error.getMessage();
-                response.setStatusCode(HTTP.NOT_FOUND);
-                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_004, id);
+            case MALFORMED_INPUT_DATA:
+                final String msg = error.getMessage();
+                response.setStatusCode(HTTP.BAD_REQUEST);
+                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_014, msg);
                 break;
             case INTERNAL_ERROR:
             default:
@@ -100,16 +111,5 @@ public class AccessModeHandler implements Handler<RoutingContext> {
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
 
         LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
-    }
-
-    /**
-     * Expected access mode values: OPEN, TIERED, or ALL_OR_NOTHING. These determine the level of access a requested
-     * item is allowed.
-     *
-     * @see <a href="https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources">Interaction with
-     *      Access-Controlled Resources </a>
-     */
-    public enum AccessMode {
-        OPEN, TIERED, ALL_OR_NOTHING;
     }
 }

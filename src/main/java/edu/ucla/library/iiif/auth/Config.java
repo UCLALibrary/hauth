@@ -33,6 +33,11 @@ public final class Config {
     public static final String API_SPEC = "API_SPEC";
 
     /**
+     * The ENV property for the API key for private endpoints.
+     */
+    public static final String API_KEY = "API_KEY";
+
+    /**
      * The ENV property for the database password.
      */
     public static final String DB_PASSWORD = "DB_PASSWORD";

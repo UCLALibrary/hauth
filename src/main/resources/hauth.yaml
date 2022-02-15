@@ -6,6 +6,12 @@ info:
     name: The 3-Clause BSD License
 servers:
 - url: http://github.com/uclalibrary/hauth
+components:
+  securitySchemes:
+    Admin:
+      type: apiKey
+      in: header
+      name: X-API-KEY
 paths:
   /access/{id}:
     get:
@@ -263,3 +269,56 @@ paths:
                     example: ok
         '500':
           description: There was an internal server error
+  /items:
+    post:
+      summary: Add Items
+      description: Adds items to the database
+      operationId: postItems
+      security:
+        - Admin: []
+      requestBody:
+        content:
+          application/json:
+            example: [ { "uid": "ark:/21198/00000000", "accessMode": 0 }, { "uid": "ark:/21198/11111111", "accessMode": 1 } ]
+      responses:
+        '201':
+          description: The items have been successfully added
+        '400':
+          description: The request didn't contain valid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [ INVALID_JSONARRAY, MALFORMED_INPUT_DATA ]
+                    example: MALFORMED_INPUT_DATA
+                  message:
+                    type: string
+        '401':
+          description: API key is missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [ INVALID_ADMIN_CREDENTIALS ]
+                    example: INVALID_ADMIN_CREDENTIALS
+                  message:
+                    type: string
+        '500':
+          description: There was an internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [ INTERNAL_ERROR ]
+                    example: INTERNAL_ERROR
+                  message:
+                    type: string

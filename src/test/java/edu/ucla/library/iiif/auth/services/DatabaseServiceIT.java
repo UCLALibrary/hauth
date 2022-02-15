@@ -3,19 +3,24 @@ package edu.ucla.library.iiif.auth.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
+import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.MessageCodes;
 
 import io.vertx.config.ConfigRetriever;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.serviceproxy.ServiceBinder;
@@ -137,6 +142,49 @@ public class DatabaseServiceIT extends AbstractServiceTest {
         setTwice.compose(put -> myServiceProxy.getAccessMode(id)).onSuccess(result -> {
             completeIfExpectedElseFail(result, expected, aContext);
         }).onFailure(aContext::failNow);
+    }
+
+    /**
+     * Tests setting multiple items at once.
+     *
+     * @param aContext A test context
+     */
+    @Test
+    final void testSetItems(final VertxTestContext aContext) {
+        final String id1 = "setItems1";
+        final String id2 = "setItems2";
+        final int expected1 = 1;
+        final int expected2 = 2;
+        final String items = StringUtils.format(
+                "[ { \"uid\": \"{}\", \"accessMode\": {} }, { \"uid\": \"{}\", \"accessMode\": {} } ]", id1, expected1,
+                id2, expected2);
+        final Future<Void> setItems = myServiceProxy.setItems(new JsonArray(items));
+
+        setItems.compose(result -> {
+            return CompositeFuture.all(myServiceProxy.getAccessMode(id1), myServiceProxy.getAccessMode(id2));
+        }).onSuccess(compositeResult -> {
+            completeIfExpectedElseFail(
+                    List.of(compositeResult.<Integer>resultAt(0), compositeResult.<Integer>resultAt(1)),
+                    List.of(expected1, expected2), aContext);
+        }).onFailure(aContext::failNow);
+    }
+
+    /**
+     * Tests that setting multiple items at once fails if any of the item JSON objects are invalid.
+     *
+     * @param aContext A test context
+     */
+    @Test
+    final void testSetItemsInvalidItem(final VertxTestContext aContext) {
+        final String itemsMissingAccessMode = "[ { \"uid\": \"setItemsInvalidItem\" } ]";
+        final Future<Void> setItems = myServiceProxy.setItems(new JsonArray(itemsMissingAccessMode));
+
+        setItems.onFailure(result -> {
+            completeIfExpectedElseFail(DatabaseServiceError.MALFORMED_INPUT_DATA,
+                    DatabaseServiceImpl.getError((ServiceException) result), aContext);
+        }).onSuccess(result -> {
+            aContext.failNow(LOGGER.getMessage(MessageCodes.AUTH_015, result));
+        });
     }
 
     /**

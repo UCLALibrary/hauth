@@ -6,12 +6,15 @@ import java.security.GeneralSecurityException;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+import edu.ucla.library.iiif.auth.AdminAuthenticationProvider;
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Op;
 import edu.ucla.library.iiif.auth.handlers.AccessCookieHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessModeHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessTokenHandler;
+import edu.ucla.library.iiif.auth.handlers.AdminAuthenticationErrorHandler;
+import edu.ucla.library.iiif.auth.handlers.ItemsHandler;
 import edu.ucla.library.iiif.auth.handlers.SinaiAccessTokenHandler;
 import edu.ucla.library.iiif.auth.handlers.StatusHandler;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
@@ -26,6 +29,8 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.APIKeyHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import io.vertx.serviceproxy.ServiceBinder;
 
@@ -94,8 +99,7 @@ public class MainVerticle extends AbstractVerticle {
 
             // Load the OpenAPI specification
             return RouterBuilder.create(vertx, apiSpec).compose(routerBuilder -> {
-                final HttpServerOptions serverOptions = new HttpServerOptions().setPort(port).setHost(host);
-                final HttpServer server = getVertx().createHttpServer(serverOptions);
+                final Router router;
 
                 // Associate handlers with operation IDs from the OpenAPI spec
                 routerBuilder.operation(Op.GET_STATUS).handler(new StatusHandler(getVertx()));
@@ -106,9 +110,25 @@ public class MainVerticle extends AbstractVerticle {
                         .failureHandler(AccessTokenHandler::handleFailure);
                 routerBuilder.operation(Op.GET_TOKEN_SINAI).handler(new SinaiAccessTokenHandler(getVertx(), config))
                         .failureHandler(SinaiAccessTokenHandler::handleFailure);
+                routerBuilder.operation(Op.POST_ITEMS).handler(new ItemsHandler(getVertx()))
+                        .failureHandler(ItemsHandler::handleFailure);
 
+                // Add API key authentication for routes that should use the "Admin" security scheme
+                routerBuilder.securityHandler("Admin")
+                        .bindBlocking(unused -> APIKeyHandler.create(new AdminAuthenticationProvider(config)));
+
+                router = routerBuilder.createRouter();
+
+                // Handle authentication errors on admin routes
+                router.route().failureHandler(new AdminAuthenticationErrorHandler());
+
+                return Future.succeededFuture(router);
+            }).compose(router -> {
                 // Finally, spin up the HTTP server
-                return server.requestHandler(routerBuilder.createRouter()).listen();
+                final HttpServerOptions serverOptions = new HttpServerOptions().setPort(port).setHost(host);
+                final HttpServer server = getVertx().createHttpServer(serverOptions);
+
+                return server.requestHandler(router).listen();
             });
         }).onSuccess(server -> {
             LOGGER.info(MessageCodes.AUTH_001, server.actualPort());
