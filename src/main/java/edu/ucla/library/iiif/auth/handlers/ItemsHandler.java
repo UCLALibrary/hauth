@@ -56,7 +56,7 @@ public class ItemsHandler implements Handler<RoutingContext> {
             requestData = aContext.getBodyAsJsonArray();
         } catch (final DecodeException details) {
             final JsonObject error = new JsonObject() //
-                    .put(ResponseJsonKeys.ERROR, Error.INVALID_JSONARRAY_ERROR) //
+                    .put(ResponseJsonKeys.ERROR, Error.INVALID_JSONARRAY) //
                     .put(ResponseJsonKeys.MESSAGE, details.getMessage());
 
             aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
@@ -85,8 +85,7 @@ public class ItemsHandler implements Handler<RoutingContext> {
         try {
             error = (ServiceException) aContext.failure();
         } catch (final ClassCastException details) {
-            aContext.fail(HTTP.INTERNAL_SERVER_ERROR, details);
-            LOGGER.error(MessageCodes.AUTH_010, details);
+            aContext.next();
             return;
         }
 

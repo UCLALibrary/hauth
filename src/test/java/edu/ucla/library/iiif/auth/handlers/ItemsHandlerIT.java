@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.StringUtils;
 
+import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.RequestJsonKeys;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
@@ -20,6 +21,7 @@ import edu.ucla.library.iiif.auth.utils.MediaType;
 import edu.ucla.library.iiif.auth.utils.TestConstants;
 
 import io.vertx.core.CompositeFuture;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
@@ -64,6 +66,12 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
             .put(RequestJsonKeys.UID, TEST_ID_1);
 
     /**
+     * An HTTP header for making authorized requests.
+     */
+    private static final MultiMap API_KEY_HEADER =
+            MultiMap.caseInsensitiveMultiMap().add("X-API-KEY", System.getenv(Config.API_KEY));
+
+    /**
      * Tests that items can be POSTed.
      *
      * @param aVertx A Vert.x instance
@@ -71,7 +79,8 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testPostItems(final Vertx aVertx, final VertxTestContext aContext) {
-        final HttpRequest<?> postItems = myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH);
+        final HttpRequest<?> postItems =
+                myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
         final JsonArray json = new JsonArray().add(TEST_ITEM_OPEN_ACCESS).add(TEST_ITEM_TIERED_ACCESS);
 
         postItems.sendJson(json).compose(response -> {
@@ -109,6 +118,27 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
     }
 
     /**
+     * Tests that an unauthorized request will fail.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public void testPostItemsUnauthorized(final Vertx aVertx, final VertxTestContext aContext) {
+        final HttpRequest<?> postItems = myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH);
+        final JsonArray json = new JsonArray().add(TEST_ITEM_OPEN_ACCESS).add(TEST_ITEM_TIERED_ACCESS);
+
+        postItems.sendJson(json).onSuccess(response -> {
+            assertEquals(HTTP.UNAUTHORIZED, response.statusCode());
+            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            assertEquals(Error.INVALID_ADMIN_CREDENTIALS.toString(),
+                    response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
+
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
+    }
+
+    /**
      * Tests that the request body must be a JSON array, not a JSON object (or anything else).
      *
      * @param aVertx A Vert.x instance
@@ -116,12 +146,13 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testPostItemsInvalidRequestBody(final Vertx aVertx, final VertxTestContext aContext) {
-        final HttpRequest<?> postItems = myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH);
+        final HttpRequest<?> postItems =
+                myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
 
         postItems.sendJson(TEST_ITEM_OPEN_ACCESS).onSuccess(response -> {
             assertEquals(HTTP.BAD_REQUEST, response.statusCode());
             assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(Error.INVALID_JSONARRAY_ERROR.toString(),
+            assertEquals(Error.INVALID_JSONARRAY.toString(),
                     response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
 
             aContext.completeNow();
@@ -135,8 +166,9 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
      * @param aContext A test context
      */
     @Test
-    public void testPostItemsMissingKey(final Vertx aVertx, final VertxTestContext aContext) {
-        final HttpRequest<?> postItems = myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH);
+    public void testPostItemsMissingJsonKey(final Vertx aVertx, final VertxTestContext aContext) {
+        final HttpRequest<?> postItems =
+                myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
         final JsonArray json = new JsonArray().add(TEST_ITEM_OPEN_ACCESS).add(TEST_ITEM_MISSING_ACCESS_MODE);
 
         postItems.sendJson(json).onSuccess(response -> {

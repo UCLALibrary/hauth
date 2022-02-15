@@ -74,8 +74,7 @@ public class AccessModeHandler implements Handler<RoutingContext> {
         try {
             error = (ServiceException) aContext.failure();
         } catch (final ClassCastException details) {
-            aContext.fail(HTTP.INTERNAL_SERVER_ERROR, details);
-            LOGGER.error(MessageCodes.AUTH_010, details);
+            aContext.next();
             return;
         }
 

@@ -6,6 +6,12 @@ info:
     name: The 3-Clause BSD License
 servers:
 - url: http://github.com/uclalibrary/hauth
+components:
+  securitySchemes:
+    Admin:
+      type: apiKey
+      in: header
+      name: X-API-KEY
 paths:
   /access/{id}:
     get:
@@ -268,6 +274,8 @@ paths:
       summary: Add Items
       description: Adds items to the database
       operationId: postItems
+      security:
+        - Admin: []
       requestBody:
         content:
           application/json:
@@ -284,8 +292,21 @@ paths:
                 properties:
                   error:
                     type: string
-                    enum: [ INVALID_JSONARRAY_ERROR, MALFORMED_INPUT_DATA ]
+                    enum: [ INVALID_JSONARRAY, MALFORMED_INPUT_DATA ]
                     example: MALFORMED_INPUT_DATA
+                  message:
+                    type: string
+        '401':
+          description: API key is missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [ INVALID_ADMIN_CREDENTIALS ]
+                    example: INVALID_ADMIN_CREDENTIALS
                   message:
                     type: string
         '500':

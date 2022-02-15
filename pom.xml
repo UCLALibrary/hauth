@@ -276,6 +276,15 @@
             </configuration>
           </execution>
           <execution>
+            <id>generate-api-key</id>
+            <goals>
+              <goal>set-uuid-property</goal>
+            </goals>
+            <configuration>
+              <name>test.api.key</name>
+            </configuration>
+          </execution>
+          <execution>
             <id>set-snapshot-url</id>
             <goals>
               <goal>set-snapshot-url</goal>
@@ -436,6 +445,7 @@
                   <port>${test.http.port}:8888</port>
                 </ports>
                 <env>
+                  <API_KEY>${test.api.key}</API_KEY>
                   <!-- This particular choice of subnets is arbitrary -->
                   <CAMPUS_NETWORK_SUBNETS>127.0.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
                   <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
@@ -546,6 +556,7 @@
         <configuration>
           <argLine>${jacoco.agent.arg}</argLine>
           <environmentVariables>
+            <API_KEY>${test.api.key}</API_KEY>
             <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
             <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
             <DB_PORT>${test.db.port}</DB_PORT>
