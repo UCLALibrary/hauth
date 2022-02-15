@@ -18,16 +18,17 @@ class AccessMode(Enum):
 @click.command()
 @click.option('--access-mode', '-m', help='The access mode to use for all items in each INPUT_CSV.', required=True,
               type=click.Choice([name for name, member in AccessMode.__members__.items()], case_sensitive=False))
+@click.option('--api-key', '-k', help='The API key for accessing the admin API.', required=True)
 @click.argument('hauth-base-url', nargs=1)
 @click.argument('input-csv', required=True, nargs=-1, type=click.File('r'))
-def import_items(access_mode, hauth_base_url, input_csv):
+def import_items(access_mode, api_key, hauth_base_url, input_csv):
     """Import items into Hauth.
 
     Instructs the Hauth instance at HAUTH_BASE_URL to use the specified access mode for all items in each INPUT_CSV.
     Exits with zero status only if all items are imported successfully.
     """
     request_url = hauth_base_url + '/items'
-    request_headers = {'Content-Type': 'application/json'}
+    request_headers = {'Content-Type': 'application/json', 'X-API-KEY': api_key}
     files = input_csv
     exit_code = 0
 
