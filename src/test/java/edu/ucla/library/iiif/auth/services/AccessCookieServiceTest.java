@@ -22,6 +22,7 @@ import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
+import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.MessageCodes;
 
 import io.vertx.config.ConfigRetriever;
@@ -162,7 +163,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
         }).onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
-            assertEquals(AccessCookieServiceError.INVALID_COOKIE, AccessCookieServiceImpl.getError(error));
+            assertEquals(Error.INVALID_COOKIE.ordinal(), error.failureCode());
 
             aContext.completeNow();
         }).onSuccess(decryptedCookie -> {

@@ -14,6 +14,7 @@ import edu.ucla.library.iiif.auth.handlers.AccessCookieHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessModeHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessTokenHandler;
 import edu.ucla.library.iiif.auth.handlers.AdminAuthenticationErrorHandler;
+import edu.ucla.library.iiif.auth.handlers.HtmlRenderingErrorHandler;
 import edu.ucla.library.iiif.auth.handlers.ItemsHandler;
 import edu.ucla.library.iiif.auth.handlers.SinaiAccessTokenHandler;
 import edu.ucla.library.iiif.auth.handlers.StatusHandler;
@@ -37,6 +38,7 @@ import io.vertx.serviceproxy.ServiceBinder;
 /**
  * Main verticle that starts the application.
  */
+@SuppressWarnings("PMD.ExcessiveImports")
 public class MainVerticle extends AbstractVerticle {
 
     /**
@@ -103,15 +105,11 @@ public class MainVerticle extends AbstractVerticle {
 
                 // Associate handlers with operation IDs from the OpenAPI spec
                 routerBuilder.operation(Op.GET_STATUS).handler(new StatusHandler(getVertx()));
-                routerBuilder.operation(Op.GET_ACCESS_MODE).handler(new AccessModeHandler(getVertx()))
-                        .failureHandler(AccessModeHandler::handleFailure);
+                routerBuilder.operation(Op.GET_ACCESS_MODE).handler(new AccessModeHandler(getVertx()));
                 routerBuilder.operation(Op.GET_COOKIE).handler(new AccessCookieHandler(getVertx(), config));
-                routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), config))
-                        .failureHandler(AccessTokenHandler::handleFailure);
-                routerBuilder.operation(Op.GET_TOKEN_SINAI).handler(new SinaiAccessTokenHandler(getVertx(), config))
-                        .failureHandler(SinaiAccessTokenHandler::handleFailure);
-                routerBuilder.operation(Op.POST_ITEMS).handler(new ItemsHandler(getVertx()))
-                        .failureHandler(ItemsHandler::handleFailure);
+                routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), config));
+                routerBuilder.operation(Op.GET_TOKEN_SINAI).handler(new SinaiAccessTokenHandler(getVertx(), config));
+                routerBuilder.operation(Op.POST_ITEMS).handler(new ItemsHandler(getVertx()));
 
                 // Add API key authentication for routes that should use the "Admin" security scheme
                 routerBuilder.securityHandler("Admin")
@@ -119,8 +117,14 @@ public class MainVerticle extends AbstractVerticle {
 
                 router = routerBuilder.createRouter();
 
-                // Handle authentication errors on admin routes
-                router.route().failureHandler(new AdminAuthenticationErrorHandler());
+                // Register error handlers that are generic enough to apply to more than one operation.
+                //
+                // Note that the operation-specific handlers above are responsible for handling any ServiceExceptions
+                // that they may encounter, since the proper handling of those particular errors is likely to be
+                // context-dependent.
+                router.route() //
+                        .failureHandler(new AdminAuthenticationErrorHandler()) //
+                        .failureHandler(new HtmlRenderingErrorHandler());
 
                 return Future.succeededFuture(router);
             }).compose(router -> {

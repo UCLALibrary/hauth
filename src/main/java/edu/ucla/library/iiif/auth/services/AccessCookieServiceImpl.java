@@ -20,6 +20,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import edu.ucla.library.iiif.auth.Config;
+import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
 import edu.ucla.library.iiif.auth.MessageCodes;
 
@@ -63,14 +64,14 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     private static final String CIPHER_TRANSFORMATION = "AES/CBC/PKCS5Padding";
 
     /**
-     * The failure code to use for a ServiceException that represents {@link AccessCookieServiceError#CONFIGURATION}.
+     * The failure code to use for a ServiceException that represents {@link Error#CONFIGURATION}.
      */
-    private static final int CONFIGURATION_ERROR = AccessCookieServiceError.CONFIGURATION.ordinal();
+    private static final int CONFIGURATION_ERROR = Error.CONFIGURATION.ordinal();
 
     /**
-     * The failure code to use for a ServiceException that represents {@link AccessCookieServiceError#INVALID_COOKIE}.
+     * The failure code to use for a ServiceException that represents {@link Error#INVALID_COOKIE}.
      */
-    private static final int INVALID_COOKIE_ERROR = AccessCookieServiceError.INVALID_COOKIE.ordinal();
+    private static final int INVALID_COOKIE_ERROR = Error.INVALID_COOKIE.ordinal();
 
     /**
      * A reference to the configuration.
@@ -202,9 +203,8 @@ public class AccessCookieServiceImpl implements AccessCookieService {
             LOGGER.error(MessageCodes.AUTH_013, aClientIpAddress, expectedClientIpAddress);
             return Future
                     .failedFuture(new ServiceException(INVALID_COOKIE_ERROR, LOGGER.getMessage(MessageCodes.AUTH_011)));
-        } else {
-            return Future.succeededFuture(cookieData);
         }
+        return Future.succeededFuture(cookieData);
     }
 
     @Override
@@ -228,15 +228,5 @@ public class AccessCookieServiceImpl implements AccessCookieService {
             // Cookie was tampered with or is otherwise invalid
             return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR, details.getMessage()));
         }
-    }
-
-    /**
-     * Gets the AccessCookieServiceError represented by the ServiceException.
-     *
-     * @param aServiceException A ServiceException that represents a AccessCookieServiceError
-     * @return The access cookie service error
-     */
-    public static AccessCookieServiceError getError(final ServiceException aServiceException) {
-        return AccessCookieServiceError.values()[aServiceException.failureCode()];
     }
 }

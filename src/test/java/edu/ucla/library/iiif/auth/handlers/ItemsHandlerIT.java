@@ -16,7 +16,6 @@ import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.RequestJsonKeys;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.handlers.AccessModeHandler.AccessMode;
-import edu.ucla.library.iiif.auth.services.DatabaseServiceError;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 import edu.ucla.library.iiif.auth.utils.TestConstants;
 
@@ -174,7 +173,7 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
         postItems.sendJson(json).onSuccess(response -> {
             assertEquals(HTTP.BAD_REQUEST, response.statusCode());
             assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(DatabaseServiceError.MALFORMED_INPUT_DATA.toString(),
+            assertEquals(Error.MALFORMED_INPUT_DATA.toString(),
                     response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
 
             aContext.completeNow();
