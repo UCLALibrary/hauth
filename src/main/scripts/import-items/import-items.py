@@ -48,7 +48,7 @@ def import_items(access_mode, api_key, hauth_base_url, input_csv):
             click.secho('Error while importing file {}: {}'.format(boldface(base_name), repr(e)), fg='red')
             exit_code = 1
 
-    if (len(files) > 1):
+    if len(files) > 1:
         click.echo('Total items: {}'.format(total_item_count))
 
     exit(exit_code)
