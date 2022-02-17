@@ -4,7 +4,6 @@ package edu.ucla.library.iiif.auth.handlers;
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
-import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
@@ -12,7 +11,6 @@ import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.ErrorHandler;
