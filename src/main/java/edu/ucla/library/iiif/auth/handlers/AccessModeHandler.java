@@ -15,6 +15,7 @@ import edu.ucla.library.iiif.auth.utils.MediaType;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -46,7 +47,8 @@ public class AccessModeHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(final RoutingContext aContext) {
-        final String id = aContext.request().getParam(Param.ID);
+        final HttpServerRequest request = aContext.request();
+        final String id = request.getParam(Param.ID);
         final HttpServerResponse response = aContext.response() //
                 .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
 
@@ -75,6 +77,8 @@ public class AccessModeHandler implements Handler<RoutingContext> {
                         .put(ResponseJsonKeys.MESSAGE, errorMessage);
 
                 response.setStatusCode(statusCode).end(errorData.encodePrettily());
+
+                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             } else {
                 aContext.fail(error);
             }

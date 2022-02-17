@@ -20,6 +20,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -89,8 +90,9 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
 
     @Override
     public final void handle(final RoutingContext aContext) {
-        final String messageID = aContext.request().getParam(Param.MESSAGE_ID);
-        final String origin = aContext.request().getParam(Param.ORIGIN);
+        final HttpServerRequest request = aContext.request();
+        final String messageID = request.getParam(Param.MESSAGE_ID);
+        final String origin = request.getParam(Param.ORIGIN);
         final boolean isBrowserClient = messageID != null && origin != null;
         final MediaType responseContentType = isBrowserClient ? MediaType.TEXT_HTML : MediaType.APPLICATION_JSON;
         final HttpServerResponse response =
@@ -143,6 +145,8 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
 
                     response.end(errorData.encodePrettily());
                 }
+
+                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             } else {
                 aContext.fail(error);
             }

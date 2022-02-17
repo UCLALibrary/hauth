@@ -11,6 +11,7 @@ import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.ErrorHandler;
@@ -35,11 +36,14 @@ public class AdminAuthenticationErrorHandler implements ErrorHandler {
             final JsonObject errorBody = new JsonObject() //
                     .put(ResponseJsonKeys.ERROR, Error.INVALID_ADMIN_CREDENTIALS) //
                     .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_016));
+            final HttpServerRequest request = aContext.request();
 
             aContext.response() //
                     .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()) //
                     .setStatusCode(HTTP.UNAUTHORIZED) //
                     .end(errorBody.encodePrettily());
+
+            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), error.getMessage());
         } else {
             LOGGER.error(MessageCodes.AUTH_010, error.toString());
         }

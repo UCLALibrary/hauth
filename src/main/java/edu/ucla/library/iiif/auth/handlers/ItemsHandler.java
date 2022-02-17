@@ -14,6 +14,7 @@ import edu.ucla.library.iiif.auth.utils.MediaType;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
@@ -47,6 +48,7 @@ public class ItemsHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(final RoutingContext aContext) {
+        final HttpServerRequest request = aContext.request();
         final JsonArray requestData;
         final HttpServerResponse response = aContext.response() //
                 .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
@@ -59,6 +61,8 @@ public class ItemsHandler implements Handler<RoutingContext> {
                     .put(ResponseJsonKeys.ERROR, Error.INVALID_JSONARRAY) //
                     .put(ResponseJsonKeys.MESSAGE, details.getMessage());
             response.setStatusCode(HTTP.BAD_REQUEST).end(responseData.encodePrettily());
+
+            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             return;
         }
 
@@ -84,6 +88,8 @@ public class ItemsHandler implements Handler<RoutingContext> {
                         .put(ResponseJsonKeys.MESSAGE, errorMessage);
 
                 response.setStatusCode(statusCode).end(errorData.encodePrettily());
+
+                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             } else {
                 aContext.fail(error);
             }

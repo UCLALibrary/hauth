@@ -42,6 +42,8 @@ public class HtmlRenderingErrorHandler implements ErrorHandler {
                     .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString()) //
                     .setStatusCode(HTTP.INTERNAL_SERVER_ERROR) //
                     .end(LOGGER.getMessage(MessageCodes.AUTH_017, request.method(), request.path()));
+
+            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), error.getMessage());
         } else {
             LOGGER.error(MessageCodes.AUTH_010, error.toString());
         }

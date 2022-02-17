@@ -107,6 +107,8 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
             origin = URI.create(request.getParam(Param.ORIGIN));
         } catch (final IllegalArgumentException details) {
             response.setStatusCode(HTTP.BAD_REQUEST).end(details.getMessage());
+
+            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             return;
         }
 
@@ -146,6 +148,8 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                     errorMessage = LOGGER.getMessage(MessageCodes.AUTH_018);
                 }
                 response.setStatusCode(statusCode).end(errorMessage);
+
+                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             } else {
                 aContext.fail(error);
             }
