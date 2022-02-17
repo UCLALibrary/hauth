@@ -41,7 +41,7 @@ public class AdminAuthenticationErrorHandler implements ErrorHandler {
                     .setStatusCode(HTTP.UNAUTHORIZED) //
                     .end(errorBody.encodePrettily());
         } else {
-            aContext.next();
+            LOGGER.error(MessageCodes.AUTH_010, error.toString());
         }
     }
 }

@@ -76,7 +76,7 @@ public class AccessModeHandler implements Handler<RoutingContext> {
 
                 response.setStatusCode(statusCode).end(errorData.encodePrettily());
             } else {
-                aContext.next();
+                aContext.fail(error);
             }
         });
     }

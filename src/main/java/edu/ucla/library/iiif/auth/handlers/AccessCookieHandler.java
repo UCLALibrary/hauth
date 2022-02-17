@@ -147,7 +147,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                 }
                 response.setStatusCode(statusCode).end(errorMessage);
             } else {
-                aContext.next();
+                aContext.fail(error);
             }
         });
     }

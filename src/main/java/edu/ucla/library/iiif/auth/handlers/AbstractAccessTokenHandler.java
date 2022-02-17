@@ -144,7 +144,7 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
                     response.end(errorData.encodePrettily());
                 }
             } else {
-                aContext.next();
+                aContext.fail(error);
             }
         });
     }

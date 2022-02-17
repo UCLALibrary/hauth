@@ -85,7 +85,7 @@ public class ItemsHandler implements Handler<RoutingContext> {
 
                 response.setStatusCode(statusCode).end(errorData.encodePrettily());
             } else {
-                aContext.next();
+                aContext.fail(error);
             }
         });
     }

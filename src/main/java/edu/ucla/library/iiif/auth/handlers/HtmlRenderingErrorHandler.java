@@ -32,17 +32,19 @@ public class HtmlRenderingErrorHandler implements ErrorHandler {
         final Throwable error = aContext.failure();
 
         // First condition is true if syntax errors within the template
-        // Second condition is true if template file is not found at the expected path
+        // Second condition is true if template file is not found at the expected path (it appears that Handlebars
+        // always reports a path that ends with ".hbs")
         if (error instanceof HandlebarsException || error instanceof FileNotFoundException &&
                 ((FileNotFoundException) error).getMessage().endsWith(".hbs")) {
             final HttpServerRequest request = aContext.request();
 
             aContext.response() //
                     .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString()) //
-                    .setStatusCode(HTTP.INTERNAL_SERVER_ERROR)
+                    .setStatusCode(HTTP.INTERNAL_SERVER_ERROR) //
                     .end(LOGGER.getMessage(MessageCodes.AUTH_017, request.method(), request.path()));
         } else {
-            aContext.next();
+            LOGGER.error(MessageCodes.AUTH_010, error.toString());
         }
+
     }
 }
