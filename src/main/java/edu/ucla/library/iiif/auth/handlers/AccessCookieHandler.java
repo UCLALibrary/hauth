@@ -149,7 +149,6 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
             } else {
                 aContext.next();
             }
-
         });
     }
 

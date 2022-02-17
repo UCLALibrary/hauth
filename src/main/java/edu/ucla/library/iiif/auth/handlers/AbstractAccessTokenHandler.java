@@ -106,7 +106,6 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
             myExpiresIn.ifPresent(expiry -> jsonWrapper.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
             if (isBrowserClient) {
-                // Browser-based client
                 final JsonObject templateData = new JsonObject();
 
                 jsonWrapper.put(ResponseJsonKeys.MESSAGE_ID, messageID);
@@ -117,7 +116,7 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
                 return myHtmlTemplateEngine.render(templateData, "templates/token.hbs");
             }
 
-            // Non browser-based client
+            // Non browser-based clients just need the JSON
             return Future.succeededFuture(jsonWrapper.toBuffer());
         }).onSuccess(response::end).onFailure(error -> {
             if (error instanceof ServiceException) {
