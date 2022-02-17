@@ -33,25 +33,15 @@ public class AdminAuthenticationErrorHandler implements ErrorHandler {
     public void handle(final RoutingContext aContext) {
         final Throwable error = aContext.failure();
 
-        if (error instanceof HttpException) {
-            final HttpException details = (HttpException) error;
-            final int statusCode = details.getStatusCode();
+        if (error instanceof HttpException && ((HttpException) error).getStatusCode() == HTTP.UNAUTHORIZED) {
+            final JsonObject errorBody = new JsonObject() //
+                    .put(ResponseJsonKeys.ERROR, Error.INVALID_ADMIN_CREDENTIALS) //
+                    .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_016));
 
-            final HttpServerResponse response =
-                    aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
-            final JsonObject responseBody = new JsonObject();
-
-            response.setStatusCode(statusCode);
-
-            if (statusCode == HTTP.UNAUTHORIZED) {
-                responseBody.put(ResponseJsonKeys.ERROR, Error.INVALID_ADMIN_CREDENTIALS).put(ResponseJsonKeys.MESSAGE,
-                        LOGGER.getMessage(MessageCodes.AUTH_016));
-            } else {
-                responseBody.put(ResponseJsonKeys.ERROR, StringUtils.format("HTTP {}", statusCode))
-                        .put(ResponseJsonKeys.MESSAGE, details.getMessage());
-            }
-
-            response.end(responseBody.encodePrettily());
+            aContext.response() //
+                    .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()) //
+                    .setStatusCode(HTTP.UNAUTHORIZED) //
+                    .end(errorBody.encodePrettily());
         } else {
             aContext.next();
         }

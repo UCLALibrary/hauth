@@ -29,13 +29,14 @@ public class HtmlRenderingErrorHandler implements ErrorHandler {
 
     @Override
     public void handle(final RoutingContext aContext) {
-        final HttpServerRequest request = aContext.request();
         final Throwable error = aContext.failure();
 
         // First condition is true if syntax errors within the template
         // Second condition is true if template file is not found at the expected path
         if (error instanceof HandlebarsException || error instanceof FileNotFoundException &&
                 ((FileNotFoundException) error).getMessage().endsWith(".hbs")) {
+            final HttpServerRequest request = aContext.request();
+
             aContext.response() //
                     .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString()) //
                     .setStatusCode(HTTP.INTERNAL_SERVER_ERROR)
