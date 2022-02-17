@@ -5,12 +5,11 @@ import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Param;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
-import edu.ucla.library.iiif.auth.services.DatabaseServiceError;
-import edu.ucla.library.iiif.auth.services.DatabaseServiceImpl;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.Handler;
@@ -48,58 +47,42 @@ public class AccessModeHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(final RoutingContext aContext) {
-        final String id = aContext.request().getParam(Param.ID);
+        final HttpServerRequest request = aContext.request();
+        final String id = request.getParam(Param.ID);
+        final HttpServerResponse response = aContext.response() //
+                .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
 
         myDatabaseServiceProxy.getAccessMode(id).onSuccess(accessMode -> {
-            final JsonObject data = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.values()[accessMode]);
+            final JsonObject responseData = new JsonObject() //
+                    .put(ResponseJsonKeys.ACCESS_MODE, AccessMode.values()[accessMode]);
 
-            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
-                    .setStatusCode(HTTP.OK).end(data.encodePrettily());
-        }).onFailure(aContext::fail);
-    }
+            response.setStatusCode(HTTP.OK).end(responseData.encodePrettily());
+        }).onFailure(error -> {
+            if (error instanceof ServiceException) {
+                final ServiceException details = (ServiceException) error;
+                final int statusCode;
+                final String errorMessage;
+                final JsonObject errorData;
 
-    /**
-     * Handle failure events sent by {@link #handle}.
-     *
-     * @param aContext the failure event to handle
-     */
-    public static void handleFailure(final RoutingContext aContext) {
-        final ServiceException error;
-        final HttpServerRequest request;
-        final HttpServerResponse response;
-        final String responseMessage;
-        final JsonObject data;
-        final DatabaseServiceError errorCode;
+                if (details.failureCode() == Error.NOT_FOUND.ordinal()) {
+                    statusCode = HTTP.NOT_FOUND;
+                    errorMessage = LOGGER.getMessage(MessageCodes.AUTH_004, id);
+                } else {
+                    statusCode = HTTP.INTERNAL_SERVER_ERROR;
+                    errorMessage = LOGGER.getMessage(MessageCodes.AUTH_005);
+                }
 
-        try {
-            error = (ServiceException) aContext.failure();
-        } catch (final ClassCastException details) {
-            aContext.next();
-            return;
-        }
+                errorData = new JsonObject() //
+                        .put(ResponseJsonKeys.ERROR, Error.values()[details.failureCode()]) //
+                        .put(ResponseJsonKeys.MESSAGE, errorMessage);
 
-        request = aContext.request();
-        response = aContext.response();
-        data = new JsonObject();
-        errorCode = DatabaseServiceImpl.getError(error);
+                response.setStatusCode(statusCode).end(errorData.encodePrettily());
 
-        switch (errorCode) {
-            case NOT_FOUND:
-                final String id = error.getMessage();
-                response.setStatusCode(HTTP.NOT_FOUND);
-                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_004, id);
-                break;
-            case INTERNAL_ERROR:
-            default:
-                response.setStatusCode(HTTP.INTERNAL_SERVER_ERROR);
-                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_005);
-                break;
-        }
-
-        data.put(ResponseJsonKeys.ERROR, errorCode).put(ResponseJsonKeys.MESSAGE, responseMessage);
-        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
-
-        LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
+                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
+            } else {
+                aContext.fail(error);
+            }
+        });
     }
 
     /**

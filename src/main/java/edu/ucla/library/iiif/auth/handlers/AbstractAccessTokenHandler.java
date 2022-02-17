@@ -14,8 +14,6 @@ import edu.ucla.library.iiif.auth.Param;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.TemplateKeys;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
-import edu.ucla.library.iiif.auth.services.AccessCookieServiceError;
-import edu.ucla.library.iiif.auth.services.AccessCookieServiceImpl;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.Future;
@@ -92,40 +90,67 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
 
     @Override
     public final void handle(final RoutingContext aContext) {
-        createAccessToken(aContext).onSuccess(token -> {
-            // Unless e.g. the Handlebars template rendering fails, we'll return HTTP 200
-            final HttpServerResponse response = aContext.response().setStatusCode(HTTP.OK);
+        final HttpServerRequest request = aContext.request();
+        final String messageID = request.getParam(Param.MESSAGE_ID);
+        final String origin = request.getParam(Param.ORIGIN);
+        final boolean isBrowserClient = messageID != null && origin != null;
+        final MediaType responseContentType = isBrowserClient ? MediaType.TEXT_HTML : MediaType.APPLICATION_JSON;
+        final HttpServerResponse response =
+                aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, responseContentType.toString());
+
+        createAccessToken(aContext).compose(token -> {
             final JsonObject jsonWrapper = new JsonObject().put(ResponseJsonKeys.ACCESS_TOKEN, token);
-            final String messageID = aContext.request().getParam(Param.MESSAGE_ID);
-            final String origin = aContext.request().getParam(Param.ORIGIN);
+
+            // Unless e.g. the Handlebars template rendering fails, we'll return HTTP 200
+            response.setStatusCode(HTTP.OK);
 
             // Token expiry is optional
             myExpiresIn.ifPresent(expiry -> jsonWrapper.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
-            if (messageID != null && origin != null) {
-                // Browser-based client
+            if (isBrowserClient) {
                 final JsonObject templateData = new JsonObject();
 
                 jsonWrapper.put(ResponseJsonKeys.MESSAGE_ID, messageID);
                 templateData.put(TemplateKeys.ORIGIN, origin).put(TemplateKeys.ACCESS_TOKEN_OBJECT, jsonWrapper);
 
-                response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString());
+                response.putHeader(HttpHeaders.CONTENT_TYPE, responseContentType.toString());
 
-                myHtmlTemplateEngine.render(templateData, "templates/token.hbs").onSuccess(html -> {
-                    response.end(html);
-                }).onFailure(details -> {
-                    final JsonObject error = new JsonObject().put(ResponseJsonKeys.ERROR, Error.HTML_RENDERING_ERROR)
-                            .put(ResponseJsonKeys.MESSAGE, details.getMessage());
-
-                    response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
-                            .setStatusCode(HTTP.INTERNAL_SERVER_ERROR).end(error.encodePrettily());
-                });
-            } else {
-                // Non browser-based client
-                response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
-                        .end(jsonWrapper.encodePrettily());
+                return myHtmlTemplateEngine.render(templateData, "templates/token.hbs");
             }
-        }).onFailure(aContext::fail);
+
+            // Non browser-based clients just need the JSON
+            return Future.succeededFuture(jsonWrapper.toBuffer());
+        }).onSuccess(response::end).onFailure(error -> {
+            if (error instanceof ServiceException) {
+                final ServiceException details = (ServiceException) error;
+                final int statusCode;
+                final String errorMessage;
+
+                if (details.failureCode() == Error.INVALID_COOKIE.ordinal()) {
+                    statusCode = HTTP.BAD_REQUEST;
+                    errorMessage = LOGGER.getMessage(MessageCodes.AUTH_012);
+                } else {
+                    statusCode = HTTP.INTERNAL_SERVER_ERROR;
+                    errorMessage = LOGGER.getMessage(MessageCodes.AUTH_018);
+                }
+
+                response.setStatusCode(statusCode);
+
+                if (isBrowserClient) {
+                    response.end(errorMessage);
+                } else {
+                    final JsonObject errorData = new JsonObject() //
+                            .put(ResponseJsonKeys.ERROR, Error.values()[details.failureCode()]) //
+                            .put(ResponseJsonKeys.MESSAGE, errorMessage);
+
+                    response.end(errorData.encodePrettily());
+                }
+
+                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
+            } else {
+                aContext.fail(error);
+            }
+        });
     }
 
     /**
@@ -135,46 +160,4 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
      * @return A Future that resolves to the access token value
      */
     protected abstract Future<String> createAccessToken(RoutingContext aContext);
-
-    /**
-     * Handle failure events sent by {@link #handle}.
-     *
-     * @param aContext the failure event to handle
-     */
-    public static final void handleFailure(final RoutingContext aContext) {
-        final ServiceException error;
-        final HttpServerRequest request;
-        final HttpServerResponse response;
-        final String responseMessage;
-        final JsonObject data;
-        final AccessCookieServiceError errorCode;
-
-        try {
-            error = (ServiceException) aContext.failure();
-        } catch (final ClassCastException details) {
-            aContext.next();
-            return;
-        }
-
-        request = aContext.request();
-        response = aContext.response();
-        data = new JsonObject();
-        errorCode = AccessCookieServiceImpl.getError(error);
-
-        switch (errorCode) {
-            case INVALID_COOKIE:
-                response.setStatusCode(HTTP.BAD_REQUEST);
-                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_011);
-                break;
-            case CONFIGURATION:
-            default:
-                response.setStatusCode(HTTP.INTERNAL_SERVER_ERROR);
-                responseMessage = LOGGER.getMessage(MessageCodes.AUTH_012);
-                break;
-        }
-        data.put(ResponseJsonKeys.ERROR, errorCode).put(ResponseJsonKeys.MESSAGE, responseMessage);
-        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).end(data.encodePrettily());
-
-        LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), responseMessage);
-    }
 }

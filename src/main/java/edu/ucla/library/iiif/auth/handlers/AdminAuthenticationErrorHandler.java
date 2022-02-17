@@ -4,7 +4,6 @@ package edu.ucla.library.iiif.auth.handlers;
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
-import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
@@ -12,7 +11,7 @@ import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.ErrorHandler;
@@ -33,27 +32,20 @@ public class AdminAuthenticationErrorHandler implements ErrorHandler {
     public void handle(final RoutingContext aContext) {
         final Throwable error = aContext.failure();
 
-        if (error instanceof HttpException) {
-            final HttpException details = (HttpException) error;
-            final int statusCode = details.getStatusCode();
+        if (error instanceof HttpException && ((HttpException) error).getStatusCode() == HTTP.UNAUTHORIZED) {
+            final JsonObject errorBody = new JsonObject() //
+                    .put(ResponseJsonKeys.ERROR, Error.INVALID_ADMIN_CREDENTIALS) //
+                    .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_016));
+            final HttpServerRequest request = aContext.request();
 
-            final HttpServerResponse response =
-                    aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
-            final JsonObject responseBody = new JsonObject();
+            aContext.response() //
+                    .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()) //
+                    .setStatusCode(HTTP.UNAUTHORIZED) //
+                    .end(errorBody.encodePrettily());
 
-            response.setStatusCode(statusCode);
-
-            if (statusCode == HTTP.UNAUTHORIZED) {
-                responseBody.put(ResponseJsonKeys.ERROR, Error.INVALID_ADMIN_CREDENTIALS).put(ResponseJsonKeys.MESSAGE,
-                        LOGGER.getMessage(MessageCodes.AUTH_016));
-            } else {
-                responseBody.put(ResponseJsonKeys.ERROR, StringUtils.format("HTTP {}", statusCode))
-                        .put(ResponseJsonKeys.MESSAGE, details.getMessage());
-            }
-
-            response.end(responseBody.encodePrettily());
+            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), error.getMessage());
         } else {
-            aContext.next();
+            LOGGER.error(MessageCodes.AUTH_010, error.toString());
         }
     }
 }

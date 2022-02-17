@@ -58,7 +58,7 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
 
         getCookie.send().onSuccess(response -> {
-            assertEquals(HTTP.INTERNAL_SERVER_ERROR, response.statusCode());
+            assertEquals(HTTP.BAD_REQUEST, response.statusCode());
             assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
 
             aContext.completeNow();

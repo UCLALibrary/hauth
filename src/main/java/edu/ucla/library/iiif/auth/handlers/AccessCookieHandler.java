@@ -12,6 +12,8 @@ import com.github.veqryn.net.Ip4;
 
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.CookieNames;
+import edu.ucla.library.iiif.auth.Error;
+import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Param;
 import edu.ucla.library.iiif.auth.TemplateKeys;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
@@ -19,6 +21,8 @@ import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import info.freelibrary.util.HTTP;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -26,14 +30,21 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine;
+import io.vertx.serviceproxy.ServiceException;
 
 /**
  * Handler that handles access cookie requests.
  */
 public class AccessCookieHandler implements Handler<RoutingContext> {
+
+    /**
+     * The handler's logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieHandler.class, MessageCodes.BUNDLE);
 
     /**
      * The application configuration.
@@ -88,12 +99,16 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
         final Ip4 clientIpAddress;
         final URI origin;
         final boolean isOnCampusNetwork;
+        final HttpServerResponse response =
+                aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString());
 
         try {
             clientIpAddress = new Ip4(request.remoteAddress().hostAddress());
             origin = URI.create(request.getParam(Param.ORIGIN));
         } catch (final IllegalArgumentException details) {
-            aContext.fail(HTTP.BAD_REQUEST, details);
+            response.setStatusCode(HTTP.BAD_REQUEST).end(details.getMessage());
+
+            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             return;
         }
 
@@ -107,22 +122,37 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                 final Cookie cookie = Cookie.cookie(CookieNames.HAUTH, cookieValue);
 
                 // Along with the origin, pass all the cookie data to the HTML template
-                final JsonObject htmlTemplateData = new JsonObject().put(TemplateKeys.ORIGIN, origin)
+                final JsonObject templateData = new JsonObject().put(TemplateKeys.ORIGIN, origin)
                         .put(TemplateKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
                         .put(TemplateKeys.CLIENT_IP_ADDRESS, clientIpAddress)
                         .put(TemplateKeys.CAMPUS_NETWORK, isOnCampusNetwork)
                         .put(TemplateKeys.DEGRADED_ALLOWED, isDegradedAllowed);
 
-                aContext.response().addCookie(cookie);
+                response.addCookie(cookie);
 
-                return myHtmlTemplateEngine.render(htmlTemplateData.getMap(), "templates/cookie.hbs");
+                return myHtmlTemplateEngine.render(templateData, "templates/cookie.hbs");
             });
         }).onSuccess(renderedHtmlTemplate -> {
-            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString())
-                    .setStatusCode(HTTP.OK).end(renderedHtmlTemplate);
-        }).onFailure(details -> {
-            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString())
-                    .setStatusCode(HTTP.INTERNAL_SERVER_ERROR).end(details.getMessage());
+            response.setStatusCode(HTTP.OK).end(renderedHtmlTemplate);
+        }).onFailure(error -> {
+            if (error instanceof ServiceException) {
+                final ServiceException details = (ServiceException) error;
+                final int statusCode;
+                final String errorMessage;
+
+                if (details.failureCode() == Error.NOT_FOUND.ordinal()) {
+                    statusCode = HTTP.BAD_REQUEST;
+                    errorMessage = details.getMessage();
+                } else {
+                    statusCode = HTTP.INTERNAL_SERVER_ERROR;
+                    errorMessage = LOGGER.getMessage(MessageCodes.AUTH_018);
+                }
+                response.setStatusCode(statusCode).end(errorMessage);
+
+                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
+            } else {
+                aContext.fail(error);
+            }
         });
     }
 

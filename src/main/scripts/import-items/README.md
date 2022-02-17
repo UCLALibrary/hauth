@@ -19,7 +19,7 @@ pip install -r requirements.txt
 Assuming that all CSV files in the current working directory contain open access items, and a Hauth instance is running at http://example.com:
 
 ```bash
-./import-items.py --access-mode=OPEN http://example.com *.csv
+./import-items.py --api-key=0123456789ABCDEF --access-mode=OPEN http://example.com *.csv
 ```
 
 For complete usage info:

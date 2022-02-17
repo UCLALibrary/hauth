@@ -17,6 +17,7 @@ import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.Config;
+import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.RequestJsonKeys;
 
@@ -77,19 +78,19 @@ public class DatabaseServiceImpl implements DatabaseService {
     private static final String DEFAULT_HOSTNAME = "localhost";
 
     /**
-     * The failure code to use for a ServiceException that represents {@link DatabaseServiceError#INTERNAL_ERROR}.
+     * The failure code to use for a ServiceException that represents {@link Error#INTERNAL_ERROR}.
      */
-    private static final int INTERNAL_ERROR = DatabaseServiceError.INTERNAL_ERROR.ordinal();
+    private static final int INTERNAL_ERROR = Error.INTERNAL_ERROR.ordinal();
 
     /**
-     * The failure code to use for a ServiceException that represents {@link DatabaseServiceError#NOT_FOUND}.
+     * The failure code to use for a ServiceException that represents {@link Error#NOT_FOUND}.
      */
-    private static final int NOT_FOUND_ERROR = DatabaseServiceError.NOT_FOUND.ordinal();
+    private static final int NOT_FOUND_ERROR = Error.NOT_FOUND.ordinal();
 
     /**
-     * The failure code to use for a ServiceException that represents {@link DatabaseServiceError#MALFORMED_INPUT_DATA}.
+     * The failure code to use for a ServiceException that represents {@link Error#MALFORMED_INPUT_DATA}.
      */
-    private static final int MALFORMED_INPUT_DATA_ERROR = DatabaseServiceError.MALFORMED_INPUT_DATA.ordinal();
+    private static final int MALFORMED_INPUT_DATA_ERROR = Error.MALFORMED_INPUT_DATA.ordinal();
 
     /**
      * The underlying PostgreSQL connection pool.
@@ -183,16 +184,6 @@ public class DatabaseServiceImpl implements DatabaseService {
         }).recover(error -> {
             return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
         }).compose(result -> Future.succeededFuture());
-    }
-
-    /**
-     * Gets the DatabaseServiceError represented by the ServiceException.
-     *
-     * @param aServiceException A ServiceException that represents a DatabaseServiceError
-     * @return The database service error
-     */
-    public static DatabaseServiceError getError(final ServiceException aServiceException) {
-        return DatabaseServiceError.values()[aServiceException.failureCode()];
     }
 
     /**

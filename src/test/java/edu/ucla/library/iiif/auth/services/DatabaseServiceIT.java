@@ -13,6 +13,7 @@ import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
+import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.MessageCodes;
 
 import io.vertx.config.ConfigRetriever;
@@ -101,7 +102,7 @@ public class DatabaseServiceIT extends AbstractServiceTest {
             // The get should fail since nothing has been set for the id
             final ServiceException error = (ServiceException) details;
 
-            assertEquals(DatabaseServiceError.NOT_FOUND, DatabaseServiceImpl.getError(error));
+            assertEquals(Error.NOT_FOUND.ordinal(), error.failureCode());
             assertEquals(id, error.getMessage());
 
             aContext.completeNow();
@@ -179,9 +180,12 @@ public class DatabaseServiceIT extends AbstractServiceTest {
         final String itemsMissingAccessMode = "[ { \"uid\": \"setItemsInvalidItem\" } ]";
         final Future<Void> setItems = myServiceProxy.setItems(new JsonArray(itemsMissingAccessMode));
 
-        setItems.onFailure(result -> {
-            completeIfExpectedElseFail(DatabaseServiceError.MALFORMED_INPUT_DATA,
-                    DatabaseServiceImpl.getError((ServiceException) result), aContext);
+        setItems.onFailure(details -> {
+            final ServiceException error = (ServiceException) details;
+
+            assertEquals(Error.MALFORMED_INPUT_DATA.ordinal(), error.failureCode());
+
+            aContext.completeNow();
         }).onSuccess(result -> {
             aContext.failNow(LOGGER.getMessage(MessageCodes.AUTH_015, result));
         });
@@ -200,7 +204,7 @@ public class DatabaseServiceIT extends AbstractServiceTest {
         myServiceProxy.getDegradedAllowed(url).onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
-            assertEquals(DatabaseServiceError.NOT_FOUND, DatabaseServiceImpl.getError(error));
+            assertEquals(Error.NOT_FOUND.ordinal(), error.failureCode());
             assertEquals(url, error.getMessage());
 
             aContext.completeNow();
