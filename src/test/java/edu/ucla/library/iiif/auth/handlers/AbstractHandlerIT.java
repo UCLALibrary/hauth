@@ -2,7 +2,9 @@
 package edu.ucla.library.iiif.auth.handlers;
 
 import java.security.GeneralSecurityException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Random;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
+import edu.ucla.library.iiif.auth.utils.TestUtils;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.CompositeFuture;
@@ -22,6 +25,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.sqlclient.Tuple;
 
 /**
  * A base class for handler integration tests.
@@ -101,6 +105,16 @@ public abstract class AbstractHandlerIT {
     protected AccessCookieService myAccessCookieService;
 
     /**
+     * Mock values for a pair of Sinai cookies that have not expired yet.
+     */
+    protected Tuple myMockSinaiCookies;
+
+    /**
+     * Mock values for a pair of Sinai cookies that have expired.
+     */
+    protected Tuple myMockSinaiCookiesExpired;
+
+    /**
      * Sets up the test.
      *
      * @param aVertx A Vert.x instance
@@ -121,6 +135,21 @@ public abstract class AbstractHandlerIT {
             try {
                 myAccessCookieService = AccessCookieService.create(config);
             } catch (final GeneralSecurityException details) {
+                return Future.failedFuture(details);
+            }
+
+            // We also need some Sinai cookies to test with
+            try {
+                final Random random = new Random();
+
+                // Choose a day within the past 3
+                myMockSinaiCookies =
+                        TestUtils.getMockSinaiCookies(config, LocalDate.now().minusDays(random.nextInt(3 + 1)));
+
+                // Choose a day after the past 3 days but within, say, the past 90
+                myMockSinaiCookiesExpired = TestUtils.getMockSinaiCookies(config,
+                        LocalDate.now().minusDays(4 + random.nextInt(90 - 4 + 1)));
+            } catch (final Exception details) {
                 return Future.failedFuture(details);
             }
 

@@ -1,9 +1,6 @@
 
 package edu.ucla.library.iiif.auth.handlers;
 
-import static edu.ucla.library.iiif.auth.utils.TestConstants.TEST_INITIALIZATION_VECTOR;
-import static edu.ucla.library.iiif.auth.utils.TestConstants.TEST_SINAI_AUTHENTICATED_3DAY;
-
 import static info.freelibrary.util.Constants.EMPTY;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,6 +29,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.sqlclient.Tuple;
 
 /**
  * Tests {@link SinaiAccessTokenHandler#handle}.
@@ -55,19 +53,12 @@ public final class SinaiAccessTokenHandlerIT extends AbstractHandlerIT {
     private final String mySinaiCookieHeaderTemplate = "{}={}; {}={}";
 
     /**
-     * A valid cookie header to test with.
-     */
-    private final String mySinaiCookieHeader =
-            StringUtils.format(mySinaiCookieHeaderTemplate, CookieNames.SINAI_CIPHERTEXT, TEST_SINAI_AUTHENTICATED_3DAY,
-                    CookieNames.SINAI_IV, TEST_INITIALIZATION_VECTOR);
-
-    /**
      * The invalid cookie to test with.
      */
     private final String myInvalidCookieHeader =
             StringUtils.format(mySinaiCookieHeaderTemplate, CookieNames.SINAI_CIPHERTEXT,
                     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                    CookieNames.SINAI_IV, TEST_INITIALIZATION_VECTOR);
+                    CookieNames.SINAI_IV, "30313233343536373839414243444546");
 
     /**
      * The Handlebars template used by the handler for rendering responses to requests by browser clients.
@@ -84,7 +75,7 @@ public final class SinaiAccessTokenHandlerIT extends AbstractHandlerIT {
     public void testGetTokenBrowser(final Vertx aVertx, final VertxTestContext aContext) {
         final String getTokenRequestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, myGetTokenRequestQuery);
         final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
-                .putHeader(HttpHeaders.COOKIE.toString(), mySinaiCookieHeader);
+                .putHeader(HttpHeaders.COOKIE.toString(), getSinaiCookieHeader(myMockSinaiCookies));
 
         getToken.send().onSuccess(response -> {
             final JsonObject expectedAccessTokenDecoded =
@@ -127,7 +118,7 @@ public final class SinaiAccessTokenHandlerIT extends AbstractHandlerIT {
     public void testGetTokenNonBrowser(final Vertx aVertx, final VertxTestContext aContext) {
         final String getTokenRequestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, EMPTY);
         final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
-                .putHeader(HttpHeaders.COOKIE.toString(), mySinaiCookieHeader);
+                .putHeader(HttpHeaders.COOKIE.toString(), getSinaiCookieHeader(myMockSinaiCookies));
 
         getToken.send().onSuccess(response -> {
             final JsonObject expectedAccessTokenDecoded =
@@ -148,6 +139,8 @@ public final class SinaiAccessTokenHandlerIT extends AbstractHandlerIT {
             aContext.completeNow();
         }).onFailure(aContext::failNow);
     }
+
+    // TODO: add tests for expired cookies
 
     /**
      * Tests that a browser client can't use an invalid access cookie to obtain an access token.
@@ -187,5 +180,16 @@ public final class SinaiAccessTokenHandlerIT extends AbstractHandlerIT {
 
             aContext.completeNow();
         }).onFailure(aContext::failNow);
+    }
+
+    /**
+     * Gets a cookie header to use in Sinai access token requests.
+     *
+     * @param aSinaiCookieTuple A tuple that contains all cookies required for Sinai authentication
+     * @return The cookie header
+     */
+    private String getSinaiCookieHeader(final Tuple aSinaiCookieTuple) {
+        return StringUtils.format(mySinaiCookieHeaderTemplate, CookieNames.SINAI_CIPHERTEXT,
+                aSinaiCookieTuple.getString(0), CookieNames.SINAI_IV, aSinaiCookieTuple.getString(1));
     }
 }

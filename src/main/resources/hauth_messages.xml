@@ -24,5 +24,7 @@
   <entry key="AUTH_016">API key is missing or invalid</entry>
   <entry key="AUTH_017">Could not render HTML response for {} {}</entry>
   <entry key="AUTH_018">Internal error</entry>
+  <entry key="AUTH_019">Expected validation of expired cookie to fail, but it succeeded</entry>
+  <entry key="AUTH_020">Generated cookies: {}={}, {}={} (cleartext: "{}")</entry>
 
 </properties>

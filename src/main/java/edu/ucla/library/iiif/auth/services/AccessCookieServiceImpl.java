@@ -1,6 +1,8 @@
 
 package edu.ucla.library.iiif.auth.services;
 
+import static info.freelibrary.util.Constants.SPACE;
+
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -8,6 +10,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
@@ -41,27 +46,33 @@ import org.apache.commons.codec.binary.Hex;
  * Algorithm names are defined
  * <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">here</a>.
  */
+@SuppressWarnings("PMD.ExcessiveImports")
 public class AccessCookieServiceImpl implements AccessCookieService {
+
+    /**
+     * The name of the algorithm to use for key derivation.
+     */
+    public static final String KEY_DERIVATION_FUNCTION = "PBKDF2WithHmacSHA256";
+
+    /**
+     * The name of the secret key algorithm.
+     */
+    public static final String KEY_ALGORITHM = "AES";
+
+    /**
+     * The name of the cipher transformation.
+     */
+    public static final String CIPHER_TRANSFORMATION = "AES/CBC/PKCS5Padding";
+
+    /**
+     * The date format used in Sinai cookies.
+     */
+    public static final String SINAI_COOKIE_DATE_FORMAT = "EEE, dd MMM yyyy";
 
     /**
      * The access cookie service impl's logger.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessCookieServiceImpl.class, MessageCodes.BUNDLE);
-
-    /**
-     * The name of the algorithm to use for key derivation.
-     */
-    private static final String KEY_DERIVATION_FUNCTION = "PBKDF2WithHmacSHA256";
-
-    /**
-     * The name of the secret key algorithm.
-     */
-    private static final String KEY_ALGORITHM = "AES";
-
-    /**
-     * The name of the cipher transformation.
-     */
-    private static final String CIPHER_TRANSFORMATION = "AES/CBC/PKCS5Padding";
 
     /**
      * The failure code to use for a ServiceException that represents {@link Error#CONFIGURATION}.
@@ -104,6 +115,11 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     private final String mySinaiCookieValidPrefix;
 
     /**
+     * A formatter for the date in a Sinai cookie.
+     */
+    private final DateTimeFormatter mySinaiCookieDateFormatter;
+
+    /**
      * Creates an instance of the service. For reference material on the key derivation crypto, see RFC 8018:
      * <ul>
      * <li><a href="https://datatracker.ietf.org/doc/html/rfc8018#section-4.1">Salt</a>
@@ -141,6 +157,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
         mySecretKeySinai = new SecretKeySpec(
                 aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD).getBytes(), KEY_ALGORITHM);
         mySinaiCookieValidPrefix = aConfig.getString(Config.SINAI_COOKIE_VALID_PREFIX);
+        mySinaiCookieDateFormatter = DateTimeFormatter.ofPattern(SINAI_COOKIE_DATE_FORMAT);
     }
 
     @Override
@@ -213,18 +230,29 @@ public class AccessCookieServiceImpl implements AccessCookieService {
             final byte[] encryptedCookieData = Hex.decodeHex(aAuthCookieValue);
             final byte[] nonce = Hex.decodeHex(aIvCookieValue);
             final byte[] rawCookieData;
-            final String cookieData;
+            final String[] cookieData;
+            final String prefix;
+            final LocalDate lastValidDate;
+            final boolean isValid;
 
             myCipher.init(Cipher.DECRYPT_MODE, mySecretKeySinai, new IvParameterSpec(nonce));
 
             rawCookieData = myCipher.doFinal(encryptedCookieData);
-            cookieData = new String(rawCookieData);
+            cookieData = new String(rawCookieData).split(SPACE, 2);
 
-            return Future.succeededFuture(cookieData.startsWith(mySinaiCookieValidPrefix));
+            // The prefix must match exactly, and the date must not be more than three days ago
+            prefix = cookieData[0];
+            lastValidDate = LocalDate.parse(cookieData[1], mySinaiCookieDateFormatter).plusDays(3);
+            // TODO: the Sinai cookie should contain a more specific timestamp so that any given cookie is considered
+            // valid for exactly 72 hours after creation
+            isValid = prefix.equals(mySinaiCookieValidPrefix) && !LocalDate.now().isAfter(lastValidDate);
+
+            return Future.succeededFuture(isValid);
         } catch (final IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException details) {
             // This code should never be reached, assuming we've configured the application properly
             return Future.failedFuture(new ServiceException(CONFIGURATION_ERROR, details.getMessage()));
-        } catch (final BadPaddingException | ClassCastException | DecoderException | IllegalArgumentException details) {
+        } catch (final BadPaddingException | ClassCastException | DateTimeException | DecoderException |
+                IllegalArgumentException | IndexOutOfBoundsException details) {
             // Cookie was tampered with or is otherwise invalid
             return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR, details.getMessage()));
         }
