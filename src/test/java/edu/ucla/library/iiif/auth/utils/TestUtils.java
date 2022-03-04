@@ -53,19 +53,18 @@ public final class TestUtils {
                 aLocalDate.format(DateTimeFormatter.ofPattern(AccessCookieServiceImpl.SINAI_COOKIE_DATE_FORMAT));
         final String clearText = String.join(SPACE, clearTextPrefix, clearTextSuffix);
 
-        final Cipher cipher;
-        final SecretKey key;
+        final Cipher cipher = Cipher.getInstance(AccessCookieServiceImpl.CIPHER_TRANSFORMATION);
+        final SecretKey key =
+                new SecretKeySpec(aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD).getBytes(),
+                        AccessCookieServiceImpl.KEY_ALGORITHM);
+
         final byte[] cipherText;
         final String sinaiAuthenticated3Day;
         final String initializationVector;
 
-        cipher = Cipher.getInstance(AccessCookieServiceImpl.CIPHER_TRANSFORMATION);
-        key = new SecretKeySpec(aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD).getBytes(),
-                AccessCookieServiceImpl.KEY_ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, key, new SecureRandom());
 
         cipherText = cipher.doFinal(clearText.getBytes());
-
         sinaiAuthenticated3Day = Hex.encodeHexString(cipherText);
         initializationVector = Hex.encodeHexString(cipher.getIV());
 
