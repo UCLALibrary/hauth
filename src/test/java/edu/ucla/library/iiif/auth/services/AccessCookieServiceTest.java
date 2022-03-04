@@ -1,20 +1,21 @@
 
 package edu.ucla.library.iiif.auth.services;
 
-import static edu.ucla.library.iiif.auth.utils.TestConstants.TEST_INITIALIZATION_VECTOR;
-import static edu.ucla.library.iiif.auth.utils.TestConstants.TEST_SINAI_AUTHENTICATED_3DAY;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.security.GeneralSecurityException;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import info.freelibrary.util.Logger;
@@ -24,8 +25,10 @@ import info.freelibrary.util.StringUtils;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
 import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.MessageCodes;
+import edu.ucla.library.iiif.auth.utils.TestUtils;
 
 import io.vertx.config.ConfigRetriever;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -34,11 +37,13 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.serviceproxy.ServiceException;
+import io.vertx.sqlclient.Tuple;
 
 /**
  * Tests the {@link AccessCookieService}.
  */
 @ExtendWith(VertxExtension.class)
+@TestInstance(Lifecycle.PER_CLASS)
 public class AccessCookieServiceTest extends AbstractServiceTest {
 
     /**
@@ -62,18 +67,43 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
     private MessageConsumer<JsonObject> myService;
 
     /**
+     * Mock values for a pair of Sinai cookies that were created just moments ago.
+     */
+    private Tuple myMockSinaiCookiesFresh;
+
+    /**
+     * MOck values for a pair of Sinai cookies that were created three days ago.
+     */
+    private Tuple myMockSinaiCookies3DaysOld;
+
+    /**
+     * Mock values for a pair of Sinai cookies that were created four days ago.
+     */
+    private Tuple myMockSinaiCookies4DaysOld;
+
+    /**
      * Sets up the test.
      *
      * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
-    @BeforeEach
+    @BeforeAll
     public final void setUp(final Vertx aVertx, final VertxTestContext aContext) {
         ConfigRetriever.create(aVertx).getConfig().onSuccess(config -> {
             try {
                 // In order to test the service proxy, we need to instantiate the service first
                 final AccessCookieService service = AccessCookieService.create(config);
                 final ServiceBinder binder = new ServiceBinder(aVertx);
+
+                // We also need some Sinai cookies to test with
+                try {
+                    myMockSinaiCookiesFresh = TestUtils.getMockSinaiCookies(config, LocalDate.now());
+                    myMockSinaiCookies3DaysOld = TestUtils.getMockSinaiCookies(config, LocalDate.now().minusDays(3));
+                    myMockSinaiCookies4DaysOld = TestUtils.getMockSinaiCookies(config, LocalDate.now().minusDays(4));
+                } catch (final Exception details) {
+                    aContext.failNow(details);
+                    return;
+                }
 
                 // Register the service on the event bus, and keep a reference to it so it can be unregistered later
                 myService = binder.setAddress(AccessCookieService.ADDRESS).register(AccessCookieService.class, service);
@@ -94,7 +124,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
      * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
-    @AfterEach
+    @AfterAll
     public final void tearDown(final Vertx aVertx, final VertxTestContext aContext) {
         // Close the service proxy, then unregister the service (order important)
         myServiceProxy.close().compose(result -> myService.unregister()).onSuccess(success -> aContext.completeNow())
@@ -189,12 +219,13 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
      */
     @Test
     public final void testValidateSinaiCookie(final Vertx aVertx, final VertxTestContext aContext) {
-        final Future<Boolean> validateCookie =
-                myServiceProxy.validateSinaiCookie(TEST_SINAI_AUTHENTICATED_3DAY, TEST_INITIALIZATION_VECTOR);
+        final Future<Boolean> validateCookieFresh = validateSinaiCookieTuple(myMockSinaiCookiesFresh);
+        final Future<Boolean> validateCookie3DaysOld = validateSinaiCookieTuple(myMockSinaiCookies3DaysOld);
 
-        validateCookie.onSuccess(result -> {
+        CompositeFuture.all(validateCookieFresh, validateCookie3DaysOld).onSuccess(result -> {
             try {
-                assertTrue(result);
+                assertTrue(result.<Boolean>resultAt(0));
+                assertTrue(result.<Boolean>resultAt(1));
 
                 aContext.completeNow();
             } catch (final AssertionError details) {
@@ -203,7 +234,39 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
         }).onFailure(aContext::failNow);
     }
 
+    /**
+     * Tests that an expired Sinai cookie will not be accepted.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public final void testInvalidateExpiredSinaiCookie(final Vertx aVertx, final VertxTestContext aContext) {
+        final Future<Boolean> validateCookie4DaysOld = validateSinaiCookieTuple(myMockSinaiCookies4DaysOld);
+
+        validateCookie4DaysOld.onSuccess(result -> {
+            try {
+                assertFalse(result);
+
+                aContext.completeNow();
+            } catch (final AssertionError details) {
+                aContext.failNow(LOGGER.getMessage(MessageCodes.AUTH_019));
+            }
+        }).onFailure(aContext::failNow);
+    }
+
     protected Logger getLogger() {
         return LOGGER;
+    }
+
+    /**
+     * Helper method for validating a pair of Sinai cookies.
+     *
+     * @param aCookieTuple A pair of Sinai cookies returned from
+     *        {@link TestUtils#getMockSinaiCookies(JsonObject, LocalDate)}
+     * @return The result of validating the cookies
+     */
+    private Future<Boolean> validateSinaiCookieTuple(final Tuple aCookieTuple) {
+        return myServiceProxy.validateSinaiCookie(aCookieTuple.getString(0), aCookieTuple.getString(1));
     }
 }

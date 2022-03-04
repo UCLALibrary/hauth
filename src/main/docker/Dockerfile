@@ -42,6 +42,12 @@ RUN if [ "${NATIVE_COMPILE}" = true ] ; then \
     && chown hauth:hauth /usr/bin/hauth \
     && chmod 750 /usr/bin/hauth
 
+# Required so that the current date is always the same from the perspective of both the container and Maven
+# TODO: the Sinai cookie should contain a more specific timestamp so that setting the system time is not strictly necessary
+RUN apk add alpine-conf \
+    && setup-timezone -z America/Los_Angeles \
+    && apk del alpine-conf
+
 # The user that runs the hauth application
 USER hauth
 
