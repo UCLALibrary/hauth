@@ -2,7 +2,6 @@
 package edu.ucla.library.iiif.auth.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.security.GeneralSecurityException;
@@ -219,18 +218,11 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
      */
     @Test
     public final void testValidateSinaiCookie(final Vertx aVertx, final VertxTestContext aContext) {
-        final Future<Boolean> validateCookieFresh = validateSinaiCookieTuple(myMockSinaiCookiesFresh);
-        final Future<Boolean> validateCookie3DaysOld = validateSinaiCookieTuple(myMockSinaiCookies3DaysOld);
+        final Future<Void> validateCookieFresh = validateSinaiCookieTuple(myMockSinaiCookiesFresh);
+        final Future<Void> validateCookie3DaysOld = validateSinaiCookieTuple(myMockSinaiCookies3DaysOld);
 
         CompositeFuture.all(validateCookieFresh, validateCookie3DaysOld).onSuccess(result -> {
-            try {
-                assertTrue(result.<Boolean>resultAt(0));
-                assertTrue(result.<Boolean>resultAt(1));
-
-                aContext.completeNow();
-            } catch (final AssertionError details) {
-                aContext.failNow(details);
-            }
+            aContext.completeNow();
         }).onFailure(aContext::failNow);
     }
 
@@ -242,17 +234,13 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
      */
     @Test
     public final void testInvalidateExpiredSinaiCookie(final Vertx aVertx, final VertxTestContext aContext) {
-        final Future<Boolean> validateCookie4DaysOld = validateSinaiCookieTuple(myMockSinaiCookies4DaysOld);
+        final Future<Void> validateCookie4DaysOld = validateSinaiCookieTuple(myMockSinaiCookies4DaysOld);
 
-        validateCookie4DaysOld.onSuccess(result -> {
-            try {
-                assertFalse(result);
-
-                aContext.completeNow();
-            } catch (final AssertionError details) {
-                aContext.failNow(LOGGER.getMessage(MessageCodes.AUTH_019));
-            }
-        }).onFailure(aContext::failNow);
+        validateCookie4DaysOld.onFailure(result -> {
+            aContext.completeNow();
+        }).onSuccess(result -> {
+            aContext.failNow(LOGGER.getMessage(MessageCodes.AUTH_019));
+        });
     }
 
     protected Logger getLogger() {
@@ -266,7 +254,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
      *        {@link TestUtils#getMockSinaiCookies(JsonObject, LocalDate)}
      * @return The result of validating the cookies
      */
-    private Future<Boolean> validateSinaiCookieTuple(final Tuple aCookieTuple) {
+    private Future<Void> validateSinaiCookieTuple(final Tuple aCookieTuple) {
         return myServiceProxy.validateSinaiCookie(aCookieTuple.getString(0), aCookieTuple.getString(1));
     }
 }

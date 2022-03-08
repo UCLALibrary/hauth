@@ -45,6 +45,7 @@ public class AdminAuthenticationErrorHandler implements ErrorHandler {
 
             LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), error.getMessage());
         } else {
+            aContext.next();
             LOGGER.error(MessageCodes.AUTH_010, error.toString());
         }
     }

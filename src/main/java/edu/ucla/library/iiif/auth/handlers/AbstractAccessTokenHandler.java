@@ -7,6 +7,7 @@ import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+import edu.ucla.library.iiif.auth.AccessTokenError;
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.MessageCodes;
@@ -36,6 +37,11 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
      * The handler's logger.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAccessTokenHandler.class, MessageCodes.BUNDLE);
+
+    /**
+     * The HTML template file name.
+     */
+    private static final String HTML_TEMPLATE_FILE_NAME = "templates/token.hbs";
 
     /**
      * The application configuration.
@@ -115,7 +121,7 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
 
                 response.putHeader(HttpHeaders.CONTENT_TYPE, responseContentType.toString());
 
-                return myHtmlTemplateEngine.render(templateData, "templates/token.hbs");
+                return myHtmlTemplateEngine.render(templateData, HTML_TEMPLATE_FILE_NAME);
             }
 
             // Non browser-based clients just need the JSON
@@ -124,26 +130,31 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
             if (error instanceof ServiceException) {
                 final ServiceException details = (ServiceException) error;
                 final int statusCode;
-                final String errorMessage;
+                final AccessTokenError errorName;
+                final JsonObject jsonWrapper;
 
                 if (details.failureCode() == Error.INVALID_COOKIE.ordinal()) {
-                    statusCode = HTTP.BAD_REQUEST;
-                    errorMessage = LOGGER.getMessage(MessageCodes.AUTH_012);
+                    statusCode = HTTP.UNAUTHORIZED;
+                    errorName = AccessTokenError.invalidCredentials;
                 } else {
-                    statusCode = HTTP.INTERNAL_SERVER_ERROR;
-                    errorMessage = LOGGER.getMessage(MessageCodes.AUTH_018);
+                    // We don't interpret any other ServiceExceptions as any of the access token error conditions
+                    // defined here: https://iiif.io/api/auth/1.0/#access-token-error-conditions
+                    aContext.fail(HTTP.INTERNAL_SERVER_ERROR);
+                    return;
                 }
 
-                response.setStatusCode(statusCode);
+                jsonWrapper = new JsonObject().put(ResponseJsonKeys.ERROR, errorName);
 
                 if (isBrowserClient) {
-                    response.end(errorMessage);
-                } else {
-                    final JsonObject errorData = new JsonObject() //
-                            .put(ResponseJsonKeys.ERROR, Error.values()[details.failureCode()]) //
-                            .put(ResponseJsonKeys.MESSAGE, errorMessage);
+                    final JsonObject templateData = new JsonObject() //
+                            .put(TemplateKeys.ORIGIN, origin) //
+                            .put(TemplateKeys.ACCESS_TOKEN_OBJECT, jsonWrapper);
 
-                    response.end(errorData.encodePrettily());
+                    myHtmlTemplateEngine.render(templateData, HTML_TEMPLATE_FILE_NAME).onSuccess(html -> {
+                        response.setStatusCode(HTTP.OK).end(html);
+                    }).onFailure(aContext::fail);
+                } else {
+                    response.setStatusCode(statusCode).end(jsonWrapper.encodePrettily());
                 }
 
                 LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());

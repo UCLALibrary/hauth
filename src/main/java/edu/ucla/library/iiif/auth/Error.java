@@ -14,7 +14,7 @@ public enum Error {
 
     /**
      * The failure code if the access cookie service receives a decryption request for an invalid cookie (e.g., one that
-     * has been tampered with or stolen).
+     * is expired, or has been tampered with or stolen).
      */
     INVALID_COOKIE,
 

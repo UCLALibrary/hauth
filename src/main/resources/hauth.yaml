@@ -134,7 +134,7 @@ paths:
         required: false
       responses:
         '200':
-          description: The access token response
+          description: The access token response for browser-based clients; note that this may represent an error condition
           content:
             application/json:
               schema:
@@ -149,7 +149,7 @@ paths:
                 type: string
                 example: '<html><body><script>window.parent.postMessage({"messageId":"1234","accessToken":"TOKEN_HERE","expiresIn": 3600},"https://client.example.com/");</script></body></html>'
         '400':
-          description: The request didn't contain a valid cookie
+          description: The request is missing a required cookie
           content:
             application/json:
               schema:
@@ -157,25 +157,26 @@ paths:
                 properties:
                   error:
                     type: string
-                    enum: [ INVALID_COOKIE ]
-                    example: INVALID_COOKIE
-                  message:
+                    enum: [ missingCredentials ]
+                    example: missingCredentials
+        '401':
+          description: The request contains an invalid cookie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
                     type: string
-                    example: The request did not contain a valid cookie
+                    enum: [ invalidCredentials ]
+                    example: invalidCredentials
         '500':
           description: There was an internal server error
           content:
-            application/json:
+            text/plain:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum: [ CONFIGURATION ]
-                    example: CONFIGURATION
-                  message:
-                    type: string
-                    example: The access cookie decryption service is not configured properly
+                type: string
+                example: Internal server error
   /token/sinai:
     get:
       summary: Get Authentication Token
@@ -210,7 +211,7 @@ paths:
         required: false
       responses:
         '200':
-          description: The access token response
+          description: The access token response for browser-based clients; note that this may represent an error condition
           content:
             application/json:
               schema:
@@ -225,7 +226,7 @@ paths:
                 type: string
                 example: '<html><body><script>window.parent.postMessage({"messageId":"1234","accessToken":"TOKEN_HERE","expiresIn": 3600},"https://client.example.com/");</script></body></html>'
         '400':
-          description: The request didn't contain a valid cookie
+          description: The request is missing a required cookie
           content:
             application/json:
               schema:
@@ -233,23 +234,26 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: INVALID_COOKIE
-                  message:
+                    enum: [ missingCredentials ]
+                    example: missingCredentials
+        '401':
+          description: The request contains an invalid cookie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
                     type: string
-                    example: The request did not contain a valid cookie
+                    enum: [ invalidCredentials ]
+                    example: invalidCredentials
         '500':
           description: There was an internal server error
           content:
-            application/json:
+            text/plain:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: CONFIGURATION
-                  message:
-                    type: string
-                    example: The access cookie decryption service is not configured properly
+                type: string
+                example: Internal server error
   /status:
     get:
       summary: Get Application Status

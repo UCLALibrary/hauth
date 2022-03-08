@@ -225,7 +225,7 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     }
 
     @Override
-    public Future<Boolean> validateSinaiCookie(final String aAuthCookieValue, final String aIvCookieValue) {
+    public Future<Void> validateSinaiCookie(final String aAuthCookieValue, final String aIvCookieValue) {
         try {
             final byte[] encryptedCookieData = Hex.decodeHex(aAuthCookieValue);
             final byte[] nonce = Hex.decodeHex(aIvCookieValue);
@@ -233,7 +233,6 @@ public class AccessCookieServiceImpl implements AccessCookieService {
             final String[] cookieData;
             final String prefix;
             final LocalDate lastValidDate;
-            final boolean isValid;
 
             myCipher.init(Cipher.DECRYPT_MODE, mySecretKeySinai, new IvParameterSpec(nonce));
 
@@ -242,12 +241,15 @@ public class AccessCookieServiceImpl implements AccessCookieService {
 
             // The prefix must match exactly, and the date must not be more than three days ago
             prefix = cookieData[0];
-            lastValidDate = LocalDate.parse(cookieData[1], mySinaiCookieDateFormatter).plusDays(3);
             // TODO: the Sinai cookie should contain a more specific timestamp so that any given cookie is considered
             // valid for exactly 72 hours after creation
-            isValid = prefix.equals(mySinaiCookieValidPrefix) && !LocalDate.now().isAfter(lastValidDate);
+            lastValidDate = LocalDate.parse(cookieData[1], mySinaiCookieDateFormatter).plusDays(3);
 
-            return Future.succeededFuture(isValid);
+            if (prefix.equals(mySinaiCookieValidPrefix) && !LocalDate.now().isAfter(lastValidDate)) {
+                return Future.succeededFuture();
+            }
+            return Future.failedFuture(new ServiceException(INVALID_COOKIE_ERROR,
+                    LOGGER.getMessage(MessageCodes.AUTH_012, lastValidDate.plusDays(1).toString())));
         } catch (final IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException details) {
             // This code should never be reached, assuming we've configured the application properly
             return Future.failedFuture(new ServiceException(CONFIGURATION_ERROR, details.getMessage()));

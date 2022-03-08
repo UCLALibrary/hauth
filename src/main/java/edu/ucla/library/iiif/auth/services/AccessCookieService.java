@@ -3,8 +3,6 @@ package edu.ucla.library.iiif.auth.services;
 
 import java.security.GeneralSecurityException;
 
-import edu.ucla.library.iiif.auth.Config;
-
 import io.vertx.codegen.annotations.ProxyClose;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
@@ -83,9 +81,7 @@ public interface AccessCookieService {
      *
      * @param aCipherText An encrypted cookie value returned from {@link Cookie#getValue()}
      * @param anInitializationVector The initialization vector used to encrypt {@code aCipherText}
-     * @return A Future that resolves to whether the decrypted cookie value starts with
-     *         {@link Config#SINAI_COOKIE_VALID_PREFIX}, or fails if the cookie has been tampered with, cannot be
-     *         decrypted, or is otherwise invalid
+     * @return A Future that succeeds if the cookie is valid and not expired, and fails otherwise
      */
-    Future<Boolean> validateSinaiCookie(String aCipherText, String anInitializationVector);
+    Future<Void> validateSinaiCookie(String aCipherText, String anInitializationVector);
 }
