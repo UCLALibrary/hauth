@@ -12,6 +12,7 @@ import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Op;
 import edu.ucla.library.iiif.auth.handlers.AccessCookieHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessModeHandler;
+import edu.ucla.library.iiif.auth.handlers.MissingAccessCookieErrorHandler;
 import edu.ucla.library.iiif.auth.handlers.AccessTokenHandler;
 import edu.ucla.library.iiif.auth.handlers.AdminAuthenticationErrorHandler;
 import edu.ucla.library.iiif.auth.handlers.HtmlRenderingErrorHandler;
@@ -32,6 +33,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.APIKeyHandler;
+import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import io.vertx.serviceproxy.ServiceBinder;
 
@@ -103,12 +105,20 @@ public class MainVerticle extends AbstractVerticle {
             return RouterBuilder.create(vertx, apiSpec).compose(routerBuilder -> {
                 final Router router;
 
+                // In the case of the access token service, in order to construct a response that complies with
+                // https://iiif.io/api/auth/1.0/#access-token-error-conditions, we need to take control back from the
+                // ValidationHandler that gets invoked when an incoming request violates the OpenAPI contract (e.g.,
+                // missing access cookie).
+                final ErrorHandler missingAccessCookieErrorHandler = new MissingAccessCookieErrorHandler(getVertx());
+
                 // Associate handlers with operation IDs from the OpenAPI spec
                 routerBuilder.operation(Op.GET_STATUS).handler(new StatusHandler(getVertx()));
                 routerBuilder.operation(Op.GET_ACCESS_MODE).handler(new AccessModeHandler(getVertx()));
                 routerBuilder.operation(Op.GET_COOKIE).handler(new AccessCookieHandler(getVertx(), config));
-                routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), config));
-                routerBuilder.operation(Op.GET_TOKEN_SINAI).handler(new SinaiAccessTokenHandler(getVertx(), config));
+                routerBuilder.operation(Op.GET_TOKEN).handler(new AccessTokenHandler(getVertx(), config))
+                        .failureHandler(missingAccessCookieErrorHandler);
+                routerBuilder.operation(Op.GET_TOKEN_SINAI).handler(new SinaiAccessTokenHandler(getVertx(), config))
+                        .failureHandler(missingAccessCookieErrorHandler);
                 routerBuilder.operation(Op.POST_ITEMS).handler(new ItemsHandler(getVertx()));
 
                 // Add API key authentication for routes that should use the "Admin" security scheme

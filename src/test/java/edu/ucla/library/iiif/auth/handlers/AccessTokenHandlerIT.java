@@ -10,14 +10,13 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.Random;
 
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
 
+import edu.ucla.library.iiif.auth.AccessTokenError;
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
-import edu.ucla.library.iiif.auth.Param;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.TemplateKeys;
 import edu.ucla.library.iiif.auth.TokenJsonKeys;
@@ -37,28 +36,12 @@ import io.vertx.junit5.VertxTestContext;
 /**
  * Tests {@link AccessTokenHandler#handle}.
  */
-public final class AccessTokenHandlerIT extends AbstractHandlerIT {
-
-    /**
-     * Obtains a random unsigned integer by zeroing the sign bit of a random signed integer.
-     */
-    private final String myMessageID = String.valueOf(new Random().nextInt() & 0x7FFFFFFF);
-
-    /**
-     * The query string to use for token requests by browser clients.
-     */
-    private final String myGetTokenRequestQuery =
-            StringUtils.format("{}={}&{}={}", Param.MESSAGE_ID, myMessageID, Param.ORIGIN, TEST_ORIGIN);
+public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
 
     /**
      * The invalid cookie to test with.
      */
     private final String myInvalidCookieHeader = "iiif-access=invalid";
-
-    /**
-     * The Handlebars template used by the handler for rendering responses to requests by browser clients.
-     */
-    private final String myTokenResponseTemplate = "src/main/resources/templates/token.hbs";
 
     /**
      * The id of the HTML element that contains the client IP address that was put in the cookie.
@@ -180,10 +163,20 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
                 .putHeader(HttpHeaders.COOKIE.toString(), myInvalidCookieHeader);
 
         getToken.send().onSuccess(response -> {
-            assertEquals(HTTP.BAD_REQUEST, response.statusCode());
-            assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            final JsonObject expectedError = new JsonObject() //
+                    .put(ResponseJsonKeys.ERROR, AccessTokenError.invalidCredentials);
+            final JsonObject templateData = new JsonObject() //
+                    .put(TemplateKeys.ACCESS_TOKEN_OBJECT, expectedError) //
+                    .put(TemplateKeys.ORIGIN, TEST_ORIGIN);
+            final HandlebarsTemplateEngine templateEngine = HandlebarsTemplateEngine.create(aVertx);
 
-            aContext.completeNow();
+            templateEngine.render(templateData, myTokenResponseTemplate).onSuccess(expected -> {
+                assertEquals(HTTP.OK, response.statusCode());
+                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expected, response.bodyAsBuffer());
+
+                aContext.completeNow();
+            }).onFailure(aContext::failNow);
         }).onFailure(aContext::failNow);
     }
 
@@ -200,8 +193,64 @@ public final class AccessTokenHandlerIT extends AbstractHandlerIT {
                 .putHeader(HttpHeaders.COOKIE.toString(), myInvalidCookieHeader);
 
         getToken.send().onSuccess(response -> {
+            final JsonObject expectedError = new JsonObject() //
+                    .put(ResponseJsonKeys.ERROR, AccessTokenError.invalidCredentials);
+
+            assertEquals(HTTP.UNAUTHORIZED, response.statusCode());
+            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            assertEquals(expectedError, response.bodyAsJsonObject());
+
+            aContext.completeNow();
+        }).onFailure(aContext::failNow);
+    }
+
+    /**
+     * Tests that a browser client must provide an access cookie to obtain an access token.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public void testGetTokenBrowserMissingCookie(final Vertx aVertx, final VertxTestContext aContext) {
+        final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
+        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI);
+
+        getToken.send().onSuccess(response -> {
+            final JsonObject expectedError = new JsonObject() //
+                    .put(ResponseJsonKeys.ERROR, AccessTokenError.missingCredentials);
+            final JsonObject templateData = new JsonObject() //
+                    .put(TemplateKeys.ACCESS_TOKEN_OBJECT, expectedError) //
+                    .put(TemplateKeys.ORIGIN, TEST_ORIGIN);
+            final HandlebarsTemplateEngine templateEngine = HandlebarsTemplateEngine.create(aVertx);
+
+            templateEngine.render(templateData, myTokenResponseTemplate).onSuccess(expected -> {
+                assertEquals(HTTP.OK, response.statusCode());
+                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expected, response.bodyAsBuffer());
+
+                aContext.completeNow();
+            }).onFailure(aContext::failNow);
+        }).onFailure(aContext::failNow);
+    }
+
+    /**
+     * Tests that a non-browser client must provide an access cookie to obtain an access token.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public void testGetTokenNonBrowserMissingCookie(final Vertx aVertx, final VertxTestContext aContext) {
+        final String requestURI = StringUtils.format(GET_TOKEN_PATH, EMPTY);
+        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
+
+        getToken.send().onSuccess(response -> {
+            final JsonObject expectedError = new JsonObject() //
+                    .put(ResponseJsonKeys.ERROR, AccessTokenError.missingCredentials);
+
             assertEquals(HTTP.BAD_REQUEST, response.statusCode());
             assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            assertEquals(expectedError, response.bodyAsJsonObject());
 
             aContext.completeNow();
         }).onFailure(aContext::failNow);

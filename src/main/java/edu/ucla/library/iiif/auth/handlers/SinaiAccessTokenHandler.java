@@ -33,10 +33,10 @@ public class SinaiAccessTokenHandler extends AbstractAccessTokenHandler {
         final String authCookie = aContext.request().getCookie(CookieNames.SINAI_CIPHERTEXT).getValue();
         final String ivCookie = aContext.request().getCookie(CookieNames.SINAI_IV).getValue();
 
-        return getAccessCookieService().validateSinaiCookie(authCookie, ivCookie).compose(isValid -> {
+        return getAccessCookieService().validateSinaiCookie(authCookie, ivCookie).compose(unused -> {
             final JsonObject unencodedAccessToken =
                     new JsonObject().put(TokenJsonKeys.VERSION, getConfig().getString(Config.HAUTH_VERSION))
-                            .put(TokenJsonKeys.SINAI_AFFILIATE, isValid);
+                            .put(TokenJsonKeys.SINAI_AFFILIATE, true);
             final String accessToken = Base64.getEncoder().encodeToString(unencodedAccessToken.encode().getBytes());
 
             return Future.succeededFuture(accessToken);

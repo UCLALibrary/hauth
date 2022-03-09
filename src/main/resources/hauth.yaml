@@ -7,6 +7,69 @@ info:
 servers:
 - url: http://github.com/uclalibrary/hauth
 components:
+  parameters:
+    AccessTokenOrigin:
+      name: origin
+      in: query
+      description: The origin of the page, consisting of a protocol, hostname and, optionally, port number
+      schema:
+        type: string
+        format: uri
+        example: https://client.example.com/
+      required: false
+    AccessTokenMessageId:
+      name: messageId
+      in: query
+      description: A string that both prompts the server to respond with a web page instead of JSON, and allows the client to match access token service requests with the messages received
+      schema:
+        type: string
+        example: 1234
+      required: false
+  responses:
+    AccessTokenBrowserClient:
+      description: The access token response for browser-based clients; note that this may represent an error condition
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              accessToken:
+                type: string
+              expiresIn:
+                type: integer
+        text/html:
+          schema:
+            type: string
+            example: '<html><body><script>window.parent.postMessage({"messageId":"1234","accessToken":"TOKEN_HERE","expiresIn": 3600},"https://client.example.com/");</script></body></html>'
+    AccessTokenNonBrowserMissingCredentials:
+      description: The request is missing a required cookie
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                enum: [ missingCredentials ]
+                example: missingCredentials
+    AccessTokenNonBrowserInvalidCredentials:
+      description: The request contains an invalid cookie
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                enum: [ invalidCredentials ]
+                example: invalidCredentials
+    InternalServerError:
+      description: There was an internal server error
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: Internal server error
   securitySchemes:
     Admin:
       type: apiKey
@@ -117,65 +180,17 @@ paths:
           type: string
           example: iiif-access=asrvaaDe43AAqw34QpOoPJR4j5b1; Path=/; HttpOnly
         required: true
-      - in: query
-        name: origin
-        description: The origin of the page, consisting of a protocol, hostname and, optionally, port number
-        schema:
-          type: string
-          format: uri
-          example: https://client.example.com/
-        required: false
-      - in: query
-        name: messageId
-        description: A string that both prompts the server to respond with a web page instead of JSON, and allows the client to match access token service requests with the messages received
-        schema:
-          type: string
-          example: 1234
-        required: false
+      - $ref: '#/components/parameters/AccessTokenOrigin'
+      - $ref: '#/components/parameters/AccessTokenMessageId'
       responses:
         '200':
-          description: The access token response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  accessToken:
-                    type: string
-                  expiresIn:
-                    type: integer
-            text/html:
-              schema:
-                type: string
-                example: '<html><body><script>window.parent.postMessage({"messageId":"1234","accessToken":"TOKEN_HERE","expiresIn": 3600},"https://client.example.com/");</script></body></html>'
+          $ref: '#/components/responses/AccessTokenBrowserClient'
         '400':
-          description: The request didn't contain a valid cookie
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum: [ INVALID_COOKIE ]
-                    example: INVALID_COOKIE
-                  message:
-                    type: string
-                    example: The request did not contain a valid cookie
+          $ref: '#/components/responses/AccessTokenNonBrowserMissingCredentials'
+        '401':
+          $ref: '#/components/responses/AccessTokenNonBrowserInvalidCredentials'
         '500':
-          description: There was an internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum: [ CONFIGURATION ]
-                    example: CONFIGURATION
-                  message:
-                    type: string
-                    example: The access cookie decryption service is not configured properly
+          $ref: '#/components/responses/InternalServerError'
   /token/sinai:
     get:
       summary: Get Authentication Token
@@ -194,62 +209,17 @@ paths:
           type: string
           example: initialization_vector=30313233343536373839414243444546
         required: true
-      - in: query
-        name: origin
-        description: The origin of the page, consisting of a protocol, hostname and, optionally, port number
-        schema:
-          type: string
-          example: https://client.example.com/
-        required: false
-      - in: query
-        name: messageId
-        description: A string that both prompts the server to respond with a web page instead of JSON, and allows the client to match access token service requests with the messages received
-        schema:
-          type: string
-          example: 1234
-        required: false
+      - $ref: '#/components/parameters/AccessTokenOrigin'
+      - $ref: '#/components/parameters/AccessTokenMessageId'
       responses:
         '200':
-          description: The access token response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  accessToken:
-                    type: string
-                  expiresIn:
-                    type: integer
-            text/html:
-              schema:
-                type: string
-                example: '<html><body><script>window.parent.postMessage({"messageId":"1234","accessToken":"TOKEN_HERE","expiresIn": 3600},"https://client.example.com/");</script></body></html>'
+          $ref: '#/components/responses/AccessTokenBrowserClient'
         '400':
-          description: The request didn't contain a valid cookie
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: INVALID_COOKIE
-                  message:
-                    type: string
-                    example: The request did not contain a valid cookie
+          $ref: '#/components/responses/AccessTokenNonBrowserMissingCredentials'
+        '401':
+          $ref: '#/components/responses/AccessTokenNonBrowserInvalidCredentials'
         '500':
-          description: There was an internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: CONFIGURATION
-                  message:
-                    type: string
-                    example: The access cookie decryption service is not configured properly
+          $ref: '#/components/responses/InternalServerError'
   /status:
     get:
       summary: Get Application Status
