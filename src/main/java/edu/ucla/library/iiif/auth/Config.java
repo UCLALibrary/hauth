@@ -23,6 +23,14 @@ public final class Config {
     public static final String HTTP_HOST = "HTTP_HOST";
 
     /**
+     * The optional ENV property for the number of seconds after which the pop-up window that is presented to users
+     * after their client has called the access cookie service should close.
+     * <p>
+     * If unset, the window must be closed with user interaction.
+     */
+    public static final String ACCESS_COOKIE_WINDOW_CLOSE_DELAY = "ACCESS_COOKIE_WINDOW_CLOSE_DELAY";
+
+    /**
      * The optional ENV property for the number of seconds after which an access token will cease to be valid.
      */
     public static final String ACCESS_TOKEN_EXPIRES_IN = "ACCESS_TOKEN_EXPIRES_IN";

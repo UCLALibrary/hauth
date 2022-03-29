@@ -42,6 +42,7 @@ These are a work in progress. Randomized ports and passwords are created on the 
 
 | ENV Property | Default Value | Required |
 | --- | --- | --- |
+| ACCESS_COOKIE_WINDOW_CLOSE_DELAY | XXX | No
 | ACCESS_TOKEN_EXPIRES_IN | 3600 | No |
 | API_KEY | XXXX | Yes |
 | API_SPEC | hauth.yaml | No |

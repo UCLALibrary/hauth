@@ -47,12 +47,17 @@
     {{/unless}}
 
     <p>
-        <em>To continue, please close this tab (or window).</em>
+        {{#neq windowCloseDelay null}}
+        <em>This window will automatically close in <span id="countdown">{{windowCloseDelay}}</span> seconds.</em>
+        {{else}}
+        <em>To continue, please close this window.</em>
+        {{/neq}}
     </p>
     <hr>
     <p>
         <span id="version" style="font-style: italic;">Hauth v{{version}}</span>
     </p>
+
     <style>
         em {
             font-style: normal;
@@ -65,4 +70,22 @@
             color: red;
         }
     </style>
+
+    {{#neq windowCloseDelay null}}
+    <script>
+        function countdown(delay) {
+            document.getElementById("countdown").innerText = delay
+
+            if (delay === 0) {
+                window.close()
+            } else {
+                setTimeout(function() {
+                    countdown(delay - 1)
+                }, 1000)
+            }
+        }
+
+        countdown({{windowCloseDelay}})
+    </script>
+    {{/neq}}
 </body>
