@@ -4,7 +4,10 @@ package edu.ucla.library.iiif.auth.handlers;
 import static info.freelibrary.util.Constants.COMMA;
 
 import java.net.URI;
+import java.util.Optional;
 
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import com.github.veqryn.collect.Cidr4Trie;
 import com.github.veqryn.collect.Trie;
 import com.github.veqryn.net.Cidr4;
@@ -39,6 +42,7 @@ import io.vertx.serviceproxy.ServiceException;
 /**
  * Handler that handles access cookie requests.
  */
+@SuppressWarnings("PMD.ExcessiveImports")
 public class AccessCookieHandler implements Handler<RoutingContext> {
 
     /**
@@ -72,6 +76,11 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
     private final AccessCookieService myAccessCookieService;
 
     /**
+     * See {@link Config#ACCESS_COOKIE_WINDOW_CLOSE_DELAY}.
+     */
+    private final Optional<Integer> myWindowCloseDelay;
+
+    /**
      * Creates a handler that retrieves an access cookie for the client.
      *
      * @param aVertx The Vert.x instance
@@ -83,6 +92,10 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
         myHtmlTemplateEngine = HandlebarsTemplateEngine.create(aVertx);
         myCampusNetworkSubnets = new Cidr4Trie<>();
         myAccessCookieService = AccessCookieService.createProxy(aVertx);
+        myWindowCloseDelay = Optional.ofNullable(aConfig.getInteger(Config.ACCESS_COOKIE_WINDOW_CLOSE_DELAY));
+
+        // Register the neq helper
+        ((Handlebars) myHtmlTemplateEngine.unwrap()).registerHelpers(ConditionalHelpers.class);
 
         for (final String subnet : aConfig.getString(Config.CAMPUS_NETWORK_SUBNETS).split(COMMA)) {
             final Cidr4 cidr = new Cidr4(subnet);
@@ -127,6 +140,12 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                         .put(TemplateKeys.CLIENT_IP_ADDRESS, clientIpAddress)
                         .put(TemplateKeys.CAMPUS_NETWORK, isOnCampusNetwork)
                         .put(TemplateKeys.DEGRADED_ALLOWED, isDegradedAllowed);
+
+                myWindowCloseDelay.ifPresent(delay -> {
+                    if (delay >= 0) {
+                        templateData.put(TemplateKeys.WINDOW_CLOSE_DELAY, delay);
+                    }
+                });
 
                 response.addCookie(cookie);
 

@@ -42,8 +42,9 @@ These are a work in progress. Randomized ports and passwords are created on the 
 
 | ENV Property | Default Value | Required |
 | --- | --- | --- |
-| ACCESS_TOKEN_EXPIRES_IN | 3600 | No |
-| API_KEY | XXXX | Yes |
+| ACCESS_COOKIE_WINDOW_CLOSE_DELAY | XXX | No
+| ACCESS_TOKEN_EXPIRES_IN | XXX | No |
+| API_KEY | XXX | Yes |
 | API_SPEC | hauth.yaml | No |
 | CAMPUS_NETWORK_SUBNETS | XXX | Yes |
 | DB_CACHE_HOST | localhost | No |

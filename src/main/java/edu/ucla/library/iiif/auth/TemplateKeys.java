@@ -27,6 +27,11 @@ public final class TemplateKeys {
     public static final String DEGRADED_ALLOWED = "degradedAllowed";
 
     /**
+     * The window close delay key.
+     */
+    public static final String WINDOW_CLOSE_DELAY = "windowCloseDelay";
+
+    /**
      * The origin key.
      */
     public static final String ORIGIN = "origin";
