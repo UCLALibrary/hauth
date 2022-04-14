@@ -1,18 +1,19 @@
 <configuration debug="false">
   <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
-  <timestamp key="byDay" datePattern="yyyy-MM-dd" />
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>[%level] %logger{45} | %msg%n</pattern>
+      <pattern>[%level] %logger{45}:%X{line} | %msg%n</pattern>
     </encoder>
   </appender>
 
-  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-    <file>target/hauth-${byDay}.log</file>
-    <append>false</append>
+  <appender name="FILE" class="ch.qos.logback.core.RollingFileAppender">
+    <fileNamePattern>target/hauth-%d.log</fileNamePattern>
+    <immediateFlush>true</immediateFlush>
+    <maxHistory>30</maxHistory>
+    <append>true</append>
     <encoder>
-      <pattern>[%level] %logger{45} | %msg%n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} [%level] %logger{45}:%X{line} | %msg%n</pattern>
     </encoder>
   </appender>
 
