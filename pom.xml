@@ -55,9 +55,9 @@
     <clean.plugin.version>3.1.0</clean.plugin.version>
     <jar.plugin.version>3.2.0</jar.plugin.version>
     <vertx.plugin.version>1.0.27</vertx.plugin.version>
-    <freelib.maven.version>0.3.0</freelib.maven.version>
-    <deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
-    <docker.maven.plugin.version>0.38.1</docker.maven.plugin.version>
+    <freelib.maven.version>0.3.1</freelib.maven.version>
+    <deploy.plugin.version>2.8.2</deploy.plugin.version>
+    <docker.maven.plugin.version>0.39.1</docker.maven.plugin.version>
     <!-- Failsafe 3.x has compatibility issues with JUnit 5: https://stackoverflow.com/a/51837961 -->
     <maven.failsafe.plugin.version>2.22.0</maven.failsafe.plugin.version>
 
@@ -69,9 +69,6 @@
     <cantaloupe.version>5.0.4-1</cantaloupe.version>
     <auth.delegate.version>0.0.1-SNAPSHOT</auth.delegate.version>
     <jsoup.version>1.14.3</jsoup.version>
-
-    <!-- Version overrides to address vulnerabilities -->
-    <logback.version>1.2.10</logback.version><!-- https://security.snyk.io/vuln/SNYK-JAVA-CHQOSLOGBACK-1726923 -->
 
     <!-- Name of the main Vert.x verticle -->
     <main.verticle>edu.ucla.library.iiif.auth.verticles.MainVerticle</main.verticle>

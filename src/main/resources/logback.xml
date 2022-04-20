@@ -9,7 +9,7 @@
     </encoder>
   </appender>
 
-  <appender name="FILE" class="ch.qos.logback.core.RollingFileAppender">
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <fileNamePattern>/var/log/hauth/hauth-%d.log</fileNamePattern>
     <maxHistory>30</maxHistory>
     <append>true</append>
