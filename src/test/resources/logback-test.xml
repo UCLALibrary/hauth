@@ -8,10 +8,11 @@
   </appender>
 
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <fileNamePattern>target/hauth-%d.log</fileNamePattern>
-    <immediateFlush>true</immediateFlush>
-    <maxHistory>30</maxHistory>
-    <append>true</append>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>target/hauth.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <immediateFlush>true</immediateFlush>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} [%level] %logger{45}:%X{line} | %msg%n</pattern>
     </encoder>
