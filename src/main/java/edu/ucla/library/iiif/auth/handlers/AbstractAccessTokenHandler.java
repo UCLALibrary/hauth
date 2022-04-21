@@ -95,6 +95,7 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
     }
 
     @Override
+    @SuppressWarnings("PMD.CognitiveComplexity")
     public final void handle(final RoutingContext aContext) {
         final HttpServerRequest request = aContext.request();
         final String messageID = request.getParam(Param.MESSAGE_ID);
@@ -133,15 +134,14 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
                 final AccessTokenError errorName;
                 final JsonObject jsonWrapper;
 
-                if (details.failureCode() == Error.INVALID_COOKIE.ordinal()) {
-                    statusCode = HTTP.UNAUTHORIZED;
-                    errorName = AccessTokenError.invalidCredentials;
-                } else {
+                if (details.failureCode() != Error.INVALID_COOKIE.ordinal()) {
                     // We don't interpret any other ServiceExceptions as any of the access token error conditions
                     // defined here: https://iiif.io/api/auth/1.0/#access-token-error-conditions
                     aContext.fail(HTTP.INTERNAL_SERVER_ERROR);
                     return;
                 }
+                statusCode = HTTP.UNAUTHORIZED;
+                errorName = AccessTokenError.invalidCredentials;
 
                 jsonWrapper = new JsonObject().put(ResponseJsonKeys.ERROR, errorName);
 

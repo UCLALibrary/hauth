@@ -39,11 +39,12 @@ RUN if [ "${NATIVE_COMPILE}" = true ] ; then \
     fi \
     && addgroup -S hauth \
     && adduser -S hauth -G hauth \
-    && chown hauth:hauth /usr/bin/hauth \
-    && chmod 750 /usr/bin/hauth
+    && mkdir -p /var/log/hauth \
+    && chown hauth:hauth /usr/bin/hauth /var/log/hauth \
+    && chmod 750 /usr/bin/hauth /var/log/hauth
 
 # Required so that the current date is always the same from the perspective of both the container and Maven
-# TODO: the Sinai cookie should contain a more specific timestamp so that setting the system time is not strictly necessary
+# FIXME: Sinai cookie should contain a more specific timestamp so that setting system time is not strictly necessary
 RUN apk add alpine-conf \
     && setup-timezone -z America/Los_Angeles \
     && apk del alpine-conf
