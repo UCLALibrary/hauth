@@ -134,30 +134,30 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
                 final AccessTokenError errorName;
                 final JsonObject jsonWrapper;
 
-                if (details.failureCode() != Error.INVALID_COOKIE.ordinal()) {
+                if (details.failureCode() == Error.INVALID_COOKIE.ordinal()) {
+                    statusCode = HTTP.UNAUTHORIZED;
+                    errorName = AccessTokenError.invalidCredentials;
+
+                    jsonWrapper = new JsonObject().put(ResponseJsonKeys.ERROR, errorName);
+
+                    if (isBrowserClient) {
+                        final JsonObject templateData = new JsonObject() //
+                                .put(TemplateKeys.ORIGIN, origin) //
+                                .put(TemplateKeys.ACCESS_TOKEN_OBJECT, jsonWrapper);
+
+                        myHtmlTemplateEngine.render(templateData, HTML_TEMPLATE_FILE_NAME).onSuccess(html -> {
+                            response.setStatusCode(HTTP.OK).end(html);
+                        }).onFailure(aContext::fail);
+                    } else {
+                        response.setStatusCode(statusCode).end(jsonWrapper.encodePrettily());
+                    }
+
+                    LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
+                } else {
                     // We don't interpret any other ServiceExceptions as any of the access token error conditions
                     // defined here: https://iiif.io/api/auth/1.0/#access-token-error-conditions
                     aContext.fail(HTTP.INTERNAL_SERVER_ERROR);
-                    return;
                 }
-                statusCode = HTTP.UNAUTHORIZED;
-                errorName = AccessTokenError.invalidCredentials;
-
-                jsonWrapper = new JsonObject().put(ResponseJsonKeys.ERROR, errorName);
-
-                if (isBrowserClient) {
-                    final JsonObject templateData = new JsonObject() //
-                            .put(TemplateKeys.ORIGIN, origin) //
-                            .put(TemplateKeys.ACCESS_TOKEN_OBJECT, jsonWrapper);
-
-                    myHtmlTemplateEngine.render(templateData, HTML_TEMPLATE_FILE_NAME).onSuccess(html -> {
-                        response.setStatusCode(HTTP.OK).end(html);
-                    }).onFailure(aContext::fail);
-                } else {
-                    response.setStatusCode(statusCode).end(jsonWrapper.encodePrettily());
-                }
-
-                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             } else {
                 aContext.fail(error);
             }
