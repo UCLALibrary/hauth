@@ -4,8 +4,6 @@
 
 A IIIF Auth implementation for limiting access by IP address.
 
-Still in development.
-
 ## Prerequisites
 
 To build Hauth, you need the following things installed and configured on your local machine:
@@ -38,7 +36,7 @@ This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloup
 
 ## Environmental Properties
 
-These are a work in progress. Randomized ports and passwords are created on the fly. The port numbers can be seen in the Maven output.
+Randomized ports and passwords are created on the fly. The port numbers can be seen in the Maven output.
 
 | ENV Property | Default Value | Required |
 | --- | --- | --- |
