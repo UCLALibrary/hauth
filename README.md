@@ -34,9 +34,9 @@ To bring up the server locally for testing or development purposes, run:
 
 This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloupe Docker containers. The containers will be randomly assigned unused ports, and random UUIDs will be created as dummy values for various secrets. The port numbers can be seen in the Maven output.
 
-## Environmental Properties
+## Environment Variables
 
-| ENV Property | Default Value | Required |
+| Name | Default Value | Required |
 | --- | --- | --- |
 | ACCESS_COOKIE_WINDOW_CLOSE_DELAY | XXX | No
 | ACCESS_TOKEN_EXPIRES_IN | XXX | No |
