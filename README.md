@@ -32,11 +32,9 @@ To bring up the server locally for testing or development purposes, run:
 
     mvn initialize docker:build docker:run
 
-This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloupe Docker containers.
+This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloupe Docker containers. The containers will be randomly assigned unused ports, and random UUIDs will be created as dummy values for various secrets. The port numbers can be seen in the Maven output.
 
 ## Environmental Properties
-
-Randomized ports and passwords are created on the fly. The port numbers can be seen in the Maven output.
 
 | ENV Property | Default Value | Required |
 | --- | --- | --- |
