@@ -70,6 +70,16 @@
     <auth.delegate.version>0.0.1-SNAPSHOT</auth.delegate.version>
     <jsoup.version>1.14.3</jsoup.version>
 
+    <!-- Fluency logback dependencies -->
+    <fluency.core.version>2.6.4</fluency.core.version>
+    <fluency.fluentd.version>2.6.4</fluency.fluentd.version>
+    <msgpack.core.version>0.9.1</msgpack.core.version>
+    <jackson.dataformat.msgpack.version>0.9.1</jackson.dataformat.msgpack.version>
+    <logback.more.appenders.version>1.8.7</logback.more.appenders.version>
+
+    <!-- Add Janino to support if/else in logback file -->
+    <janino.version>3.1.7</janino.version>
+
     <!-- Name of the main Vert.x verticle -->
     <main.verticle>edu.ucla.library.iiif.auth.verticles.MainVerticle</main.verticle>
 
@@ -198,6 +208,38 @@
       <artifactId>jsoup</artifactId>
       <version>${jsoup.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <!-- Fluency logback dependencies -->
+    <dependency>
+      <groupId>org.komamitsu</groupId>
+      <artifactId>fluency-core</artifactId>
+      <version>${fluency.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.komamitsu</groupId>
+      <artifactId>fluency-fluentd</artifactId>
+      <version>${fluency.fluentd.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.msgpack</groupId>
+      <artifactId>msgpack-core</artifactId>
+      <version>${msgpack.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.msgpack</groupId>
+      <artifactId>jackson-dataformat-msgpack</artifactId>
+      <version>${jackson.dataformat.msgpack.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sndyuk</groupId>
+      <artifactId>logback-more-appenders</artifactId>
+      <version>${logback.more.appenders.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+      <version>${janino.version}</version>
     </dependency>
   </dependencies>
 
@@ -471,6 +513,11 @@
                   <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
                   <SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
                   <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
+                  <FLUENCY_ENABLED>true</FLUENCY_ENABLED>
+                  <FLUENCY_ENDPOINT>192.168.4.33</FLUENCY_ENDPOINT>
+                  <FLUENCY_PORT>24224</FLUENCY_PORT>
+                  <FLUENCY_ENVIRONMENT>test</FLUENCY_ENVIRONMENT>
+                  <FLUENCY_APP>hauth</FLUENCY_APP>
                 </env>
                 <dependsOn>
                   <container>hauth_pgsql</container>

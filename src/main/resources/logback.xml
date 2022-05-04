@@ -1,34 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <configuration debug="false">
+  <include resource="logback-appenders-fluentd.xml" />
+  <include resource="logback-appenders-stdout.xml" />
 
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-      <level>${logLevel}</level>
-    </filter>
-    <encoder>
-      <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS, ${log.tz}} ${log.tz} [%level] %logger{45}:%X{line} | %msg%n</pattern>
-    </encoder>
-  </appender>
-
-  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>/var/log/hauth/hauth.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>30</maxHistory>
-    </rollingPolicy>
-    <encoder>
-      <pattern>%d{HH:mm:ss.SSS, ${log.tz}} ${log.tz} [%level] %logger{45}:%X{line} | %msg%n</pattern>
-    </encoder>
-  </appender>
-
-  <logger name="io.netty" level="ERROR" additivity="false">
+  <logger name="io.netty" level="${logLevel}" additivity="true">
     <appender-ref ref="STDOUT" />
+    <if condition='property("FLUENCY_ENABLED").equals("true")'>
+    <then>
+      <appender-ref ref="FLUENCY" />
+    </then>
+    </if>
   </logger>
-  <logger name="io.vertx" level="ERROR" additivity="false">
+  <logger name="io.vertx" level="${logLevel}" additivity="true">
     <appender-ref ref="STDOUT" />
+    <if condition='property("FLUENCY_ENABLED").equals("true")'>
+    <then>
+      <appender-ref ref="FLUENCY" />
+    </then>
+    </if>
+  </logger>
+
+  <!-- Loggers for our application -->
+  <logger name="edu.ucla.library.iiif.fester" level="${logLevel}" additivity="true">
+    <appender-ref ref="STDOUT" />
+    <if condition='property("FLUENCY_ENABLED").equals("true")'>
+    <then>
+      <appender-ref ref="FLUENCY" />
+    </then>
+    </if>
   </logger>
 
   <!-- Default logging level for everything else -->
-  <root level="INFO">
+  <root level="DEBUG">
     <appender-ref ref="STDOUT" />
+    <if condition='property("FLUENCY_ENABLED").equals("true")'>
+    <then>
+      <appender-ref ref="FLUENCY" />
+    </then>
+    </if>
   </root>
 
 </configuration>
