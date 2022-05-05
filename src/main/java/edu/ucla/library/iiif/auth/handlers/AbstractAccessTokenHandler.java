@@ -20,6 +20,7 @@ import edu.ucla.library.iiif.auth.utils.MediaType;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -107,6 +108,7 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
 
         createAccessToken(aContext).compose(token -> {
             final JsonObject jsonWrapper = new JsonObject().put(ResponseJsonKeys.ACCESS_TOKEN, token);
+            final Future<Buffer> responseBody;
 
             // Unless e.g. the Handlebars template rendering fails, we'll return HTTP 200
             response.setStatusCode(HTTP.OK);
@@ -120,13 +122,13 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
                 jsonWrapper.put(ResponseJsonKeys.MESSAGE_ID, messageID);
                 templateData.put(TemplateKeys.ORIGIN, origin).put(TemplateKeys.ACCESS_TOKEN_OBJECT, jsonWrapper);
 
-                response.putHeader(HttpHeaders.CONTENT_TYPE, responseContentType.toString());
-
-                return myHtmlTemplateEngine.render(templateData, HTML_TEMPLATE_FILE_NAME);
+                responseBody = myHtmlTemplateEngine.render(templateData, HTML_TEMPLATE_FILE_NAME);
+            } else {
+                // Non browser-based clients just need the JSON
+                responseBody = Future.succeededFuture(jsonWrapper.toBuffer());
             }
 
-            // Non browser-based clients just need the JSON
-            return Future.succeededFuture(jsonWrapper.toBuffer());
+            return responseBody;
         }).onSuccess(response::end).onFailure(error -> {
             if (error instanceof ServiceException) {
                 final ServiceException details = (ServiceException) error;
@@ -134,30 +136,30 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
                 final AccessTokenError errorName;
                 final JsonObject jsonWrapper;
 
-                if (details.failureCode() != Error.INVALID_COOKIE.ordinal()) {
+                if (details.failureCode() == Error.INVALID_COOKIE.ordinal()) {
+                    statusCode = HTTP.UNAUTHORIZED;
+                    errorName = AccessTokenError.invalidCredentials;
+
+                    jsonWrapper = new JsonObject().put(ResponseJsonKeys.ERROR, errorName);
+
+                    if (isBrowserClient) {
+                        final JsonObject templateData = new JsonObject() //
+                                .put(TemplateKeys.ORIGIN, origin) //
+                                .put(TemplateKeys.ACCESS_TOKEN_OBJECT, jsonWrapper);
+
+                        myHtmlTemplateEngine.render(templateData, HTML_TEMPLATE_FILE_NAME).onSuccess(html -> {
+                            response.setStatusCode(HTTP.OK).end(html);
+                        }).onFailure(aContext::fail);
+                    } else {
+                        response.setStatusCode(statusCode).end(jsonWrapper.encodePrettily());
+                    }
+
+                    LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
+                } else {
                     // We don't interpret any other ServiceExceptions as any of the access token error conditions
                     // defined here: https://iiif.io/api/auth/1.0/#access-token-error-conditions
                     aContext.fail(HTTP.INTERNAL_SERVER_ERROR);
-                    return;
                 }
-                statusCode = HTTP.UNAUTHORIZED;
-                errorName = AccessTokenError.invalidCredentials;
-
-                jsonWrapper = new JsonObject().put(ResponseJsonKeys.ERROR, errorName);
-
-                if (isBrowserClient) {
-                    final JsonObject templateData = new JsonObject() //
-                            .put(TemplateKeys.ORIGIN, origin) //
-                            .put(TemplateKeys.ACCESS_TOKEN_OBJECT, jsonWrapper);
-
-                    myHtmlTemplateEngine.render(templateData, HTML_TEMPLATE_FILE_NAME).onSuccess(html -> {
-                        response.setStatusCode(HTTP.OK).end(html);
-                    }).onFailure(aContext::fail);
-                } else {
-                    response.setStatusCode(statusCode).end(jsonWrapper.encodePrettily());
-                }
-
-                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             } else {
                 aContext.fail(error);
             }

@@ -2,9 +2,7 @@
 
 [![Maven Build](https://github.com/uclalibrary/hauth/workflows/Maven%20PR%20Build/badge.svg)](https://github.com/UCLALibrary/hauth/actions) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f0e9885893cb47499767112f20050cdc)](https://app.codacy.com/gh/UCLALibrary/hauth?utm_source=github.com&utm_medium=referral&utm_content=UCLALibrary/hauth&utm_campaign=Badge_Grade_Settings)
 
-A IIIF Auth implementation for limiting access by IP address.
-
-Still in development.
+A IIIF Auth implementation for limiting access by IP address or affiliation with the [Sinai Manuscripts Digital Library](https://sinaimanuscripts.library.ucla.edu).
 
 ## Prerequisites
 
@@ -34,13 +32,11 @@ To bring up the server locally for testing or development purposes, run:
 
     mvn initialize docker:build docker:run
 
-This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloupe Docker containers.
+This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloupe Docker containers. The containers will be randomly assigned unused ports, and random UUIDs will be created as dummy values for various secrets. The port numbers can be seen in the Maven output.
 
-## Environmental Properties
+## Environment Variables
 
-These are a work in progress. Randomized ports and passwords are created on the fly. The port numbers can be seen in the Maven output.
-
-| ENV Property | Default Value | Required |
+| Name | Default Value | Required |
 | --- | --- | --- |
 | ACCESS_COOKIE_WINDOW_CLOSE_DELAY | XXX | No
 | ACCESS_TOKEN_EXPIRES_IN | XXX | No |
