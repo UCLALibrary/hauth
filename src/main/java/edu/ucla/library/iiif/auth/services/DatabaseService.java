@@ -72,7 +72,7 @@ public interface DatabaseService {
     /**
      * Sets the given items.
      *
-     * @param aItems An array of objects that can be deserialized to a list of {@link DatabaseServiceImpl.Item}
+     * @param aItems An array of objects that conforms to the request body schema of the "postItems" OpenAPI operation
      * @return A Future that resolves once the items have been set
      */
     Future<Void> setItems(JsonArray aItems);
