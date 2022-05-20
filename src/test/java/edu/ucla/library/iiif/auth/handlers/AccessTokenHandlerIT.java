@@ -162,7 +162,7 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
         final String getCookieRequestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestURI)
-                .putHeader(CLIENT_IP_HEADER_NAME, CLIENT_IP_HEADER_VALUE);
+                .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
 
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
@@ -172,7 +172,7 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
                 final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
                 final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader)
-                        .putHeader(CLIENT_IP_HEADER_NAME, CLIENT_IP_HEADER_VALUE);
+                        .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
 
                 return getToken.send().onSuccess(response -> {
                     final JsonObject expectedAccessTokenDecoded =
@@ -218,7 +218,7 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
         final String getCookieRequestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestURI)
-                .putHeader(CLIENT_IP_HEADER_NAME, CLIENT_IP_HEADER_VALUE);
+                .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
 
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
@@ -228,7 +228,7 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
                 final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, EMPTY);
                 final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader)
-                        .putHeader(CLIENT_IP_HEADER_NAME, CLIENT_IP_HEADER_VALUE);
+                        .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
 
                 return getToken.send().onSuccess(response -> {
                     final JsonObject expectedAccessTokenDecoded =

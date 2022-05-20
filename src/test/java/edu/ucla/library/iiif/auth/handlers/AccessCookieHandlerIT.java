@@ -63,7 +63,7 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
         final String requestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI)
-                .putHeader(CLIENT_IP_HEADER_NAME, CLIENT_IP_HEADER_VALUE);
+                .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
 
         getCookie.send().onSuccess(response -> {
             final String actualClientIpAddress;
