@@ -17,6 +17,8 @@ import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.utils.TestUtils;
 
+import info.freelibrary.util.StringUtils;
+
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -63,6 +65,21 @@ public abstract class AbstractHandlerIT {
      * The URI path for items requests.
      */
     protected static final String POST_ITEMS_PATH = "/items";
+
+    /**
+     * The name of the HTTP request header used by the reverse proxy to carry the client IP address.
+     */
+    protected static final String CLIENT_IP_HEADER_NAME = "Forwarded";
+
+    /**
+     * The fictitious client IP address that we'll pretend a reverse proxy sent through.
+     */
+    protected static final String CLIENT_IP = "1.1.1.1";
+
+    /**
+     * The value to use for the {@link CLIENT_IP_HEADER} header.
+     */
+    protected static final String CLIENT_IP_HEADER_VALUE = StringUtils.format("for={}", CLIENT_IP);
 
     /**
      * A test id for an item with open access.
