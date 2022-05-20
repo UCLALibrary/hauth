@@ -13,6 +13,8 @@ import java.util.Optional;
 
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import edu.ucla.library.iiif.auth.AccessTokenError;
 import edu.ucla.library.iiif.auth.Config;
@@ -51,25 +53,41 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
     /**
      * Tests that a browser client can use a valid access cookie to obtain an access token.
      *
+     * @param aReverseProxyDeployment Whether or not to simulate app deployment behind a reverse proxy
      * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
-    @Test
-    public void testGetTokenBrowser(final Vertx aVertx, final VertxTestContext aContext) {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void testGetTokenBrowser(final boolean aReverseProxyDeployment, final Vertx aVertx,
+            final VertxTestContext aContext) {
         final String getCookieRequestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestURI);
 
+        if (aReverseProxyDeployment) {
+            getCookie.putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
+        }
+
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
             final String cookieValue = cookieHeader.split(EQUALS)[1];
-            final String clientIpAddress =
-                    Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
+            final String clientIpAddress;
+
+            if (aReverseProxyDeployment) {
+                clientIpAddress = CLIENT_IP;
+            } else {
+                clientIpAddress = Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
+            }
 
             return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
                 final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
                 final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);
+
+                if (aReverseProxyDeployment) {
+                    getToken.putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
+                }
 
                 return getToken.send().onSuccess(response -> {
                     final JsonObject expectedAccessTokenDecoded =
@@ -106,129 +124,41 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
     /**
      * Tests that a non-browser client can use a valid access cookie to obtain an access token.
      *
+     * @param aReverseProxyDeployment Whether or not to simulate app deployment behind a reverse proxy
      * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
-    @Test
-    public void testGetTokenNonBrowser(final Vertx aVertx, final VertxTestContext aContext) {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void testGetTokenNonBrowser(final boolean aReverseProxyDeployment, final Vertx aVertx,
+            final VertxTestContext aContext) {
         final String getCookieRequestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestURI);
 
+        if (aReverseProxyDeployment) {
+            getCookie.putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
+        }
+
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
             final String cookieValue = cookieHeader.split(EQUALS)[1];
-            final String clientIpAddress =
-                    Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
+            final String clientIpAddress;
+
+            if (aReverseProxyDeployment) {
+                clientIpAddress = CLIENT_IP;
+            } else {
+                clientIpAddress = Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
+            }
 
             return myAccessCookieService.decryptCookie(cookieValue, clientIpAddress).compose(cookie -> {
                 final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, EMPTY);
                 final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
                         .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader);
 
-                return getToken.send().onSuccess(response -> {
-                    final JsonObject expectedAccessTokenDecoded =
-                            new JsonObject().put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION)).put(
-                                    TokenJsonKeys.CAMPUS_NETWORK, cookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
-                    final String expectedAccessToken =
-                            Base64.getEncoder().encodeToString(expectedAccessTokenDecoded.encode().getBytes());
-                    final Optional<Integer> expectedExpiresIn =
-                            Optional.ofNullable(myConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN));
-                    final JsonObject expected =
-                            new JsonObject().put(ResponseJsonKeys.ACCESS_TOKEN, expectedAccessToken);
-
-                    expectedExpiresIn.ifPresent(expiry -> expected.put(ResponseJsonKeys.EXPIRES_IN, expiry));
-
-                    assertEquals(HTTP.OK, response.statusCode());
-                    assertEquals(MediaType.APPLICATION_JSON.toString(),
-                            response.headers().get(HttpHeaders.CONTENT_TYPE));
-                    assertEquals(expected, response.bodyAsJsonObject());
-
-                    aContext.completeNow();
-                }).onFailure(aContext::failNow);
-            });
-        }).onFailure(aContext::failNow);
-    }
-
-    /**
-     * Tests that a browser client can use a valid access cookie to obtain an access token when the app is deployed
-     * behind a reverse proxy.
-     *
-     * @param aVertx A Vert.x instance
-     * @param aContext A test context
-     */
-    @Test
-    public void testGetTokenBrowserReverseProxyDeployment(final Vertx aVertx, final VertxTestContext aContext) {
-        final String getCookieRequestURI =
-                StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestURI)
-                .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
-
-        getCookie.send().compose(result -> {
-            final String cookieHeader = result.cookies().get(0);
-            final String cookieValue = cookieHeader.split(EQUALS)[1];
-
-            return myAccessCookieService.decryptCookie(cookieValue, CLIENT_IP).compose(cookie -> {
-                final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, myGetTokenRequestQuery);
-                final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
-                        .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader)
-                        .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
-
-                return getToken.send().onSuccess(response -> {
-                    final JsonObject expectedAccessTokenDecoded =
-                            new JsonObject().put(TokenJsonKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION)).put(
-                                    TokenJsonKeys.CAMPUS_NETWORK, cookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK));
-                    final String expectedAccessToken =
-                            Base64.getEncoder().encodeToString(expectedAccessTokenDecoded.encode().getBytes());
-                    final Optional<Integer> expectedExpiresIn =
-                            Optional.ofNullable(myConfig.getInteger(Config.ACCESS_TOKEN_EXPIRES_IN));
-                    final JsonObject expectedJsonWrapper = new JsonObject();
-                    final JsonObject templateData = new JsonObject();
-                    final HandlebarsTemplateEngine templateEngine = HandlebarsTemplateEngine.create(aVertx);
-
-                    // Insertion order must be the same as in the handler
-                    expectedJsonWrapper.put(ResponseJsonKeys.ACCESS_TOKEN, expectedAccessToken);
-                    expectedExpiresIn.ifPresent(expiry -> expectedJsonWrapper.put(ResponseJsonKeys.EXPIRES_IN, expiry));
-                    expectedJsonWrapper.put(ResponseJsonKeys.MESSAGE_ID, myMessageID);
-
-                    templateData.put(TemplateKeys.ACCESS_TOKEN_OBJECT, expectedJsonWrapper).put(TemplateKeys.ORIGIN,
-                            TEST_ORIGIN);
-
-                    templateEngine.render(templateData, myTokenResponseTemplate).onSuccess(expected -> {
-                        assertEquals(HTTP.OK, response.statusCode());
-                        assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-                        assertEquals(expected, response.bodyAsBuffer());
-
-                        aContext.completeNow();
-                    }).onFailure(aContext::failNow);
-                }).onFailure(aContext::failNow);
-            });
-        }).onFailure(aContext::failNow);
-    }
-
-    /**
-     * Tests that a non-browser client can use a valid access cookie to obtain an access token when the app is deployed
-     * behind a reverse proxy.
-     *
-     * @param aVertx A Vert.x instance
-     * @param aContext A test context
-     */
-    @Test
-    public void testGetTokenNonBrowserReverseProxyDeployment(final Vertx aVertx, final VertxTestContext aContext) {
-        final String getCookieRequestURI =
-                StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, getCookieRequestURI)
-                .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
-
-        getCookie.send().compose(result -> {
-            final String cookieHeader = result.cookies().get(0);
-            final String cookieValue = cookieHeader.split(EQUALS)[1];
-
-            return myAccessCookieService.decryptCookie(cookieValue, CLIENT_IP).compose(cookie -> {
-                final String getTokenRequestURI = StringUtils.format(GET_TOKEN_PATH, EMPTY);
-                final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
-                        .putHeader(HttpHeaders.COOKIE.toString(), cookieHeader)
-                        .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
+                if (aReverseProxyDeployment) {
+                    getToken.putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
+                }
 
                 return getToken.send().onSuccess(response -> {
                     final JsonObject expectedAccessTokenDecoded =

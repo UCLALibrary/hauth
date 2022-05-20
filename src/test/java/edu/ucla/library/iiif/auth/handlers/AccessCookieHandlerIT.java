@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import edu.ucla.library.iiif.auth.utils.MediaType;
 import edu.ucla.library.iiif.auth.utils.TestConstants;
@@ -26,52 +28,33 @@ import io.vertx.junit5.VertxTestContext;
 public final class AccessCookieHandlerIT extends AbstractHandlerIT {
 
     /**
-     * The id of the HTML element that contains the client IP address that was put in the cookie.
-     */
-    private final String myClientIpAddressID = "client-ip-address";
-
-    /**
      * Tests that a client can obtain an access cookie.
      *
+     * @param aReverseProxyDeployment Whether or not to simulate app deployment behind a reverse proxy
      * @param aVertx A Vert.x instance
      * @param aContext A test context
      */
-    @Test
-    public void testGetCookie(final Vertx aVertx, final VertxTestContext aContext) {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void testGetCookie(final boolean aReverseProxyDeployment, final Vertx aVertx,
+            final VertxTestContext aContext) {
         final String requestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
 
+        if (aReverseProxyDeployment) {
+            getCookie.putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
+        }
+
         getCookie.send().onSuccess(response -> {
             assertEquals(HTTP.OK, response.statusCode());
             assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
             assertEquals(1, response.cookies().size());
 
-            aContext.completeNow();
-        }).onFailure(aContext::failNow);
-    }
-
-    /**
-     * Tests that a client can obtain an access cookie with the correct IP address when the app is deployed behind a
-     * reverse proxy.
-     *
-     * @param aVertx A Vert.x instance
-     * @param aContext A test context
-     */
-    @Test
-    public void testGetCookieReverseProxyDeployment(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestURI =
-                StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI)
-                .putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
-
-        getCookie.send().onSuccess(response -> {
-            final String actualClientIpAddress;
-
-            assertEquals(HTTP.OK, response.statusCode());
-            assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(1, response.cookies().size());
-            assertEquals(CLIENT_IP, Jsoup.parse(response.bodyAsString()).getElementById(myClientIpAddressID).text());
+            if (aReverseProxyDeployment) {
+                assertEquals(CLIENT_IP,
+                        Jsoup.parse(response.bodyAsString()).getElementById("client-ip-address").text());
+            }
 
             aContext.completeNow();
         }).onFailure(aContext::failNow);
