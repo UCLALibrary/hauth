@@ -62,7 +62,6 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
     public void testGetCookieReverseProxyDeployment(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
-        final String expectedClientIpAddress = "1.1.1.1";
         final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI)
                 .putHeader(CLIENT_IP_HEADER_NAME, CLIENT_IP_HEADER_VALUE);
 

@@ -164,7 +164,7 @@ public class MainVerticle extends AbstractVerticle {
                     .failureHandler(new HtmlRenderingErrorHandler());
 
             // Enable deployment behind a reverse proxy
-            router.allowForward(AllowForwardHeaders.FORWARD);
+            router.allowForward(AllowForwardHeaders.X_FORWARD);
 
             return Future.succeededFuture(router);
         });
