@@ -52,7 +52,7 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
             assertEquals(1, response.cookies().size());
 
             if (aReverseProxyDeployment) {
-                assertEquals(CLIENT_IP,
+                assertEquals(FORWARDED_CLIENT_IP,
                         Jsoup.parse(response.bodyAsString()).getElementById("client-ip-address").text());
             }
 

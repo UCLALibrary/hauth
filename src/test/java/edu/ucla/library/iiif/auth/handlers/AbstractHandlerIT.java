@@ -74,17 +74,18 @@ public abstract class AbstractHandlerIT {
     /**
      * The fictitious client IP address that we'll pretend a reverse proxy sent through.
      */
-    protected static final String CLIENT_IP = "1.1.1.1";
+    protected static final String FORWARDED_CLIENT_IP = "1.1.1.1";
 
     /**
      * The fictitious proxy IP address that we'll pretend a reverse proxy sent through.
      */
-    protected static final String PROXY_IP = "2.2.2.2";
+    protected static final String FORWARDED_PROXY_IP = "2.2.2.2";
 
     /**
      * The value to use for the {@link CLIENT_IP_HEADER} header.
      */
-    protected static final String FORWARDED_IP_ADDRESSES = StringUtils.format("{}, {}", CLIENT_IP, PROXY_IP);
+    protected static final String FORWARDED_IP_ADDRESSES =
+            StringUtils.format("{}, {}", FORWARDED_CLIENT_IP, FORWARDED_PROXY_IP);
 
     /**
      * A test id for an item with open access.

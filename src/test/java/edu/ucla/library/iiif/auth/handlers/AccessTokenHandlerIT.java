@@ -75,7 +75,7 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
             final String clientIpAddress;
 
             if (aReverseProxyDeployment) {
-                clientIpAddress = CLIENT_IP;
+                clientIpAddress = FORWARDED_CLIENT_IP;
             } else {
                 clientIpAddress = Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
             }
@@ -146,7 +146,7 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
             final String clientIpAddress;
 
             if (aReverseProxyDeployment) {
-                clientIpAddress = CLIENT_IP;
+                clientIpAddress = FORWARDED_CLIENT_IP;
             } else {
                 clientIpAddress = Jsoup.parse(result.bodyAsString()).getElementById(myClientIpAddressID).text();
             }
