@@ -74,12 +74,12 @@ public abstract class AbstractHandlerIT {
     /**
      * The fictitious client IP address that we'll pretend a reverse proxy sent through.
      */
-    protected static final String FORWARDED_CLIENT_IP = "1.1.1.1";
+    protected static final String FORWARDED_CLIENT_IP = "10.1.1.1";
 
     /**
      * The fictitious proxy IP address that we'll pretend a reverse proxy sent through.
      */
-    protected static final String FORWARDED_PROXY_IP = "2.2.2.2";
+    protected static final String FORWARDED_PROXY_IP = "10.2.2.2";
 
     /**
      * The value to use for the {@link CLIENT_IP_HEADER} header.
