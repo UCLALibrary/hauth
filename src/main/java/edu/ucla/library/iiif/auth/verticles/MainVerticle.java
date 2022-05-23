@@ -34,6 +34,7 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.AllowForwardHeaders;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.APIKeyHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
@@ -161,6 +162,9 @@ public class MainVerticle extends AbstractVerticle {
             router.route() //
                     .failureHandler(new AdminAuthenticationErrorHandler()) //
                     .failureHandler(new HtmlRenderingErrorHandler());
+
+            // Enable deployment behind a reverse proxy
+            router.allowForward(AllowForwardHeaders.X_FORWARD);
 
             return Future.succeededFuture(router);
         });
