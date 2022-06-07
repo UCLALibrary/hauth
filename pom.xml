@@ -36,7 +36,7 @@
     <graalvm.version>21.2.0</graalvm.version>
 
     <!-- Docker build properties -->
-    <alpine.version>3.14.2</alpine.version>
+    <alpine.version>3.16.0</alpine.version>
     <builder.version>0.0.3</builder.version>
 
     <!-- Whether UPX should be used to compress the application -->
@@ -49,7 +49,7 @@
     <freelib.utils.version>3.0.1</freelib.utils.version>
     <cidr.ip.version>1.0.1</cidr.ip.version>
     <commons.codec.version>1.15</commons.codec.version>
-    <vertx.version>4.2.7</vertx.version>
+    <vertx.version>4.3.1</vertx.version>
 
     <!-- Build plugin versions -->
     <clean.plugin.version>3.1.0</clean.plugin.version>
@@ -841,7 +841,7 @@
   <parent>
     <artifactId>freelib-parent</artifactId>
     <groupId>info.freelibrary</groupId>
-    <version>7.2.2</version>
+    <version>7.2.3</version>
   </parent>
 
 </project>

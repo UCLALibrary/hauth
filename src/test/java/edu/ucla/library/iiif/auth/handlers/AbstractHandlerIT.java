@@ -12,12 +12,12 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import info.freelibrary.util.StringUtils;
+
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
 import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.utils.TestUtils;
-
-import info.freelibrary.util.StringUtils;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.CompositeFuture;
@@ -147,6 +147,7 @@ public abstract class AbstractHandlerIT {
     public void setUp(final Vertx aVertx, final VertxTestContext aContext) {
         ConfigRetriever.create(aVertx).getConfig().compose(config -> {
             final DatabaseService db = DatabaseService.create(aVertx, config);
+            @SuppressWarnings("rawtypes")
             final List<Future> dbOps = List.of(db.setAccessMode(TEST_ID_OPEN_ACCESS, 0),
                     db.setAccessMode(TEST_ID_TIERED_ACCESS, 1), db.setAccessMode(TEST_ID_ALL_OR_NOTHING_ACCESS, 2),
                     db.setDegradedAllowed(TEST_ORIGIN, true));

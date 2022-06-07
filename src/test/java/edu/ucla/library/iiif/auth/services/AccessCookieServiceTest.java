@@ -149,7 +149,9 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
             final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(cookie.getBytes())));
 
             for (final String key : List.of(CookieJsonKeys.VERSION, CookieJsonKeys.SECRET, CookieJsonKeys.NONCE)) {
-                assertTrue(decodedCookie.containsKey(key));
+                aContext.verify(() -> {
+                    assertTrue(decodedCookie.containsKey(key));
+                });
             }
 
             return myServiceProxy.decryptCookie(cookie, clientIpAddress);
@@ -192,9 +194,10 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
         }).onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
-            assertEquals(Error.INVALID_COOKIE.ordinal(), error.failureCode());
-
-            aContext.completeNow();
+            aContext.verify(() -> {
+                assertEquals(Error.INVALID_COOKIE.ordinal(), error.failureCode());
+                aContext.completeNow();
+            });
         }).onSuccess(decryptedCookie -> {
             // Somehow we still got syntactically valid JSON; make sure the structure is not semantically valid
             if (decryptedCookie.containsKey(CookieJsonKeys.CLIENT_IP_ADDRESS) &&

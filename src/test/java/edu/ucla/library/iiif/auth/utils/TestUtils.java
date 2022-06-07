@@ -27,12 +27,19 @@ import io.vertx.sqlclient.Tuple;
 /**
  * Utilities to assist with testing.
  */
-@SuppressWarnings({ "PMD.CommentSize", "checkstyle:lineLengthChecker" })
+@SuppressWarnings({ "PMD.CommentSize" })
 public final class TestUtils {
 
+    /**
+     * The TestUtils' logger.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(TestUtils.class, MessageCodes.BUNDLE);
 
+    /**
+     * Creates a utilities class for testing purposes.
+     */
     private TestUtils() {
+        // This is intentionally left empty.
     }
 
     /**
@@ -44,8 +51,8 @@ public final class TestUtils {
      *         is a {@link CookieNames#SINAI_IV} cookie
      * @throws Exception If there is an issue generating the cookies
      * @see <a href=
-     *      "https://github.com/UCLALibrary/sinaimanuscripts/blob/44cbbd9bf508c32b742f1617205a679edf77603e/app/controllers/application_controller.rb#L98-L103">How
-     *      the Sinai application encodes cookies</a>
+     *      "https://github.com/UCLALibrary/sinaimanuscripts/blob/main/app/controllers/application_controller.rb">How
+     *      the Sinai application encodes cookies in the <code>create_encrypted_string</code> method.</a>
      */
     public static Tuple getMockSinaiCookies(final JsonObject aConfig, final LocalDate aLocalDate) throws Exception {
         final String clearTextPrefix = aConfig.getString(Config.SINAI_COOKIE_VALID_PREFIX);

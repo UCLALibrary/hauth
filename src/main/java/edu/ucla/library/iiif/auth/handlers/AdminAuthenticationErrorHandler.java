@@ -6,8 +6,8 @@ import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
 import edu.ucla.library.iiif.auth.Error;
-import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.MessageCodes;
+import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.http.HttpHeaders;
