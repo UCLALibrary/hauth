@@ -16,10 +16,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.DecodeException;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.validation.BodyProcessorException;
+import io.vertx.ext.web.validation.BodyProcessorException.BodyProcessorErrorType;
+import io.vertx.ext.web.validation.RequestPredicate;
+import io.vertx.ext.web.validation.RequestPredicateException;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
@@ -49,24 +51,10 @@ public class ItemsHandler implements Handler<RoutingContext> {
     @Override
     public void handle(final RoutingContext aContext) {
         final HttpServerRequest request = aContext.request();
-        final JsonArray requestData;
         final HttpServerResponse response = aContext.response() //
                 .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
-        final JsonObject responseData;
 
-        try {
-            requestData = aContext.getBodyAsJsonArray();
-        } catch (final DecodeException details) {
-            responseData = new JsonObject() //
-                    .put(ResponseJsonKeys.ERROR, Error.INVALID_JSONARRAY) //
-                    .put(ResponseJsonKeys.MESSAGE, details.getMessage());
-            response.setStatusCode(HTTP.BAD_REQUEST).end(responseData.encodePrettily());
-
-            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
-            return;
-        }
-
-        myDatabaseServiceProxy.setItems(requestData).onSuccess(result -> {
+        myDatabaseServiceProxy.setItems(aContext.getBodyAsJsonArray()).onSuccess(result -> {
             response.setStatusCode(HTTP.CREATED).end();
         }).onFailure(error -> {
             if (error instanceof ServiceException) {
@@ -94,5 +82,33 @@ public class ItemsHandler implements Handler<RoutingContext> {
                 aContext.fail(error);
             }
         });
+    }
+
+    /**
+     * Handles request body validation errors.
+     *
+     * @param aContext A routing context
+     */
+    public static void handleInvalidRequestBody(final RoutingContext aContext) {
+        final Throwable error = aContext.failure();
+        final String errorMessage = error.getMessage();
+        final HttpServerRequest request = aContext.request();
+
+        if (error instanceof RequestPredicateException &&
+                errorMessage.endsWith(RequestPredicate.BODY_REQUIRED.apply(aContext).getErrorMessage()) ||
+                error instanceof BodyProcessorException && ((BodyProcessorException) error).getErrorType()
+                        .equals(BodyProcessorErrorType.VALIDATION_ERROR)) {
+            final JsonObject responseData = new JsonObject() //
+                    .put(ResponseJsonKeys.ERROR, Error.INVALID_JSONARRAY) //
+                    .put(ResponseJsonKeys.MESSAGE, errorMessage);
+
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .setStatusCode(HTTP.BAD_REQUEST).end(responseData.encodePrettily());
+
+            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), errorMessage);
+        } else {
+            aContext.next();
+            LOGGER.error(MessageCodes.AUTH_010, error.toString());
+        }
     }
 }
