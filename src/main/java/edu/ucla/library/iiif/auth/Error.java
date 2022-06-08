@@ -36,11 +36,6 @@ public enum Error {
     MALFORMED_INPUT_DATA,
 
     /**
-     * The failure code if the application doesn't have a properly configured request body handler.
-     */
-    MISSING_BODY_HANDLER,
-
-    /**
      * The failure code if data that is expected to be shaped like a JSON array, isn't.
      */
     INVALID_JSONARRAY,

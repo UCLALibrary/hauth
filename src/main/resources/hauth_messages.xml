@@ -7,7 +7,7 @@
 
   <entry key="AUTH_000">{}</entry>
   <entry key="AUTH_001">Server started and listening at port: {}</entry>
-  <entry key="AUTH_002">Application's request body handler has not been successfully configured</entry>
+  <entry key="AUTH_002"></entry>
   <entry key="AUTH_003">Test database (on port: {}) using auto-generated password: {}</entry>
   <entry key="AUTH_004">The requested ID ({}) was not found</entry>
   <entry key="AUTH_005">Database error</entry>
@@ -26,6 +26,6 @@
   <entry key="AUTH_018">Internal error</entry>
   <entry key="AUTH_019">Expected validation of expired cookie to fail, but it succeeded</entry>
   <entry key="AUTH_020">Generated cookies: {}={}, {}={} (cleartext: "{}")</entry>
-  <entry key="AUTH_021">Invalid request body: {}</entry>
+  <entry key="AUTH_021"></entry>
 
 </properties>

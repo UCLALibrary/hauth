@@ -27,7 +27,6 @@ import io.vertx.sqlclient.Tuple;
 /**
  * Utilities to assist with testing.
  */
-@SuppressWarnings({ "PMD.CommentSize" })
 public final class TestUtils {
 
     /**
@@ -50,11 +49,12 @@ public final class TestUtils {
      * @return A tuple of size 2 whose first element is a {@link CookieNames#SINAI_CIPHERTEXT} cookie and whose second
      *         is a {@link CookieNames#SINAI_IV} cookie
      * @throws Exception If there is an issue generating the cookies
-     * @see <a href=
-     *      "https://github.com/UCLALibrary/sinaimanuscripts/blob/main/app/controllers/application_controller.rb">How
-     *      the Sinai application encodes cookies in the <code>create_encrypted_string</code> method.</a>
      */
+    @SuppressWarnings({ "checkstyle:LineLength" })
     public static Tuple getMockSinaiCookies(final JsonObject aConfig, final LocalDate aLocalDate) throws Exception {
+        // This code mirrors the Hyrax implementation that creates encrypted cookies in the front-end application
+        // https://github.com/UCLALibrary/sinaimanuscripts/blob/v2.15.7/app/controllers/application_controller.rb#L98-L103
+
         final String clearTextPrefix = aConfig.getString(Config.SINAI_COOKIE_VALID_PREFIX);
         final String clearTextSuffix =
                 aLocalDate.format(DateTimeFormatter.ofPattern(AccessCookieServiceImpl.SINAI_COOKIE_DATE_FORMAT));
