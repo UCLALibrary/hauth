@@ -170,6 +170,29 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
     }
 
     /**
+     * Tests that the request body must be non-empty.
+     *
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
+     */
+    @Test
+    public void testPostItemsMissingRequestBody(final Vertx aVertx, final VertxTestContext aContext) {
+        final HttpRequest<?> postItems =
+                myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
+
+        postItems.send().onSuccess(response -> {
+            aContext.verify(() -> {
+                assertEquals(HTTP.BAD_REQUEST, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(Error.INVALID_JSONARRAY.toString(),
+                        response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
+
+                aContext.completeNow();
+            });
+        }).onFailure(aContext::failNow);
+    }
+
+    /**
      * Tests that the request is rejected if any of the items are missing a key.
      *
      * @param aVertx A Vert.x instance

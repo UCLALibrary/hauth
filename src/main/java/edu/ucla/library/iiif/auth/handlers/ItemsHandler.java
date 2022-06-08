@@ -1,8 +1,6 @@
 
 package edu.ucla.library.iiif.auth.handlers;
 
-import java.util.Map;
-
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -21,6 +19,10 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.validation.BodyProcessorException;
+import io.vertx.ext.web.validation.BodyProcessorException.BodyProcessorErrorType;
+import io.vertx.ext.web.validation.RequestPredicate;
+import io.vertx.ext.web.validation.RequestPredicateException;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
@@ -32,13 +34,6 @@ public class ItemsHandler implements Handler<RoutingContext> {
      * The handler's logger.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ItemsHandler.class, MessageCodes.BUNDLE);
-
-    /**
-     * A mapping of the expected potential errors to their status codes. This is something that could potentially be a
-     * part of the Error class (if they're consistent), but keeping it simple for now with this isolated map.
-     */
-    private static final Map<Error, Integer> ERRORS = Map.of(Error.MALFORMED_INPUT_DATA, HTTP.BAD_REQUEST,
-            Error.INVALID_JSONARRAY, HTTP.BAD_REQUEST, Error.MISSING_BODY_HANDLER, HTTP.INTERNAL_SERVER_ERROR);
 
     /**
      * The service proxy for accessing the database.
@@ -56,53 +51,65 @@ public class ItemsHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(final RoutingContext aContext) {
-        final RequestBody body = aContext.body();
+        final HttpServerRequest request = aContext.request();
+        final HttpServerResponse response = aContext.response() //
+                .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
 
-        if (body.available()) {
-            try {
-                myDatabaseServiceProxy.setItems(body.asJsonArray()).onSuccess(result -> {
-                    aContext.response().setStatusCode(HTTP.CREATED).end();
-                }).onFailure(error -> {
-                    if (error instanceof ServiceException) {
-                        final ServiceException details = (ServiceException) error;
-                        final int failureCode = details.failureCode();
+        myDatabaseServiceProxy.setItems(aContext.body().asJsonArray()).onSuccess(result -> {
+            response.setStatusCode(HTTP.CREATED).end();
+        }).onFailure(error -> {
+            if (error instanceof ServiceException) {
+                final ServiceException details = (ServiceException) error;
+                final int statusCode;
+                final String errorMessage;
+                final JsonObject errorData;
 
-                        if (failureCode == Error.MALFORMED_INPUT_DATA.ordinal()) {
-                            final String errorMessage = LOGGER.getMessage(MessageCodes.AUTH_014, details.getMessage());
-                            sendError(aContext, Error.MALFORMED_INPUT_DATA, errorMessage);
-                        } else {
-                            sendError(aContext, Error.values()[failureCode], LOGGER.getMessage(MessageCodes.AUTH_005));
-                        }
-                    } else {
-                        aContext.fail(error);
-                    }
-                });
-            } catch (final ClassCastException details) {
-                sendError(aContext, Error.INVALID_JSONARRAY, LOGGER.getMessage(MessageCodes.AUTH_021, body.asString()));
+                if (details.failureCode() == Error.MALFORMED_INPUT_DATA.ordinal()) {
+                    statusCode = HTTP.BAD_REQUEST;
+                    errorMessage = LOGGER.getMessage(MessageCodes.AUTH_014, error.getMessage());
+                } else {
+                    statusCode = HTTP.INTERNAL_SERVER_ERROR;
+                    errorMessage = LOGGER.getMessage(MessageCodes.AUTH_005);
+                }
+
+                errorData = new JsonObject() //
+                        .put(ResponseJsonKeys.ERROR, Error.values()[details.failureCode()]) //
+                        .put(ResponseJsonKeys.MESSAGE, errorMessage);
+
+                response.setStatusCode(statusCode).end(errorData.encodePrettily());
+
+                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
+            } else {
+                aContext.fail(error);
             }
-        } else {
-            sendError(aContext, Error.MISSING_BODY_HANDLER, LOGGER.getMessage(MessageCodes.AUTH_002));
-        }
+        });
     }
 
     /**
-     * Sends an error for an unsuccessful request.
+     * Handles request body validation errors.
      *
-     * @param aContext The handler's routing context
-     * @param aError An error type
-     * @param aMessage An error message
+     * @param aContext A routing context
      */
-    private void sendError(final RoutingContext aContext, final Error aError, final String aMessage) {
-        final HttpServerResponse response = aContext.response();
+    public static void handleInvalidRequestBody(final RoutingContext aContext) {
+        final Throwable error = aContext.failure();
+        final String errorMessage = error.getMessage();
         final HttpServerRequest request = aContext.request();
-        final JsonObject details = new JsonObject();
 
-        details.put(ResponseJsonKeys.ERROR, aError);
-        details.put(ResponseJsonKeys.MESSAGE, aMessage);
+        if (error instanceof RequestPredicateException &&
+                errorMessage.endsWith(RequestPredicate.BODY_REQUIRED.apply(aContext).getErrorMessage()) ||
+                error instanceof BodyProcessorException && ((BodyProcessorException) error).getErrorType()
+                        .equals(BodyProcessorErrorType.VALIDATION_ERROR)) {
+            final JsonObject responseData = new JsonObject() //
+                    .put(ResponseJsonKeys.ERROR, Error.INVALID_JSONARRAY) //
+                    .put(ResponseJsonKeys.MESSAGE, errorMessage);
 
-        LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), aMessage);
+            aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .setStatusCode(HTTP.BAD_REQUEST).end(responseData.encodePrettily());
 
-        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
-        response.setStatusCode(ERRORS.getOrDefault(aError, HTTP.INTERNAL_SERVER_ERROR)).end(details.encodePrettily());
+            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), errorMessage);
+        } else {
+            aContext.next();
+            LOGGER.error(MessageCodes.AUTH_010, error.toString());
+        }
     }
 }

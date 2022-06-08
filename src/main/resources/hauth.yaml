@@ -247,8 +247,20 @@ paths:
       security:
         - Admin: []
       requestBody:
+        required: true
         content:
           application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  uid:
+                    type: string
+                    example: ark:/21198/00000000
+                  accessMode:
+                    type: integer
+                    enum: [ 0, 1, 2 ]
             example: [ { "uid": "ark:/21198/00000000", "accessMode": 0 }, { "uid": "ark:/21198/11111111", "accessMode": 1 } ]
       responses:
         '201':
