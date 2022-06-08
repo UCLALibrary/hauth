@@ -178,7 +178,7 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
     @Test
     public void testPostItemsMissingRequestBody(final Vertx aVertx, final VertxTestContext aContext) {
         final HttpRequest<?> postItems =
-                myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
+                myWebClient.post(myPort, Constants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
 
         postItems.send().onSuccess(response -> {
             aContext.verify(() -> {
