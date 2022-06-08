@@ -806,6 +806,7 @@
                   <run>
                     <env>
                       <ACCESS_COOKIE_WINDOW_CLOSE_DELAY>0</ACCESS_COOKIE_WINDOW_CLOSE_DELAY>
+                      <ACCESS_COOKIE_DOMAIN>example.com</ACCESS_COOKIE_DOMAIN>
                       <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
                     </env>
                   </run>
@@ -818,6 +819,7 @@
             <configuration>
               <environmentVariables>
                 <ACCESS_COOKIE_WINDOW_CLOSE_DELAY>0</ACCESS_COOKIE_WINDOW_CLOSE_DELAY>
+                <ACCESS_COOKIE_DOMAIN>example.com</ACCESS_COOKIE_DOMAIN>
                 <ACCESS_TOKEN_EXPIRES_IN>1800</ACCESS_TOKEN_EXPIRES_IN>
               </environmentVariables>
             </configuration>
