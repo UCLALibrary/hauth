@@ -36,7 +36,7 @@
     <graalvm.version>21.2.0</graalvm.version>
 
     <!-- Docker build properties -->
-    <alpine.version>3.14.2</alpine.version>
+    <alpine.version>3.16.0</alpine.version>
     <builder.version>0.0.3</builder.version>
 
     <!-- Whether UPX should be used to compress the application -->
@@ -841,7 +841,7 @@
   <parent>
     <artifactId>freelib-parent</artifactId>
     <groupId>info.freelibrary</groupId>
-    <version>7.2.2</version>
+    <version>7.2.3</version>
   </parent>
 
 </project>

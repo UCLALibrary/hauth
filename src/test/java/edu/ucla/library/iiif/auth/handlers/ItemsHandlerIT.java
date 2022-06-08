@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
+import info.freelibrary.util.Constants;
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.StringUtils;
 
@@ -17,7 +18,6 @@ import edu.ucla.library.iiif.auth.RequestJsonKeys;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.handlers.AccessModeHandler.AccessMode;
 import edu.ucla.library.iiif.auth.utils.MediaType;
-import edu.ucla.library.iiif.auth.utils.TestConstants;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.MultiMap;
@@ -27,6 +27,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.VertxTestContext;
 
 /**
@@ -79,8 +80,9 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
     @Test
     public void testPostItems(final Vertx aVertx, final VertxTestContext aContext) {
         final HttpRequest<?> postItems =
-                myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
+                myWebClient.post(myPort, Constants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
         final JsonArray json = new JsonArray().add(TEST_ITEM_OPEN_ACCESS).add(TEST_ITEM_TIERED_ACCESS);
+        final Checkpoint checkpoint = aContext.checkpoint(2); // Two separate asynchronous checkpoints
 
         postItems.sendJson(json).compose(response -> {
             final String getAccessModeRequestUri1 =
@@ -89,11 +91,14 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
                     StringUtils.format(GET_ACCESS_MODE_PATH, URLEncoder.encode(TEST_ID_2, StandardCharsets.UTF_8));
 
             final HttpRequest<?> getAccessMode1 =
-                    myWebClient.get(myPort, TestConstants.INADDR_ANY, getAccessModeRequestUri1);
+                    myWebClient.get(myPort, Constants.INADDR_ANY, getAccessModeRequestUri1);
             final HttpRequest<?> getAccessMode2 =
-                    myWebClient.get(myPort, TestConstants.INADDR_ANY, getAccessModeRequestUri2);
+                    myWebClient.get(myPort, Constants.INADDR_ANY, getAccessModeRequestUri2);
 
-            assertEquals(HTTP.CREATED, response.statusCode());
+            aContext.verify(() -> {
+                assertEquals(HTTP.CREATED, response.statusCode());
+                checkpoint.flag();
+            });
 
             return CompositeFuture.all(getAccessMode1.send(), getAccessMode2.send());
         }).onSuccess(responses -> {
@@ -103,16 +108,18 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
             final JsonObject expected1 = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.OPEN);
             final JsonObject expected2 = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, AccessMode.TIERED);
 
-            assertEquals(HTTP.OK, response1.statusCode());
-            assertEquals(HTTP.OK, response2.statusCode());
+            aContext.verify(() -> {
+                assertEquals(HTTP.OK, response1.statusCode());
+                assertEquals(HTTP.OK, response2.statusCode());
 
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response1.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response2.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response1.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response2.headers().get(HttpHeaders.CONTENT_TYPE));
 
-            assertEquals(expected1, response1.bodyAsJsonObject());
-            assertEquals(expected2, response2.bodyAsJsonObject());
+                assertEquals(expected1, response1.bodyAsJsonObject());
+                assertEquals(expected2, response2.bodyAsJsonObject());
 
-            aContext.completeNow();
+                checkpoint.flag();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -124,16 +131,18 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
      */
     @Test
     public void testPostItemsUnauthorized(final Vertx aVertx, final VertxTestContext aContext) {
-        final HttpRequest<?> postItems = myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH);
+        final HttpRequest<?> postItems = myWebClient.post(myPort, Constants.INADDR_ANY, POST_ITEMS_PATH);
         final JsonArray json = new JsonArray().add(TEST_ITEM_OPEN_ACCESS).add(TEST_ITEM_TIERED_ACCESS);
 
         postItems.sendJson(json).onSuccess(response -> {
-            assertEquals(HTTP.UNAUTHORIZED, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(Error.INVALID_ADMIN_CREDENTIALS.toString(),
-                    response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
+            aContext.verify(() -> {
+                assertEquals(HTTP.UNAUTHORIZED, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(Error.INVALID_ADMIN_CREDENTIALS.toString(),
+                        response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -146,15 +155,17 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
     @Test
     public void testPostItemsInvalidRequestBody(final Vertx aVertx, final VertxTestContext aContext) {
         final HttpRequest<?> postItems =
-                myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
+                myWebClient.post(myPort, Constants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
 
         postItems.sendJson(TEST_ITEM_OPEN_ACCESS).onSuccess(response -> {
-            assertEquals(HTTP.BAD_REQUEST, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(Error.INVALID_JSONARRAY.toString(),
-                    response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
+            aContext.verify(() -> {
+                assertEquals(HTTP.BAD_REQUEST, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(Error.INVALID_JSONARRAY.toString(),
+                        response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -190,16 +201,18 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
     @Test
     public void testPostItemsMissingJsonKey(final Vertx aVertx, final VertxTestContext aContext) {
         final HttpRequest<?> postItems =
-                myWebClient.post(myPort, TestConstants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
+                myWebClient.post(myPort, Constants.INADDR_ANY, POST_ITEMS_PATH).putHeaders(API_KEY_HEADER);
         final JsonArray json = new JsonArray().add(TEST_ITEM_OPEN_ACCESS).add(TEST_ITEM_MISSING_ACCESS_MODE);
 
         postItems.sendJson(json).onSuccess(response -> {
-            assertEquals(HTTP.BAD_REQUEST, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(Error.MALFORMED_INPUT_DATA.toString(),
-                    response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
+            aContext.verify(() -> {
+                assertEquals(HTTP.BAD_REQUEST, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(Error.MALFORMED_INPUT_DATA.toString(),
+                        response.bodyAsJsonObject().getString(ResponseJsonKeys.ERROR));
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 }

@@ -2,6 +2,9 @@
 # The location of build artifacts
 target/
 
+# Ignore files created by git diff
+*.orig
+
 # Don't check in the auto-generated build tools
 src/main/tools/eclipse
 

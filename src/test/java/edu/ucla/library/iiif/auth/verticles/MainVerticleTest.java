@@ -1,9 +1,9 @@
 
 package edu.ucla.library.iiif.auth.verticles;
 
+import static info.freelibrary.util.Constants.SLASH;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static info.freelibrary.util.Constants.SLASH;
 
 import java.lang.reflect.Field;
 import java.util.Set;
@@ -91,11 +91,13 @@ public class MainVerticleTest {
             final Set<MessageConsumer<?>> services = getEventBusServices((MainVerticle) myVerticle);
             final Set<String> addresses = services.stream().map(MessageConsumer::address).collect(Collectors.toSet());
 
-            assertNotEquals(services, null);
-            assertTrue(addresses.containsAll(Set.of(AccessCookieService.ADDRESS, DatabaseService.ADDRESS)));
-            services.forEach(service -> assertTrue(service.isRegistered()));
+            aContext.verify(() -> {
+                assertNotEquals(services, null);
+                assertTrue(addresses.containsAll(Set.of(AccessCookieService.ADDRESS, DatabaseService.ADDRESS)));
+                services.forEach(service -> assertTrue(service.isRegistered()));
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         } catch (final AssertionError | IllegalAccessException | NoSuchFieldException details) {
             aContext.failNow(details);
         }

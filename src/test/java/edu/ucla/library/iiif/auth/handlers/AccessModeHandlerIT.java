@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
+import info.freelibrary.util.Constants;
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -17,7 +18,6 @@ import edu.ucla.library.iiif.auth.Error;
 import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.utils.MediaType;
-import edu.ucla.library.iiif.auth.utils.TestConstants;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -45,16 +45,18 @@ public final class AccessModeHandlerIT extends AbstractHandlerIT {
     public void testGetAccessModeOpen(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestURI = StringUtils.format(GET_ACCESS_MODE_PATH,
                 URLEncoder.encode(TEST_ID_OPEN_ACCESS, StandardCharsets.UTF_8));
-        final HttpRequest<?> getAccessMode = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
+        final HttpRequest<?> getAccessMode = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI);
 
         getAccessMode.send().onSuccess(response -> {
             final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, "OPEN");
 
-            assertEquals(HTTP.OK, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(expected, response.bodyAsJsonObject());
+            aContext.verify(() -> {
+                assertEquals(HTTP.OK, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expected, response.bodyAsJsonObject());
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -68,16 +70,18 @@ public final class AccessModeHandlerIT extends AbstractHandlerIT {
     public void testGetAccessModeTiered(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestUri = StringUtils.format(GET_ACCESS_MODE_PATH,
                 URLEncoder.encode(TEST_ID_TIERED_ACCESS, StandardCharsets.UTF_8));
-        final HttpRequest<?> getAccessMode = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
+        final HttpRequest<?> getAccessMode = myWebClient.get(myPort, Constants.INADDR_ANY, requestUri);
 
         getAccessMode.send().onSuccess(response -> {
             final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, "TIERED");
 
-            assertEquals(HTTP.OK, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(expected, response.bodyAsJsonObject());
+            aContext.verify(() -> {
+                assertEquals(HTTP.OK, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expected, response.bodyAsJsonObject());
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -91,16 +95,18 @@ public final class AccessModeHandlerIT extends AbstractHandlerIT {
     public void testGetAccessModeAllOrNothing(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestUri = StringUtils.format(GET_ACCESS_MODE_PATH,
                 URLEncoder.encode(TEST_ID_ALL_OR_NOTHING_ACCESS, StandardCharsets.UTF_8));
-        final HttpRequest<?> getAccessMode = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestUri);
+        final HttpRequest<?> getAccessMode = myWebClient.get(myPort, Constants.INADDR_ANY, requestUri);
 
         getAccessMode.send().onSuccess(response -> {
             final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ACCESS_MODE, "ALL_OR_NOTHING");
 
-            assertEquals(HTTP.OK, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(expected, response.bodyAsJsonObject());
+            aContext.verify(() -> {
+                assertEquals(HTTP.OK, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expected, response.bodyAsJsonObject());
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -115,18 +121,20 @@ public final class AccessModeHandlerIT extends AbstractHandlerIT {
         final String id = "ark:/21198/unknown";
         final String requestURI =
                 StringUtils.format(GET_ACCESS_MODE_PATH, URLEncoder.encode(id, StandardCharsets.UTF_8));
-        final HttpRequest<?> getAccessMode = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
+        final HttpRequest<?> getAccessMode = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI);
 
         getAccessMode.send().onSuccess(response -> {
             final JsonObject responseBody = response.bodyAsJsonObject();
             final JsonObject expected = new JsonObject().put(ResponseJsonKeys.ERROR, Error.NOT_FOUND.toString())
                     .put(ResponseJsonKeys.MESSAGE, LOGGER.getMessage(MessageCodes.AUTH_004, id));
 
-            assertEquals(HTTP.NOT_FOUND, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(expected, responseBody);
+            aContext.verify(() -> {
+                assertEquals(HTTP.NOT_FOUND, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expected, responseBody);
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 }

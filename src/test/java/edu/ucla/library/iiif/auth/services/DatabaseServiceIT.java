@@ -102,10 +102,12 @@ public class DatabaseServiceIT extends AbstractServiceTest {
             // The get should fail since nothing has been set for the id
             final ServiceException error = (ServiceException) details;
 
-            assertEquals(Error.NOT_FOUND.ordinal(), error.failureCode());
-            assertEquals(id, error.getMessage());
+            aContext.verify(() -> {
+                assertEquals(Error.NOT_FOUND.ordinal(), error.failureCode());
+                assertEquals(id, error.getMessage());
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onSuccess(result -> {
             // The following will always fail
             completeIfExpectedElseFail(result, expected, aContext);
@@ -183,9 +185,10 @@ public class DatabaseServiceIT extends AbstractServiceTest {
         setItems.onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
-            assertEquals(Error.MALFORMED_INPUT_DATA.ordinal(), error.failureCode());
-
-            aContext.completeNow();
+            aContext.verify(() -> {
+                assertEquals(Error.MALFORMED_INPUT_DATA.ordinal(), error.failureCode());
+                aContext.completeNow();
+            });
         }).onSuccess(result -> {
             aContext.failNow(LOGGER.getMessage(MessageCodes.AUTH_015, result));
         });
@@ -204,10 +207,12 @@ public class DatabaseServiceIT extends AbstractServiceTest {
         myServiceProxy.getDegradedAllowed(url).onFailure(details -> {
             final ServiceException error = (ServiceException) details;
 
-            assertEquals(Error.NOT_FOUND.ordinal(), error.failureCode());
-            assertEquals(url, error.getMessage());
+            aContext.verify(() -> {
+                assertEquals(Error.NOT_FOUND.ordinal(), error.failureCode());
+                assertEquals(url, error.getMessage());
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onSuccess(result -> {
             // The following will always fail
             completeIfExpectedElseFail(result, expected, aContext);
