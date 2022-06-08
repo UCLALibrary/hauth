@@ -54,7 +54,7 @@ public class ItemsHandler implements Handler<RoutingContext> {
         final HttpServerResponse response = aContext.response() //
                 .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
 
-        myDatabaseServiceProxy.setItems(aContext.getBodyAsJsonArray()).onSuccess(result -> {
+        myDatabaseServiceProxy.setItems(aContext.body().asJsonArray()).onSuccess(result -> {
             response.setStatusCode(HTTP.CREATED).end();
         }).onFailure(error -> {
             if (error instanceof ServiceException) {
