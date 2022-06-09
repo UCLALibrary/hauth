@@ -52,7 +52,7 @@ public final class TestUtils {
      */
     @SuppressWarnings({ "checkstyle:LineLength" })
     public static Tuple getMockSinaiCookies(final JsonObject aConfig, final LocalDate aLocalDate) throws Exception {
-        // This code mirrors the Hyrax implementation that creates encrypted cookies in the front-end application
+        // This code mirrors the front-end Ruby code that creates encrypted cookies; see below for the implementation:
         // https://github.com/UCLALibrary/sinaimanuscripts/blob/v2.15.7/app/controllers/application_controller.rb#L98-L103
 
         final String clearTextPrefix = aConfig.getString(Config.SINAI_COOKIE_VALID_PREFIX);
@@ -61,9 +61,8 @@ public final class TestUtils {
         final String clearText = String.join(SPACE, clearTextPrefix, clearTextSuffix);
 
         final Cipher cipher = Cipher.getInstance(AccessCookieServiceImpl.CIPHER_TRANSFORMATION);
-        final SecretKey key =
-                new SecretKeySpec(aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD).getBytes(),
-                        AccessCookieServiceImpl.KEY_ALGORITHM);
+        final SecretKey key = new SecretKeySpec(aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_PASSWORD).getBytes(),
+                AccessCookieServiceImpl.KEY_ALGORITHM);
 
         final byte[] cipherText;
         final String sinaiAuthenticated3Day;

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>edu.ucla.library</groupId>
@@ -482,10 +481,8 @@
                 </args>
                 <dockerFile>${project.basedir}/src/main/docker/Dockerfile</dockerFile>
                 <assembly>
-                  <inline xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
-                      http://maven.apache.org/xsd/assembly-1.1.2.xsd"
-                    xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2">
+                  <inline xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+                      http://maven.apache.org/xsd/assembly-1.1.2.xsd" xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2">
                     <id>hauth-artifact-copy</id>
                     <fileSets>
                       <fileSet>
@@ -516,9 +513,9 @@
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                   <DB_PORT>${test.db.port}</DB_PORT>
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
-                  <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
-                  <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
-                  <SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
+                  <SECRET_KEY_PASSWORD>${test.secretkey.password}</SECRET_KEY_PASSWORD>
+                  <SECRET_KEY_SALT>${test.secretkey.salt}</SECRET_KEY_SALT>
+                  <SINAI_COOKIE_SECRET_KEY_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_PASSWORD>
                   <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
                   <FLUENCY_ENABLED>${fluency.enabled}</FLUENCY_ENABLED>
                   <FLUENCY_ENDPOINT>${fluency.endpoint}</FLUENCY_ENDPOINT>
@@ -609,9 +606,9 @@
           <environmentVariables>
             <CAMPUS_NETWORK_SUBNETS>127.0.0.0/24,192.168.0.0/24</CAMPUS_NETWORK_SUBNETS>
             <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
-            <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
-            <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
-            <SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
+            <SECRET_KEY_PASSWORD>${test.secretkey.password}</SECRET_KEY_PASSWORD>
+            <SECRET_KEY_SALT>${test.secretkey.salt}</SECRET_KEY_SALT>
+            <SINAI_COOKIE_SECRET_KEY_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_PASSWORD>
             <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
           </environmentVariables>
           <systemPropertyVariables>
@@ -631,9 +628,9 @@
             <DB_PORT>${test.db.port}</DB_PORT>
             <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
             <HTTP_PORT>${test.http.port}</HTTP_PORT>
-            <SECRET_KEY_GENERATION_PASSWORD>${test.secretkey.password}</SECRET_KEY_GENERATION_PASSWORD>
-            <SECRET_KEY_GENERATION_SALT>${test.secretkey.salt}</SECRET_KEY_GENERATION_SALT>
-            <SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD>
+            <SECRET_KEY_PASSWORD>${test.secretkey.password}</SECRET_KEY_PASSWORD>
+            <SECRET_KEY_SALT>${test.secretkey.salt}</SECRET_KEY_SALT>
+            <SINAI_COOKIE_SECRET_KEY_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_PASSWORD>
             <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
           </environmentVariables>
           <systemPropertyVariables>

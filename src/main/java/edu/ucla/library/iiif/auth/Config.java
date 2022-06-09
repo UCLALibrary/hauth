@@ -100,25 +100,23 @@ public final class Config {
     public static final String CAMPUS_NETWORK_SUBNETS = "CAMPUS_NETWORK_SUBNETS";
 
     /**
-     * The ENV property for the password used to derive the secret key for generating and validating access cookies.
+     * The ENV property for the password used to generate the secret key, which is used for creating and validating
+     * access cookies.
      */
-    @SuppressWarnings({ "PMD.LongVariable" })
-    public static final String SECRET_KEY_GENERATION_PASSWORD = "SECRET_KEY_GENERATION_PASSWORD";
+    public static final String SECRET_KEY_PASSWORD = "SECRET_KEY_PASSWORD";
 
     /**
-     * The ENV property for the salt used to derive the secret key for generating and validating access cookies.
+     * The ENV property for the salt used to generate the secret key, which is used for creating and validating access
+     * cookies.
      */
-    @SuppressWarnings({ "PMD.LongVariable" })
-    public static final String SECRET_KEY_GENERATION_SALT = "SECRET_KEY_GENERATION_SALT";
+    public static final String SECRET_KEY_SALT = "SECRET_KEY_SALT";
 
     /**
      * The ENV property for the password used to derive the secret key for validating Sinai cookies. This value must be
      * the same as the {@code CIPHER_KEY} configuration option of the Sinai application, which is used to generate its
      * encryption key.
      */
-    @SuppressWarnings({ "PMD.LongVariable" })
-    public static final String SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD =
-            "SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD";
+    public static final String SINAI_COOKIE_SECRET_KEY_PASSWORD = "SINAI_COOKIE_SECRET_KEY_PASSWORD";
 
     /**
      * The ENV property for the prefix that we'll use to validate decrypted Sinai cookies. This value be consistent with

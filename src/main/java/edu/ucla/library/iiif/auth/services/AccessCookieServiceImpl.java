@@ -24,27 +24,27 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import edu.ucla.library.iiif.auth.Config;
-import edu.ucla.library.iiif.auth.Error;
-import edu.ucla.library.iiif.auth.CookieJsonKeys;
-import edu.ucla.library.iiif.auth.MessageCodes;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
+
+import edu.ucla.library.iiif.auth.Config;
+import edu.ucla.library.iiif.auth.CookieJsonKeys;
+import edu.ucla.library.iiif.auth.Error;
+import edu.ucla.library.iiif.auth.MessageCodes;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceException;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-
 /**
  * The implementation of AccessCookieService.
  * <p>
- * Algorithm names are defined
- * <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">here</a>.
+ * Standard algorithm names are defined in Java's
+ * <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">documentation</a>.
  */
 @SuppressWarnings("PMD.ExcessiveImports")
 public class AccessCookieServiceImpl implements AccessCookieService {
@@ -135,8 +135,8 @@ public class AccessCookieServiceImpl implements AccessCookieService {
      */
     AccessCookieServiceImpl(final JsonObject aConfig)
             throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException {
-        final String password = aConfig.getString(Config.SECRET_KEY_GENERATION_PASSWORD);
-        final String salt = aConfig.getString(Config.SECRET_KEY_GENERATION_SALT);
+        final String password = aConfig.getString(Config.SECRET_KEY_PASSWORD);
+        final String salt = aConfig.getString(Config.SECRET_KEY_SALT);
         final int iterationCount = 65_536;
         final int keyLength = 256;
 
@@ -154,8 +154,8 @@ public class AccessCookieServiceImpl implements AccessCookieService {
 
         myConfig = aConfig;
         myInitializationVectorRng = new SecureRandom();
-        mySecretKeySinai = new SecretKeySpec(
-                aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD).getBytes(), KEY_ALGORITHM);
+        mySecretKeySinai =
+                new SecretKeySpec(aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_PASSWORD).getBytes(), KEY_ALGORITHM);
         mySinaiCookieValidPrefix = aConfig.getString(Config.SINAI_COOKIE_VALID_PREFIX);
         mySinaiCookieDateFormatter = DateTimeFormatter.ofPattern(SINAI_COOKIE_DATE_FORMAT);
     }
