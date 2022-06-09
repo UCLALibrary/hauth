@@ -515,6 +515,7 @@
                   <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
                   <SECRET_KEY_PASSWORD>${test.secretkey.password}</SECRET_KEY_PASSWORD>
                   <SECRET_KEY_SALT>${test.secretkey.salt}</SECRET_KEY_SALT>
+                  <!-- Sinai cookie has a fake password for testing and a real hard-coded prefix: Authenticated -->
                   <SINAI_COOKIE_SECRET_KEY_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_PASSWORD>
                   <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
                   <FLUENCY_ENABLED>${fluency.enabled}</FLUENCY_ENABLED>
@@ -608,6 +609,7 @@
             <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
             <SECRET_KEY_PASSWORD>${test.secretkey.password}</SECRET_KEY_PASSWORD>
             <SECRET_KEY_SALT>${test.secretkey.salt}</SECRET_KEY_SALT>
+            <!-- Sinai cookie has a fake password for testing and a real hard-coded prefix: Authenticated -->
             <SINAI_COOKIE_SECRET_KEY_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_PASSWORD>
             <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
           </environmentVariables>
@@ -630,6 +632,7 @@
             <HTTP_PORT>${test.http.port}</HTTP_PORT>
             <SECRET_KEY_PASSWORD>${test.secretkey.password}</SECRET_KEY_PASSWORD>
             <SECRET_KEY_SALT>${test.secretkey.salt}</SECRET_KEY_SALT>
+            <!-- Sinai cookie has a fake password for testing and a real hard-coded prefix: Authenticated -->
             <SINAI_COOKIE_SECRET_KEY_PASSWORD>ThisPasswordIsReallyHardToGuess!</SINAI_COOKIE_SECRET_KEY_PASSWORD>
             <SINAI_COOKIE_VALID_PREFIX>Authenticated</SINAI_COOKIE_VALID_PREFIX>
           </environmentVariables>

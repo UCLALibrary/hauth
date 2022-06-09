@@ -54,6 +54,8 @@ public final class TestUtils {
     public static Tuple getMockSinaiCookies(final JsonObject aConfig, final LocalDate aLocalDate) throws Exception {
         // This code mirrors the front-end Ruby code that creates encrypted cookies; see below for the implementation:
         // https://github.com/UCLALibrary/sinaimanuscripts/blob/v2.15.7/app/controllers/application_controller.rb#L98-L103
+        //
+        // If the below implementation changes, please try to remember to update the above link and the README as well!
 
         final String clearTextPrefix = aConfig.getString(Config.SINAI_COOKIE_VALID_PREFIX);
         final String clearTextSuffix =
