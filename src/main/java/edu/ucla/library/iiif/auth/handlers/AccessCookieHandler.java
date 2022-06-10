@@ -76,6 +76,11 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
     private final AccessCookieService myAccessCookieService;
 
     /**
+     * See {@link Config#ACCESS_COOKIE_DOMAIN}.
+     */
+    private final Optional<String> myCookieDomain;
+
+    /**
      * See {@link Config#ACCESS_COOKIE_WINDOW_CLOSE_DELAY}.
      */
     private final Optional<Integer> myWindowCloseDelay;
@@ -93,6 +98,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
         myCampusNetworkSubnets = new Cidr4Trie<>();
         myAccessCookieService = AccessCookieService.createProxy(aVertx);
         myWindowCloseDelay = Optional.ofNullable(aConfig.getInteger(Config.ACCESS_COOKIE_WINDOW_CLOSE_DELAY));
+        myCookieDomain = Optional.ofNullable(aConfig.getString(Config.ACCESS_COOKIE_DOMAIN));
 
         // Register the neq helper
         ((Handlebars) myHtmlTemplateEngine.unwrap()).registerHelpers(ConditionalHelpers.class);
@@ -146,6 +152,7 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                         templateData.put(TemplateKeys.WINDOW_CLOSE_DELAY, delay);
                     }
                 });
+                myCookieDomain.ifPresent(cookie::setDomain);
 
                 response.addCookie(cookie);
 

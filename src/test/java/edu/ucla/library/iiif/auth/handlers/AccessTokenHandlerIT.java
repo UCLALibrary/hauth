@@ -40,6 +40,8 @@ import io.vertx.junit5.VertxTestContext;
  */
 public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
 
+    private static final String SEMICOLON = ";";
+
     /**
      * The invalid cookie to test with.
      */
@@ -71,7 +73,7 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
 
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
-            final String cookieValue = cookieHeader.split(EQUALS)[1];
+            final String cookieValue = cookieHeader.split(SEMICOLON)[0].split(EQUALS)[1];
             final String clientIpAddress;
 
             if (aReverseProxyDeployment) {
@@ -146,7 +148,7 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
 
         getCookie.send().compose(result -> {
             final String cookieHeader = result.cookies().get(0);
-            final String cookieValue = cookieHeader.split(EQUALS)[1];
+            final String cookieValue = cookieHeader.split(SEMICOLON)[0].split(EQUALS)[1];
             final String clientIpAddress;
 
             if (aReverseProxyDeployment) {

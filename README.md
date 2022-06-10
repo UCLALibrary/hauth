@@ -38,6 +38,7 @@ This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloup
 
 | Name | Default Value | Required |
 | --- | --- | --- |
+| ACCESS_COOKIE_DOMAIN | XXX | No
 | ACCESS_COOKIE_WINDOW_CLOSE_DELAY | XXX | No
 | ACCESS_TOKEN_EXPIRES_IN | XXX | No |
 | API_KEY | XXX | Yes |

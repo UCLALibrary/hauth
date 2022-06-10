@@ -30,6 +30,13 @@ public final class Config {
     public static final String ACCESS_COOKIE_WINDOW_CLOSE_DELAY = "ACCESS_COOKIE_WINDOW_CLOSE_DELAY";
 
     /**
+     * The optional ENV property for the host domain to which the access cookie will be sent.
+     * <p>
+     * If unset, the access cookie will be sent to whatever domain Hauth itself is hosted at.
+     */
+    public static final String ACCESS_COOKIE_DOMAIN = "ACCESS_COOKIE_DOMAIN";
+
+    /**
      * The optional ENV property for the number of seconds after which an access token will cease to be valid.
      */
     public static final String ACCESS_TOKEN_EXPIRES_IN = "ACCESS_TOKEN_EXPIRES_IN";

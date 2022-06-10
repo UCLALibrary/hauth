@@ -2,6 +2,8 @@
 package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +17,7 @@ import info.freelibrary.util.Constants;
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.StringUtils;
 
+import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.Vertx;
@@ -41,6 +44,7 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
         final String requestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI);
+        final String explicitCookieDomain = myConfig.getString(Config.ACCESS_COOKIE_DOMAIN);
 
         if (aReverseProxyDeployment) {
             getCookie.putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
@@ -48,6 +52,8 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
 
         getCookie.send().onSuccess(response -> {
             aContext.verify(() -> {
+                final String cookie;
+
                 assertEquals(HTTP.OK, response.statusCode());
                 assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
                 assertEquals(1, response.cookies().size());
@@ -55,6 +61,14 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
                 if (aReverseProxyDeployment) {
                     assertEquals(FORWARDED_CLIENT_IP,
                             Jsoup.parse(response.bodyAsString()).getElementById("client-ip-address").text());
+                }
+
+                cookie = response.cookies().get(0);
+
+                if (explicitCookieDomain != null) {
+                    assertTrue(cookie.contains(StringUtils.format("Domain={}", explicitCookieDomain)));
+                } else {
+                    assertFalse(cookie.contains("Domain="));
                 }
 
                 aContext.completeNow();
