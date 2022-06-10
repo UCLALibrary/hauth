@@ -26,5 +26,6 @@
   <entry key="AUTH_018">Internal error</entry>
   <entry key="AUTH_019">Expected validation of expired cookie to fail, but it succeeded</entry>
   <entry key="AUTH_020">Generated cookies: {}={}, {}={} (cleartext: "{}")</entry>
+  <entry key="AUTH_021"></entry>
 
 </properties>

@@ -2,13 +2,16 @@
 package edu.ucla.library.iiif.auth.handlers;
 
 import static info.freelibrary.util.Constants.EMPTY;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Base64;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+
+import info.freelibrary.util.Constants;
+import info.freelibrary.util.HTTP;
+import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.AccessTokenError;
 import edu.ucla.library.iiif.auth.Config;
@@ -17,10 +20,6 @@ import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.TemplateKeys;
 import edu.ucla.library.iiif.auth.TokenJsonKeys;
 import edu.ucla.library.iiif.auth.utils.MediaType;
-import edu.ucla.library.iiif.auth.utils.TestConstants;
-
-import info.freelibrary.util.HTTP;
-import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -57,7 +56,7 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
     @Test
     public void testGetTokenBrowser(final Vertx aVertx, final VertxTestContext aContext) {
         final String getTokenRequestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, myGetTokenRequestQuery);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
+        final HttpRequest<?> getToken = myWebClient.get(myPort, Constants.INADDR_ANY, getTokenRequestURI)
                 .putHeader(HttpHeaders.COOKIE.toString(), getSinaiCookieHeader(myMockSinaiCookies));
 
         getToken.send().onSuccess(response -> {
@@ -81,11 +80,13 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
                     TEST_ORIGIN);
 
             templateEngine.render(templateData, myTokenResponseTemplate).onSuccess(expected -> {
-                assertEquals(HTTP.OK, response.statusCode());
-                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-                assertEquals(expected, response.bodyAsBuffer());
+                aContext.verify(() -> {
+                    assertEquals(HTTP.OK, response.statusCode());
+                    assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                    assertEquals(expected, response.bodyAsBuffer());
 
-                aContext.completeNow();
+                    aContext.completeNow();
+                });
             }).onFailure(aContext::failNow);
         }).onFailure(aContext::failNow);
 
@@ -100,7 +101,7 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
     @Test
     public void testGetTokenNonBrowser(final Vertx aVertx, final VertxTestContext aContext) {
         final String getTokenRequestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, EMPTY);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI)
+        final HttpRequest<?> getToken = myWebClient.get(myPort, Constants.INADDR_ANY, getTokenRequestURI)
                 .putHeader(HttpHeaders.COOKIE.toString(), getSinaiCookieHeader(myMockSinaiCookies));
 
         getToken.send().onSuccess(response -> {
@@ -115,11 +116,13 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
 
             expectedExpiresIn.ifPresent(expiry -> expected.put(ResponseJsonKeys.EXPIRES_IN, expiry));
 
-            assertEquals(HTTP.OK, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(expected, response.bodyAsJsonObject());
+            aContext.verify(() -> {
+                assertEquals(HTTP.OK, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expected, response.bodyAsJsonObject());
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -132,7 +135,7 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
     @Test
     public void testGetTokenBrowserExpiredCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, myGetTokenRequestQuery);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI)
+        final HttpRequest<?> getToken = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI)
                 .putHeader(HttpHeaders.COOKIE.toString(), getSinaiCookieHeader(myMockSinaiCookiesExpired));
 
         getToken.send().onSuccess(response -> {
@@ -144,11 +147,13 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
             final HandlebarsTemplateEngine templateEngine = HandlebarsTemplateEngine.create(aVertx);
 
             templateEngine.render(templateData, myTokenResponseTemplate).onSuccess(expected -> {
-                assertEquals(HTTP.OK, response.statusCode());
-                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-                assertEquals(expected, response.bodyAsBuffer());
+                aContext.verify(() -> {
+                    assertEquals(HTTP.OK, response.statusCode());
+                    assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                    assertEquals(expected, response.bodyAsBuffer());
 
-                aContext.completeNow();
+                    aContext.completeNow();
+                });
             }).onFailure(aContext::failNow);
         }).onFailure(aContext::failNow);
     }
@@ -162,18 +167,20 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
     @Test
     public void testGetTokenNonBrowserExpiredCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, EMPTY);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI)
+        final HttpRequest<?> getToken = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI)
                 .putHeader(HttpHeaders.COOKIE.toString(), getSinaiCookieHeader(myMockSinaiCookiesExpired));
 
         getToken.send().onSuccess(response -> {
             final JsonObject expectedError = new JsonObject() //
                     .put(ResponseJsonKeys.ERROR, AccessTokenError.invalidCredentials);
 
-            assertEquals(HTTP.UNAUTHORIZED, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(expectedError, response.bodyAsJsonObject());
+            aContext.verify(() -> {
+                assertEquals(HTTP.UNAUTHORIZED, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expectedError, response.bodyAsJsonObject());
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -186,7 +193,7 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
     @Test
     public void testGetTokenBrowserInvalidCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, myGetTokenRequestQuery);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI)
+        final HttpRequest<?> getToken = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI)
                 .putHeader(HttpHeaders.COOKIE.toString(), myInvalidCookieHeader);
 
         getToken.send().onSuccess(response -> {
@@ -198,11 +205,13 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
             final HandlebarsTemplateEngine templateEngine = HandlebarsTemplateEngine.create(aVertx);
 
             templateEngine.render(templateData, myTokenResponseTemplate).onSuccess(expected -> {
-                assertEquals(HTTP.OK, response.statusCode());
-                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-                assertEquals(expected, response.bodyAsBuffer());
+                aContext.verify(() -> {
+                    assertEquals(HTTP.OK, response.statusCode());
+                    assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                    assertEquals(expected, response.bodyAsBuffer());
 
-                aContext.completeNow();
+                    aContext.completeNow();
+                });
             }).onFailure(aContext::failNow);
         }).onFailure(aContext::failNow);
     }
@@ -216,18 +225,20 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
     @Test
     public void testGetTokenNonBrowserInvalidCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, EMPTY);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI)
+        final HttpRequest<?> getToken = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI)
                 .putHeader(HttpHeaders.COOKIE.toString(), myInvalidCookieHeader);
 
         getToken.send().onSuccess(response -> {
             final JsonObject expectedError = new JsonObject() //
                     .put(ResponseJsonKeys.ERROR, AccessTokenError.invalidCredentials);
 
-            assertEquals(HTTP.UNAUTHORIZED, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(expectedError, response.bodyAsJsonObject());
+            aContext.verify(() -> {
+                assertEquals(HTTP.UNAUTHORIZED, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expectedError, response.bodyAsJsonObject());
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -240,7 +251,7 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
     @Test
     public void testGetTokenBrowserMissingCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String getTokenRequestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, myGetTokenRequestQuery);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, getTokenRequestURI);
+        final HttpRequest<?> getToken = myWebClient.get(myPort, Constants.INADDR_ANY, getTokenRequestURI);
 
         getToken.send().onSuccess(response -> {
             final JsonObject expectedError = new JsonObject() //
@@ -251,11 +262,13 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
             final HandlebarsTemplateEngine templateEngine = HandlebarsTemplateEngine.create(aVertx);
 
             templateEngine.render(templateData, myTokenResponseTemplate).onSuccess(expected -> {
-                assertEquals(HTTP.OK, response.statusCode());
-                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-                assertEquals(expected, response.bodyAsBuffer());
+                aContext.verify(() -> {
+                    assertEquals(HTTP.OK, response.statusCode());
+                    assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                    assertEquals(expected, response.bodyAsBuffer());
 
-                aContext.completeNow();
+                    aContext.completeNow();
+                });
             }).onFailure(aContext::failNow);
         }).onFailure(aContext::failNow);
     }
@@ -269,17 +282,19 @@ public final class SinaiAccessTokenHandlerIT extends AbstractAccessTokenHandlerI
     @Test
     public void testGetTokenNonBrowserMissingCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestURI = StringUtils.format(GET_TOKEN_SINAI_PATH, EMPTY);
-        final HttpRequest<?> getToken = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
+        final HttpRequest<?> getToken = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI);
 
         getToken.send().onSuccess(response -> {
             final JsonObject expectedError = new JsonObject() //
                     .put(ResponseJsonKeys.ERROR, AccessTokenError.missingCredentials);
 
-            assertEquals(HTTP.BAD_REQUEST, response.statusCode());
-            assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(expectedError, response.bodyAsJsonObject());
+            aContext.verify(() -> {
+                assertEquals(HTTP.BAD_REQUEST, response.statusCode());
+                assertEquals(MediaType.APPLICATION_JSON.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(expectedError, response.bodyAsJsonObject());
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 

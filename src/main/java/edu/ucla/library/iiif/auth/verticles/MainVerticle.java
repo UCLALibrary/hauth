@@ -146,7 +146,8 @@ public class MainVerticle extends AbstractVerticle {
                     .failureHandler(missingAccessCookieErrorHandler);
             builder.operation(Op.GET_TOKEN_SINAI).handler(new SinaiAccessTokenHandler(vertx, aConfig))
                     .failureHandler(missingAccessCookieErrorHandler);
-            builder.operation(Op.POST_ITEMS).handler(new ItemsHandler(vertx));
+            builder.operation(Op.POST_ITEMS).handler(new ItemsHandler(getVertx()))
+                    .failureHandler(ItemsHandler::handleInvalidRequestBody);
 
             // Add API key authentication for routes that should use the "Admin" security scheme
             builder.securityHandler("Admin")

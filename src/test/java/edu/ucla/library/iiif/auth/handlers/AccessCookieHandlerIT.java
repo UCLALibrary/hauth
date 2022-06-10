@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import edu.ucla.library.iiif.auth.utils.MediaType;
-import edu.ucla.library.iiif.auth.utils.TestConstants;
-
+import info.freelibrary.util.Constants;
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.StringUtils;
+
+import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -40,23 +40,25 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
             final VertxTestContext aContext) {
         final String requestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
+        final HttpRequest<?> getCookie = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI);
 
         if (aReverseProxyDeployment) {
             getCookie.putHeader(X_FORWARDED_FOR, FORWARDED_IP_ADDRESSES);
         }
 
         getCookie.send().onSuccess(response -> {
-            assertEquals(HTTP.OK, response.statusCode());
-            assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
-            assertEquals(1, response.cookies().size());
+            aContext.verify(() -> {
+                assertEquals(HTTP.OK, response.statusCode());
+                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+                assertEquals(1, response.cookies().size());
 
-            if (aReverseProxyDeployment) {
-                assertEquals(FORWARDED_CLIENT_IP,
-                        Jsoup.parse(response.bodyAsString()).getElementById("client-ip-address").text());
-            }
+                if (aReverseProxyDeployment) {
+                    assertEquals(FORWARDED_CLIENT_IP,
+                            Jsoup.parse(response.bodyAsString()).getElementById("client-ip-address").text());
+                }
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 
@@ -70,13 +72,15 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
     public void testGetCookieUnknownOrigin(final Vertx aVertx, final VertxTestContext aContext) {
         final String requestURI = StringUtils.format(GET_COOKIE_PATH,
                 URLEncoder.encode("https://iiif.unknown.library.ucla.edu", StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, TestConstants.INADDR_ANY, requestURI);
+        final HttpRequest<?> getCookie = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI);
 
         getCookie.send().onSuccess(response -> {
-            assertEquals(HTTP.BAD_REQUEST, response.statusCode());
-            assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
+            aContext.verify(() -> {
+                assertEquals(HTTP.BAD_REQUEST, response.statusCode());
+                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
 
-            aContext.completeNow();
+                aContext.completeNow();
+            });
         }).onFailure(aContext::failNow);
     }
 }

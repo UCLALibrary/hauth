@@ -27,12 +27,18 @@ import io.vertx.sqlclient.Tuple;
 /**
  * Utilities to assist with testing.
  */
-@SuppressWarnings({ "PMD.CommentSize", "checkstyle:lineLengthChecker" })
 public final class TestUtils {
 
+    /**
+     * The TestUtils' logger.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(TestUtils.class, MessageCodes.BUNDLE);
 
+    /**
+     * Creates a utilities class for testing purposes.
+     */
     private TestUtils() {
+        // This is intentionally left empty.
     }
 
     /**
@@ -43,20 +49,22 @@ public final class TestUtils {
      * @return A tuple of size 2 whose first element is a {@link CookieNames#SINAI_CIPHERTEXT} cookie and whose second
      *         is a {@link CookieNames#SINAI_IV} cookie
      * @throws Exception If there is an issue generating the cookies
-     * @see <a href=
-     *      "https://github.com/UCLALibrary/sinaimanuscripts/blob/44cbbd9bf508c32b742f1617205a679edf77603e/app/controllers/application_controller.rb#L98-L103">How
-     *      the Sinai application encodes cookies</a>
      */
+    @SuppressWarnings({ "checkstyle:LineLength" })
     public static Tuple getMockSinaiCookies(final JsonObject aConfig, final LocalDate aLocalDate) throws Exception {
+        // This code mirrors the front-end Ruby code that creates encrypted cookies; see below for the implementation:
+        // https://github.com/UCLALibrary/sinaimanuscripts/blob/v2.15.7/app/controllers/application_controller.rb#L98-L103
+        //
+        // If the below implementation changes, please try to remember to update the above link and the README as well!
+
         final String clearTextPrefix = aConfig.getString(Config.SINAI_COOKIE_VALID_PREFIX);
         final String clearTextSuffix =
                 aLocalDate.format(DateTimeFormatter.ofPattern(AccessCookieServiceImpl.SINAI_COOKIE_DATE_FORMAT));
         final String clearText = String.join(SPACE, clearTextPrefix, clearTextSuffix);
 
         final Cipher cipher = Cipher.getInstance(AccessCookieServiceImpl.CIPHER_TRANSFORMATION);
-        final SecretKey key =
-                new SecretKeySpec(aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD).getBytes(),
-                        AccessCookieServiceImpl.KEY_ALGORITHM);
+        final SecretKey key = new SecretKeySpec(aConfig.getString(Config.SINAI_COOKIE_SECRET_KEY_PASSWORD).getBytes(),
+                AccessCookieServiceImpl.KEY_ALGORITHM);
 
         final byte[] cipherText;
         final String sinaiAuthenticated3Day;

@@ -4,7 +4,6 @@ package edu.ucla.library.iiif.auth;
 /**
  * Properties that are used to configure the application.
  */
-@SuppressWarnings({ "PMD.CommentSize", "checkstyle:lineLengthChecker" })
 public final class Config {
 
     /**
@@ -101,37 +100,27 @@ public final class Config {
     public static final String CAMPUS_NETWORK_SUBNETS = "CAMPUS_NETWORK_SUBNETS";
 
     /**
-     * The ENV property for the password used to derive the secret key for generating and validating access cookies.
+     * The ENV property for the password used to generate the secret key, which is used for creating and validating
+     * access cookies.
      */
-    @SuppressWarnings({ "PMD.LongVariable" })
-    public static final String SECRET_KEY_GENERATION_PASSWORD = "SECRET_KEY_GENERATION_PASSWORD";
+    public static final String SECRET_KEY_PASSWORD = "SECRET_KEY_PASSWORD";
 
     /**
-     * The ENV property for the salt used to derive the secret key for generating and validating access cookies.
+     * The ENV property for the salt used to generate the secret key, which is used for creating and validating access
+     * cookies.
      */
-    @SuppressWarnings({ "PMD.LongVariable" })
-    public static final String SECRET_KEY_GENERATION_SALT = "SECRET_KEY_GENERATION_SALT";
+    public static final String SECRET_KEY_SALT = "SECRET_KEY_SALT";
 
     /**
      * The ENV property for the password used to derive the secret key for validating Sinai cookies. This value must be
      * the same as the {@code CIPHER_KEY} configuration option of the Sinai application, which is used to generate its
      * encryption key.
-     *
-     * @see <a href=
-     *      "https://github.com/UCLALibrary/sinaimanuscripts/blob/44cbbd9bf508c32b742f1617205a679edf77603e/app/controllers/application_controller.rb#L100">How
-     *      the Sinai application's key generation password is configured</a>
      */
-    @SuppressWarnings({ "PMD.LongVariable" })
-    public static final String SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD =
-            "SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD";
+    public static final String SINAI_COOKIE_SECRET_KEY_PASSWORD = "SINAI_COOKIE_SECRET_KEY_PASSWORD";
 
     /**
      * The ENV property for the prefix that we'll use to validate decrypted Sinai cookies. This value be consistent with
      * the Sinai application.
-     *
-     * @see <a href=
-     *      "https://github.com/UCLALibrary/sinaimanuscripts/blob/44cbbd9bf508c32b742f1617205a679edf77603e/app/controllers/application_controller.rb#L98-L103">How
-     *      the Sinai application creates cookie values</a>
      */
     public static final String SINAI_COOKIE_VALID_PREFIX = "SINAI_COOKIE_VALID_PREFIX";
 

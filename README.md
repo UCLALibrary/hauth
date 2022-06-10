@@ -56,7 +56,18 @@ This will spin up Hauth locally, along with the Redis, PostgreSQL, and Cantaloup
 | HAUTH_VERSION | XXX | Yes |
 | HTTP_HOST | 0.0.0.0 | No |
 | HTTP_PORT | 8888 | No |
-| SECRET_KEY_GENERATION_PASSWORD | XXX | Yes |
-| SECRET_KEY_GENERATION_SALT | XXX | Yes |
-| SINAI_COOKIE_SECRET_KEY_GENERATION_PASSWORD | XXX | Yes |
+| SECRET_KEY_PASSWORD | XXX | Yes |
+| SECRET_KEY_SALT | XXX | Yes |
+| SINAI_COOKIE_SECRET_KEY_PASSWORD | XXX | Yes |
 | SINAI_COOKIE_VALID_PREFIX | XXX | Yes |
+
+## Sinai Cookie Format
+
+The format of the Sinai cookie isn't officially documented anywhere, but its construction can be seen in the front-end
+application's [source code](https://github.com/UCLALibrary/sinaimanuscripts/blob/v2.15.7/app/controllers/application_controller.rb#L98-L103").
+
+The cookie contains an encypted value that is constructed using a prefix (`Authenticated ` + date) and a password (or
+`CIPHER_KEY` as the front-end application calls it). For implementation details, see the above link, which is a
+permalink to the version of the front-end code that was in production at the time of the last Hauth deployment. We'll
+try to keep the above link up to date, but if we fall out of step the encrypted value _should_ be able to be found in
+the front-end application controller's `create_encrypted_string` method.
