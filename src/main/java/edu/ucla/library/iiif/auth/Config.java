@@ -30,9 +30,7 @@ public final class Config {
     public static final String ACCESS_COOKIE_WINDOW_CLOSE_DELAY = "ACCESS_COOKIE_WINDOW_CLOSE_DELAY";
 
     /**
-     * The optional ENV property for the host domain to which the access cookie will be sent. It is recommended to use
-     * the most specific domain that Hauth shares with all of the content domains that it provides authentication
-     * services for.
+     * The optional ENV property for the host domain to which the access cookie will be sent.
      * <p>
      * If unset, the access cookie will be sent to whatever domain Hauth itself is hosted at.
      */
