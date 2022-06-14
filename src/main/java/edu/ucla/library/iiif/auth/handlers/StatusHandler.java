@@ -1,10 +1,13 @@
 
 package edu.ucla.library.iiif.auth.handlers;
 
+import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import info.freelibrary.util.HTTP;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -16,6 +19,11 @@ import io.vertx.ext.web.RoutingContext;
  * A handler that accepts requests to find out the status of the application.
  */
 public class StatusHandler implements Handler<RoutingContext> {
+
+    /**
+     * The handler's logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(StatusHandler.class, MessageCodes.BUNDLE);
 
     /**
      * The handler's copy of the Vert.x instance.
@@ -34,6 +42,8 @@ public class StatusHandler implements Handler<RoutingContext> {
     @Override
     public void handle(final RoutingContext aContext) {
         final JsonObject status = new JsonObject();
+
+        LOGGER.debug(MessageCodes.AUTH_021, aContext.request().headers().entries());
 
         status.put(ResponseJsonKeys.STATUS, "ok");
 

@@ -106,6 +106,8 @@ public abstract class AbstractAccessTokenHandler implements Handler<RoutingConte
         final HttpServerResponse response =
                 aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, responseContentType.toString());
 
+        LOGGER.debug(MessageCodes.AUTH_021, request.headers().entries());
+
         createAccessToken(aContext).compose(token -> {
             final JsonObject jsonWrapper = new JsonObject().put(ResponseJsonKeys.ACCESS_TOKEN, token);
             final Future<Buffer> responseBody;
