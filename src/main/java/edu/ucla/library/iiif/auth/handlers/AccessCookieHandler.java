@@ -121,6 +121,8 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
         final HttpServerResponse response =
                 aContext.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML.toString());
 
+        LOGGER.debug(MessageCodes.AUTH_021, request.headers().entries());
+
         try {
             clientIpAddress = new Ip4(request.remoteAddress().hostAddress());
             origin = URI.create(request.getParam(Param.ORIGIN));
