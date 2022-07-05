@@ -553,6 +553,30 @@
                 <skip>${skip.hauth.container}</skip>
               </run>
             </hauth>
+            <hauth_import_items>
+              <name>import-items</name>
+              <build>
+                <args>
+                  <CSV_VOLUME_MOUNT_POINT>/csv</CSV_VOLUME_MOUNT_POINT>
+                </args>
+                <dockerFile>${project.basedir}/src/main/scripts/import-items/Dockerfile</dockerFile>
+              </build>
+              <run>
+                <containerNamePattern>hauth_import_items</containerNamePattern>
+                <volumes>
+                  <bind>
+                    <volume>${project.basedir}/src/test/resources/csv:/csv</volume>
+                  </bind>
+                </volumes>
+                <env>
+                  <HAUTH_API_KEY>${test.api.key}</HAUTH_API_KEY>
+                  <HAUTH_BASE_URL>http://172.17.0.1:${test.http.port}</HAUTH_BASE_URL>
+                </env>
+                <dependsOn>
+                  <container>hauth</container>
+                </dependsOn>
+              </run>
+            </hauth_import_items>
           </imagesMap>
         </configuration>
         <executions>
