@@ -17,7 +17,7 @@ class AccessMode(Enum):
     ALL_OR_NOTHING = 2
 
 @click.command()
-@click.option('--access-mode', '-m', help='The access mode to use for all items in each INPUT_CSV.', required=True,
+@click.option('--access-mode', '-m', help='The access mode to use for all items in each INPUT_CSV.', required=False,
               type=click.Choice([name for name, member in AccessMode.__members__.items()], case_sensitive=False))
 @click.option('--api-key', '-k', help='The API key for accessing the admin API.', required=True)
 @click.argument('hauth-base-url', nargs=1)
@@ -38,7 +38,7 @@ def import_items(access_mode, api_key, hauth_base_url, input_csv):
         base_name = basename(file.name)
 
         try:
-            request_data = request_payload(file, AccessMode[access_mode])
+            request_data = request_payload(file, AccessMode[access_mode] if access_mode else None)
             item_count = len(request_data)
 
             post(request_url, data=dumps(request_data), headers=request_headers).raise_for_status()
@@ -53,15 +53,32 @@ def import_items(access_mode, api_key, hauth_base_url, input_csv):
 
     exit(exit_code)
 
-def request_payload(file: TextIOBase, access_mode: AccessMode) -> List[Dict]:
+def request_payload(file: TextIOBase, access_mode_override: AccessMode) -> List[Dict]:
     """Constructs a JSON array to send to the Hauth API endpoint for importing items."""
     return [
         {
-            'uid': uid,
-            'accessMode': access_mode.value
+            'uid': row['Item ARK'],
+            'accessMode': access_mode_override.value if access_mode_override else get_access_mode(row).value
         }
-        for uid in [row['Item ARK'] for row in DictReader(file)]
+        for row in DictReader(file)
     ]
+
+def get_access_mode(row: List) -> AccessMode:
+    """Determines the access mode of an item."""
+    field_name = 'Visibility'
+    field_value = row[field_name]
+
+    if field_value == 'open':
+        return AccessMode.OPEN
+    elif field_value == 'ucla':
+        return AccessMode.TIERED
+    elif field_value == 'private':
+        # UCLA all-or-nothing access, which is not yet implemented; treat as UCLA tiered access for now
+        return AccessMode.TIERED
+    elif field_value == 'sinai':
+        return AccessMode.ALL_OR_NOTHING
+    else:
+        raise ValueError('Unknown {} "{}" for row "{}"'.format(field_name, field_value, row))
 
 def boldface(text: str) -> str:
     """Uses ANSI escape codes to enable printing the given text in boldface."""
