@@ -228,6 +228,12 @@
       <version>${jsoup.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.csveed</groupId>
+      <artifactId>csveed</artifactId>
+      <version>0.7.3</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Fluency logback dependencies -->
     <dependency>

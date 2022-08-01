@@ -3,9 +3,14 @@ package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import org.csveed.api.CsvClient;
+import org.csveed.api.CsvClientImpl;
+import org.csveed.api.Row;
 import org.junit.jupiter.api.Test;
 
 import info.freelibrary.util.Constants;
@@ -214,5 +219,24 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
                 aContext.completeNow();
             });
         }).onFailure(aContext::failNow);
+    }
+
+    /**
+     * FIXME Note that the container already hit the API for us with all the CSVs in src/test/resources/csv; here we
+     * just test to see that it worked as intended.
+     *
+     * @param aVertx
+     * @param aContext
+     */
+    @Test
+    public void testImportItemsScript(final Vertx aVertx, final VertxTestContext aContext) {
+        // FIXME: read all the CSVs
+        final Reader reader =
+                new StringReader(aVertx.fileSystem().readFileBlocking("src/test/resources/csv/allied.csv").toString());
+        final CsvClient<Row> client = new CsvClientImpl<>(reader);
+
+        for (final Row row : client.readRows()) {
+            // FIXME
+        }
     }
 }
