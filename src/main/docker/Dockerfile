@@ -35,7 +35,7 @@ COPY --from=builder /etc/default/cacerts /etc/default/cacerts
 RUN if [ "${NATIVE_COMPILE}" = true ] ; then \
       rm /opt/hauth/hauth.jar ; \
     else \
-      apk add openjdk11 --quiet --no-cache ; \
+      apk add openjdk17 --quiet --no-cache ; \
     fi \
     && addgroup -S hauth \
     && adduser -S hauth -G hauth \
