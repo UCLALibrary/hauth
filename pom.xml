@@ -50,6 +50,9 @@
     <commons.codec.version>1.15</commons.codec.version>
     <vertx.version>4.3.3</vertx.version>
 
+    <!-- Security update overrides -->
+    <snakeyaml.version>1.31</snakeyaml.version>
+
     <!-- Build plugin versions -->
     <clean.plugin.version>3.1.0</clean.plugin.version>
     <jar.plugin.version>3.2.0</jar.plugin.version>
@@ -185,6 +188,13 @@
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>${commons.codec.version}</version>
+    </dependency>
+
+    <!-- Security update overrides -->
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>${snakeyaml.version}</version>
     </dependency>
 
     <!-- A Vert.x plug-in for more flexible configuration control -->
