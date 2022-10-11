@@ -237,6 +237,7 @@
       <groupId>io.netty</groupId>
       <artifactId>netty-codec</artifactId>
       <version>${netty.codec.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <!-- Fluency logback dependencies -->
