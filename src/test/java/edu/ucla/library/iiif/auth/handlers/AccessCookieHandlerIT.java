@@ -70,6 +70,8 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
                 } else {
                     assertFalse(cookie.contains("Domain="));
                 }
+                assertTrue(cookie.contains("SameSite=None"));
+                assertTrue(cookie.contains("Secure"));
 
                 aContext.completeNow();
             });
