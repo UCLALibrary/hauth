@@ -2,11 +2,16 @@
 package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+
+import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.CookieHeaderNames.SameSite;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
@@ -52,7 +57,7 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
 
         getCookie.send().onSuccess(response -> {
             aContext.verify(() -> {
-                final String cookie;
+                final Cookie cookie;
 
                 assertEquals(HTTP.OK, response.statusCode());
                 assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
@@ -63,15 +68,16 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
                             Jsoup.parse(response.bodyAsString()).getElementById("client-ip-address").text());
                 }
 
-                cookie = response.cookies().get(0);
+                cookie = ClientCookieDecoder.STRICT.decode(response.cookies().get(0));
 
                 if (explicitCookieDomain != null) {
-                    assertTrue(cookie.contains(StringUtils.format("Domain={}", explicitCookieDomain)));
+                    assertEquals(explicitCookieDomain, cookie.domain());
                 } else {
-                    assertFalse(cookie.contains("Domain="));
+                    assertNull(cookie.domain());
                 }
-                assertTrue(cookie.contains("SameSite=None"));
-                assertTrue(cookie.contains("Secure"));
+
+                assertEquals(SameSite.None, ((DefaultCookie) cookie).sameSite());
+                assertTrue(cookie.isSecure());
 
                 aContext.completeNow();
             });
