@@ -51,7 +51,7 @@
     <vertx.version>4.3.3</vertx.version>
 
     <!-- Security update overrides -->
-    <snakeyaml.version>1.31</snakeyaml.version>
+    <snakeyaml.version>1.32</snakeyaml.version>
 
     <!-- Build plugin versions -->
     <clean.plugin.version>3.1.0</clean.plugin.version>
