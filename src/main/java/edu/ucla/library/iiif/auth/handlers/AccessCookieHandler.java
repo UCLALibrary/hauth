@@ -31,6 +31,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
+import io.vertx.core.http.CookieSameSite;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -140,7 +141,8 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
                     isOnCampusNetwork, isDegradedAllowed);
 
             return cookieGeneration.compose(cookieValue -> {
-                final Cookie cookie = Cookie.cookie(CookieNames.HAUTH, cookieValue);
+                final Cookie cookie =
+                        Cookie.cookie(CookieNames.HAUTH, cookieValue).setSameSite(CookieSameSite.NONE).setSecure(true);
 
                 // Along with the origin, pass all the cookie data to the HTML template
                 final JsonObject templateData = new JsonObject().put(TemplateKeys.ORIGIN, origin)
