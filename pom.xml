@@ -35,7 +35,7 @@
     <graalvm.version>21.2.0</graalvm.version>
 
     <!-- Docker build properties -->
-    <alpine.version>3.16.0</alpine.version>
+    <alpine.version>3.17.2</alpine.version>
     <builder.version>0.0.3</builder.version>
 
     <!-- Whether UPX should be used to compress the application -->
@@ -45,16 +45,16 @@
     <native.compile>false</native.compile>
 
     <!-- Application dependencies -->
-    <freelib.utils.version>3.2.0</freelib.utils.version>
+    <freelib.utils.version>3.3.0</freelib.utils.version>
     <cidr.ip.version>1.0.1</cidr.ip.version>
     <commons.codec.version>1.15</commons.codec.version>
-    <vertx.version>4.3.4</vertx.version>
+    <vertx.version>4.3.8</vertx.version>
 
     <!-- Build plugin versions -->
     <clean.plugin.version>3.1.0</clean.plugin.version>
     <jar.plugin.version>3.2.0</jar.plugin.version>
     <vertx.plugin.version>1.0.27</vertx.plugin.version>
-    <freelib.maven.version>0.3.3</freelib.maven.version>
+    <freelib.maven.version>0.4.6</freelib.maven.version>
     <deploy.plugin.version>2.8.2</deploy.plugin.version>
     <docker.maven.plugin.version>0.39.1</docker.maven.plugin.version>
     <!-- Failsafe 3.x has compatibility issues with JUnit 5: https://stackoverflow.com/a/51837961 -->
@@ -73,6 +73,7 @@
     <fluency.core.version>2.6.4</fluency.core.version>
     <fluency.fluentd.version>2.6.4</fluency.fluentd.version>
     <msgpack.core.version>0.9.1</msgpack.core.version>
+    <jackson.databind.version>2.13.4.2</jackson.databind.version>
     <jackson.dataformat.msgpack.version>0.9.1</jackson.dataformat.msgpack.version>
     <logback.more.appenders.version>1.8.7</logback.more.appenders.version>
 
@@ -175,6 +176,11 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web-templ-handlebars</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.13.4.2</version> <!-- Security override -->
     </dependency>
     <dependency>
       <groupId>com.github.veqryn</groupId>
@@ -851,7 +857,7 @@
   <parent>
     <artifactId>freelib-parent</artifactId>
     <groupId>info.freelibrary</groupId>
-    <version>7.3.1</version>
+    <version>8.0.0</version>
   </parent>
 
 </project>
