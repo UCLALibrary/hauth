@@ -149,8 +149,7 @@ public abstract class AbstractHandlerIT {
             final DatabaseService db = DatabaseService.create(aVertx, config);
             @SuppressWarnings("rawtypes")
             final List<Future> dbOps = List.of(db.setAccessMode(TEST_ID_OPEN_ACCESS, 0),
-                    db.setAccessMode(TEST_ID_TIERED_ACCESS, 1), db.setAccessMode(TEST_ID_ALL_OR_NOTHING_ACCESS, 2),
-                    db.setDegradedAllowed(TEST_ORIGIN, true));
+                    db.setAccessMode(TEST_ID_TIERED_ACCESS, 1), db.setAccessMode(TEST_ID_ALL_OR_NOTHING_ACCESS, 2));
 
             myConfig = config;
             myWebClient = WebClient.create(aVertx);

@@ -14,7 +14,6 @@ import io.netty.handler.codec.http.cookie.CookieHeaderNames.SameSite;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 
 import org.jsoup.Jsoup;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -78,28 +77,6 @@ public final class AccessCookieHandlerIT extends AbstractHandlerIT {
 
                 assertEquals(SameSite.None, ((DefaultCookie) cookie).sameSite());
                 assertTrue(cookie.isSecure());
-
-                aContext.completeNow();
-            });
-        }).onFailure(aContext::failNow);
-    }
-
-    /**
-     * Tests that a client can't obtain an access cookie for an unknown origin.
-     *
-     * @param aVertx A Vert.x instance
-     * @param aContext A test context
-     */
-    @Test
-    public void testGetCookieUnknownOrigin(final Vertx aVertx, final VertxTestContext aContext) {
-        final String requestURI = StringUtils.format(GET_COOKIE_PATH,
-                URLEncoder.encode("https://iiif.unknown.library.ucla.edu", StandardCharsets.UTF_8));
-        final HttpRequest<?> getCookie = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI);
-
-        getCookie.send().onSuccess(response -> {
-            aContext.verify(() -> {
-                assertEquals(HTTP.BAD_REQUEST, response.statusCode());
-                assertEquals(MediaType.TEXT_HTML.toString(), response.headers().get(HttpHeaders.CONTENT_TYPE));
 
                 aContext.completeNow();
             });

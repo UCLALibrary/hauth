@@ -76,21 +76,4 @@ public interface DatabaseService {
      * @return A Future that resolves once the items have been set
      */
     Future<Void> setItems(JsonArray aItems);
-
-    /**
-     * Gets the "degraded allowed" for content hosted at the given origin.
-     *
-     * @param aOrigin The origin
-     * @return A Future that resolves to the degraded allowed once it's been fetched
-     */
-    Future<Boolean> getDegradedAllowed(String aOrigin);
-
-    /**
-     * Sets the given "degraded allowed" for content hosted at the given origin.
-     *
-     * @param aOrigin The origin
-     * @param aDegradedAllowed The degraded allowed to set for the origin
-     * @return A Future that resolves once the degraded allowed has been set
-     */
-    Future<Void> setDegradedAllowed(String aOrigin, boolean aDegradedAllowed);
 }

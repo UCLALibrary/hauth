@@ -140,9 +140,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
     public final void testValidateGeneratedCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String clientIpAddress = LOCALHOST;
         final boolean isCampusNetwork = true;
-        final boolean isDegradedAllowed = false;
-        final Future<String> generateCookie =
-                myServiceProxy.generateCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed);
+        final Future<String> generateCookie = myServiceProxy.generateCookie(clientIpAddress, isCampusNetwork);
 
         generateCookie.compose(cookie -> {
             // The result is base64-encoded JSON with three keys
@@ -157,8 +155,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
             return myServiceProxy.decryptCookie(cookie, clientIpAddress);
         }).onSuccess(decryptedCookie -> {
             final JsonObject expected = new JsonObject().put(CookieJsonKeys.CLIENT_IP_ADDRESS, clientIpAddress)
-                    .put(CookieJsonKeys.CAMPUS_NETWORK, isCampusNetwork)
-                    .put(CookieJsonKeys.DEGRADED_ALLOWED, isDegradedAllowed);
+                    .put(CookieJsonKeys.CAMPUS_NETWORK, isCampusNetwork);
 
             completeIfExpectedElseFail(decryptedCookie, expected, aContext);
         }).onFailure(aContext::failNow);
@@ -175,9 +172,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
     public final void testInvalidateTamperedCookie(final Vertx aVertx, final VertxTestContext aContext) {
         final String clientIpAddress = LOCALHOST;
         final boolean isCampusNetwork = false;
-        final boolean isDegradedAllowed = false;
-        final Future<String> generateCookie =
-                myServiceProxy.generateCookie(clientIpAddress, isCampusNetwork, isDegradedAllowed);
+        final Future<String> generateCookie = myServiceProxy.generateCookie(clientIpAddress, isCampusNetwork);
 
         generateCookie.compose(cookie -> {
             final JsonObject decodedCookie = new JsonObject(new String(Base64.getDecoder().decode(cookie.getBytes())));
@@ -203,9 +198,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
             if (decryptedCookie.containsKey(CookieJsonKeys.CLIENT_IP_ADDRESS) &&
                     decryptedCookie.getString(CookieJsonKeys.CLIENT_IP_ADDRESS).equals(clientIpAddress) &&
                     decryptedCookie.containsKey(CookieJsonKeys.CAMPUS_NETWORK) &&
-                    decryptedCookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK) == isCampusNetwork &&
-                    decryptedCookie.containsKey(CookieJsonKeys.DEGRADED_ALLOWED) &&
-                    decryptedCookie.getBoolean(CookieJsonKeys.DEGRADED_ALLOWED) == isDegradedAllowed) {
+                    decryptedCookie.getBoolean(CookieJsonKeys.CAMPUS_NETWORK) == isCampusNetwork) {
                 aContext.failNow(StringUtils.format(MessageCodes.AUTH_009, decryptedCookie));
             } else {
                 aContext.completeNow();

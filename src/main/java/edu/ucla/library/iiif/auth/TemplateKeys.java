@@ -22,11 +22,6 @@ public final class TemplateKeys {
     public static final String CLIENT_IP_ADDRESS = "clientIpAddress";
 
     /**
-     * The degraded allowed key.
-     */
-    public static final String DEGRADED_ALLOWED = "degradedAllowed";
-
-    /**
      * The window close delay key.
      */
     public static final String WINDOW_CLOSE_DELAY = "windowCloseDelay";
