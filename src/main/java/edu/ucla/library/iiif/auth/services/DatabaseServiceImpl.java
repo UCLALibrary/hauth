@@ -62,17 +62,6 @@ public class DatabaseServiceImpl implements DatabaseService {
             "ON CONFLICT (uid) DO", "UPDATE SET access_mode = EXCLUDED.access_mode");
 
     /**
-     * The PreparedQuery template for selecting an origin's "degraded allowed".
-     */
-    private static final String SELECT_DEGRADED_ALLOWED = "SELECT degraded_allowed FROM origins WHERE url = $1";
-
-    /**
-     * The PreparedQuery template for upserting an origin's "degraded allowed".
-     */
-    private static final String UPSERT_DEGRADED_ALLOWED = String.join(SPACE, "INSERT INTO origins VALUES ($1, $2)",
-            "ON CONFLICT (url) DO", "UPDATE SET degraded_allowed = EXCLUDED.degraded_allowed");
-
-    /**
      * The database's default hostname.
      */
     private static final String DEFAULT_HOSTNAME = "localhost";
@@ -160,29 +149,6 @@ public class DatabaseServiceImpl implements DatabaseService {
                 return Future.failedFuture(error);
             }
             return Future.failedFuture(new ServiceException(MALFORMED_INPUT_DATA_ERROR, error.getMessage()));
-        }).compose(result -> Future.succeededFuture());
-    }
-
-    @Override
-    public Future<Boolean> getDegradedAllowed(final String aOrigin) {
-        return myDbConnectionPool.withConnection(connection -> {
-            return connection.preparedQuery(SELECT_DEGRADED_ALLOWED).execute(Tuple.of(aOrigin));
-        }).recover(error -> {
-            return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
-        }).compose(select -> {
-            if (hasSingleRow(select)) {
-                return Future.succeededFuture(select.iterator().next().getBoolean("degraded_allowed"));
-            }
-            return Future.failedFuture(new ServiceException(NOT_FOUND_ERROR, aOrigin));
-        });
-    }
-
-    @Override
-    public Future<Void> setDegradedAllowed(final String aOrigin, final boolean aDegradedAllowed) {
-        return myDbConnectionPool.withConnection(connection -> {
-            return connection.preparedQuery(UPSERT_DEGRADED_ALLOWED).execute(Tuple.of(aOrigin, aDegradedAllowed));
-        }).recover(error -> {
-            return Future.failedFuture(new ServiceException(INTERNAL_ERROR, error.getMessage()));
         }).compose(result -> Future.succeededFuture());
     }
 

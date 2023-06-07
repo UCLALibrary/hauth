@@ -41,14 +41,7 @@ CREATE TABLE public.items (
     access_mode smallint DEFAULT 0 NOT NULL
 );
 
-CREATE TABLE public.origins (
-    url text NOT NULL,
-    degraded_allowed boolean DEFAULT FALSE NOT NULL
-);
-
 ALTER TABLE public.items OWNER TO postgres;
-
-ALTER TABLE public.origins OWNER TO postgres;
 
 --
 -- Name: COLUMN items.uid; Type: COMMENT; Schema: public; Owner: postgres
@@ -63,30 +56,10 @@ COMMENT ON COLUMN public.items.uid IS 'The unique identifier of the requested ob
 COMMENT ON COLUMN public.items.access_mode IS 'The access mode of the requested item: 0 is open, 1 is restricted to campus network users';
 
 --
--- Name: COLUMN origins.url; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.origins.url IS 'The URL origin of an access request';
-
---
--- Name: COLUMN origins.degraded_allowed; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.origins.degraded_allowed IS 'Whether this origin allows degraded access';
-
-
---
 -- Name: items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.items (uid, access_mode) FROM stdin;
-\.
-
---
--- Name: origins; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.origins (url, degraded_allowed) FROM stdin;
 \.
 
 --
@@ -97,22 +70,8 @@ ALTER TABLE ONLY public.items
     ADD CONSTRAINT items_pkey PRIMARY KEY (uid);
 
 --
--- Name: origins_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.origins
-    ADD CONSTRAINT origins_pkey PRIMARY KEY (url);
-
---
 -- Name: TABLE items; Type: ACL; Schema: public; Owner: postgres
 --
 
 GRANT SELECT ON TABLE public.items TO authz_reader;
 GRANT ALL ON TABLE public.items TO authz_writer;
-
---
--- Name: TABLE origins; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT ON TABLE public.origins TO authz_reader;
-GRANT ALL ON TABLE public.origins TO authz_writer;

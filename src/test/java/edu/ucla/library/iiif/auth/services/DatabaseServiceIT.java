@@ -194,64 +194,6 @@ public class DatabaseServiceIT extends AbstractServiceTest {
         });
     }
 
-    /**
-     * Tests reading an origin whose "degraded allowed" has not been set.
-     *
-     * @param aContext A test context
-     */
-    @Test
-    final void testGetDegradedAllowedUnset(final VertxTestContext aContext) {
-        final String url = "https://library.ucla.edu";
-        final String expected = NULL;
-
-        myServiceProxy.getDegradedAllowed(url).onFailure(details -> {
-            final ServiceException error = (ServiceException) details;
-
-            aContext.verify(() -> {
-                assertEquals(Error.NOT_FOUND.ordinal(), error.failureCode());
-                assertEquals(url, error.getMessage());
-
-                aContext.completeNow();
-            });
-        }).onSuccess(result -> {
-            // The following will always fail
-            completeIfExpectedElseFail(result, expected, aContext);
-        });
-    }
-
-    /**
-     * Tests reading an origin whose "degraded allowed" has been set once.
-     *
-     * @param aContext A test context
-     */
-    @Test
-    final void testGetDegradedAllowedSetOnce(final VertxTestContext aContext) {
-        final String url = "https://iiif.library.ucla.edu";
-        final boolean expected = true;
-        final Future<Void> setOnce = myServiceProxy.setDegradedAllowed(url, expected);
-
-        setOnce.compose(put -> myServiceProxy.getDegradedAllowed(url)).onSuccess(result -> {
-            completeIfExpectedElseFail(result, expected, aContext);
-        }).onFailure(aContext::failNow);
-    }
-
-    /**
-     * Tests reading an origin whose "degraded allowed" has been set more than once.
-     *
-     * @param aContext A test context
-     */
-    @Test
-    final void testGetDegradedAllowedSetTwice(final VertxTestContext aContext) {
-        final String url = "https://iiif.sinaimanuscripts.library.ucla.edu";
-        final boolean expected = true;
-        final Future<Void> setTwice = myServiceProxy.setDegradedAllowed(url, false)
-                .compose(put -> myServiceProxy.setDegradedAllowed(url, expected));
-
-        setTwice.compose(put -> myServiceProxy.getDegradedAllowed(url)).onSuccess(result -> {
-            completeIfExpectedElseFail(result, expected, aContext);
-        }).onFailure(aContext::failNow);
-    }
-
     protected Logger getLogger() {
         return LOGGER;
     }

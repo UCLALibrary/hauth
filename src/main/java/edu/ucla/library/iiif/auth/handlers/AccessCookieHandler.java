@@ -20,14 +20,12 @@ import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.Param;
 import edu.ucla.library.iiif.auth.TemplateKeys;
 import edu.ucla.library.iiif.auth.services.AccessCookieService;
-import edu.ucla.library.iiif.auth.services.DatabaseService;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import info.freelibrary.util.HTTP;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
@@ -55,11 +53,6 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
      * The application configuration.
      */
     private final JsonObject myConfig;
-
-    /**
-     * The service proxy for accessing the database.
-     */
-    private final DatabaseService myDatabaseServiceProxy;
 
     /**
      * The template engine for rendering the response.
@@ -94,7 +87,6 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
      */
     public AccessCookieHandler(final Vertx aVertx, final JsonObject aConfig) {
         myConfig = aConfig;
-        myDatabaseServiceProxy = DatabaseService.createProxy(aVertx);
         myHtmlTemplateEngine = HandlebarsTemplateEngine.create(aVertx);
         myCampusNetworkSubnets = new Cidr4Trie<>();
         myAccessCookieService = AccessCookieService.createProxy(aVertx);
@@ -136,32 +128,26 @@ public class AccessCookieHandler implements Handler<RoutingContext> {
 
         isOnCampusNetwork = isOnNetwork(clientIpAddress, myCampusNetworkSubnets);
 
-        myDatabaseServiceProxy.getDegradedAllowed(origin.toString()).compose(isDegradedAllowed -> {
-            final Future<String> cookieGeneration = myAccessCookieService.generateCookie(clientIpAddress.getAddress(),
-                    isOnCampusNetwork, isDegradedAllowed);
+        myAccessCookieService.generateCookie(clientIpAddress.getAddress(), isOnCampusNetwork).compose(cookieValue -> {
+            final Cookie cookie =
+                    Cookie.cookie(CookieNames.HAUTH, cookieValue).setSameSite(CookieSameSite.NONE).setSecure(true);
 
-            return cookieGeneration.compose(cookieValue -> {
-                final Cookie cookie =
-                        Cookie.cookie(CookieNames.HAUTH, cookieValue).setSameSite(CookieSameSite.NONE).setSecure(true);
+            // Along with the origin, pass all the cookie data to the HTML template
+            final JsonObject templateData = new JsonObject().put(TemplateKeys.ORIGIN, origin)
+                    .put(TemplateKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
+                    .put(TemplateKeys.CLIENT_IP_ADDRESS, clientIpAddress)
+                    .put(TemplateKeys.CAMPUS_NETWORK, isOnCampusNetwork);
 
-                // Along with the origin, pass all the cookie data to the HTML template
-                final JsonObject templateData = new JsonObject().put(TemplateKeys.ORIGIN, origin)
-                        .put(TemplateKeys.VERSION, myConfig.getString(Config.HAUTH_VERSION))
-                        .put(TemplateKeys.CLIENT_IP_ADDRESS, clientIpAddress)
-                        .put(TemplateKeys.CAMPUS_NETWORK, isOnCampusNetwork)
-                        .put(TemplateKeys.DEGRADED_ALLOWED, isDegradedAllowed);
-
-                myWindowCloseDelay.ifPresent(delay -> {
-                    if (delay >= 0) {
-                        templateData.put(TemplateKeys.WINDOW_CLOSE_DELAY, delay);
-                    }
-                });
-                myCookieDomain.ifPresent(cookie::setDomain);
-
-                response.addCookie(cookie);
-
-                return myHtmlTemplateEngine.render(templateData, "templates/cookie.hbs");
+            myWindowCloseDelay.ifPresent(delay -> {
+                if (delay >= 0) {
+                    templateData.put(TemplateKeys.WINDOW_CLOSE_DELAY, delay);
+                }
             });
+            myCookieDomain.ifPresent(cookie::setDomain);
+
+            response.addCookie(cookie);
+
+            return myHtmlTemplateEngine.render(templateData, "templates/cookie.hbs");
         }).onSuccess(renderedHtmlTemplate -> {
             response.setStatusCode(HTTP.OK).end(renderedHtmlTemplate);
         }).onFailure(error -> {

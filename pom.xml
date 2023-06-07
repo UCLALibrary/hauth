@@ -48,7 +48,7 @@
     <freelib.utils.version>3.3.0</freelib.utils.version>
     <cidr.ip.version>1.0.1</cidr.ip.version>
     <commons.codec.version>1.15</commons.codec.version>
-    <vertx.version>4.3.8</vertx.version>
+    <vertx.version>4.4.2</vertx.version>
 
     <!-- Build plugin versions -->
     <clean.plugin.version>3.1.0</clean.plugin.version>

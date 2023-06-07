@@ -19,8 +19,7 @@ package edu.ucla.library.iiif.auth;
  * <pre>
  * {
  *   "clientIpAddress": "127.0.0.1",
- *   "campusNetwork": false,
- *   "degradedAllowed": true
+ *   "campusNetwork": false
  * }
  * </pre>
  */
@@ -50,11 +49,6 @@ public final class CookieJsonKeys {
      * The JSON key for whether the client IP address is on the campus network.
      */
     public static final String CAMPUS_NETWORK = "campusNetwork";
-
-    /**
-     * The JSON key for whether degraded content is available at the origin for which the cookie applies.
-     */
-    public static final String DEGRADED_ALLOWED = "degradedAllowed";
 
     /**
      * Private constructor for utility class.

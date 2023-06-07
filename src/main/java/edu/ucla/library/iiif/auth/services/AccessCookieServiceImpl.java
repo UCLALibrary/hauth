@@ -166,11 +166,9 @@ public class AccessCookieServiceImpl implements AccessCookieService {
     }
 
     @Override
-    public Future<String> generateCookie(final String aClientIpAddress, final boolean aIsOnCampusNetwork,
-            final boolean aIsDegradedAllowed) {
+    public Future<String> generateCookie(final String aClientIpAddress, final boolean aIsOnCampusNetwork) {
         final JsonObject cookieData = new JsonObject().put(CookieJsonKeys.CLIENT_IP_ADDRESS, aClientIpAddress)
-                .put(CookieJsonKeys.CAMPUS_NETWORK, aIsOnCampusNetwork)
-                .put(CookieJsonKeys.DEGRADED_ALLOWED, aIsDegradedAllowed);
+                .put(CookieJsonKeys.CAMPUS_NETWORK, aIsOnCampusNetwork);
         final byte[] encryptedCookieData;
         final JsonObject unencodedCookie;
         final String cookie;

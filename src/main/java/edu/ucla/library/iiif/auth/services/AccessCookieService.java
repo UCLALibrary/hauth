@@ -60,11 +60,10 @@ public interface AccessCookieService {
      *
      * @param aClientIpAddress The IP address of the client
      * @param aIsOnCampusNetwork If the client is on a campus network subnet
-     * @param aIsDegradedAllowed If the origin allows degraded access to content
      * @return A Future that resolves to a value that can be used to create a cookie with
      *         {@link Cookie#cookie(String, String)}
      */
-    Future<String> generateCookie(String aClientIpAddress, boolean aIsOnCampusNetwork, boolean aIsDegradedAllowed);
+    Future<String> generateCookie(String aClientIpAddress, boolean aIsOnCampusNetwork);
 
     /**
      * Decrypts an access cookie value.
