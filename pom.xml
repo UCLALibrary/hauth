@@ -579,10 +579,6 @@
                 <dependsOn>
                   <container>hauth</container>
                 </dependsOn>
-                <wait>
-                  <exit>0</exit>
-                  <time>30000</time>
-                </wait>
               </run>
             </hauth_import_items>
           </imagesMap>
