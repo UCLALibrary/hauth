@@ -19,6 +19,9 @@
     </then>
     </if>
   </logger>
+  <logger name="org.csveed" level="WARN" additivity="false">
+    <appender-ref ref="STDOUT" />
+  </logger>
 
   <!-- Loggers for our application -->
   <logger name="edu.ucla.library.iiif.fester" level="${logLevel}" additivity="true">
