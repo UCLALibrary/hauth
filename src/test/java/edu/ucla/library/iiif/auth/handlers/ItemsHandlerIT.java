@@ -3,28 +3,39 @@ package edu.ucla.library.iiif.auth.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.Reader;
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.csveed.api.CsvClient;
 import org.csveed.api.CsvClientImpl;
 import org.csveed.api.Row;
+import org.csveed.report.CsvException;
+
 import org.junit.jupiter.api.Test;
 
 import info.freelibrary.util.Constants;
 import info.freelibrary.util.HTTP;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.Error;
+import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.RequestJsonKeys;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.handlers.AccessModeHandler.AccessMode;
 import edu.ucla.library.iiif.auth.utils.MediaType;
 
 import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -39,6 +50,11 @@ import io.vertx.junit5.VertxTestContext;
  * Tests {@link ItemsHandler#handle}.
  */
 public final class ItemsHandlerIT extends AbstractHandlerIT {
+
+    /**
+     * The test's logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ItemsHandlerIT.class, MessageCodes.BUNDLE);
 
     /**
      * A test ID.
@@ -222,21 +238,81 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
     }
 
     /**
-     * FIXME Note that the container already hit the API for us with all the CSVs in src/test/resources/csv; here we
-     * just test to see that it worked as intended.
+     * Tests that import-items.py (run during the integration-test build phase) worked as intended.
      *
-     * @param aVertx
-     * @param aContext
+     * @param aVertx A Vert.x instance
+     * @param aContext A test context
      */
     @Test
     public void testImportItemsScript(final Vertx aVertx, final VertxTestContext aContext) {
-        // FIXME: read all the CSVs
-        final Reader reader =
-                new StringReader(aVertx.fileSystem().readFileBlocking("src/test/resources/csv/allied.csv").toString());
-        final CsvClient<Row> client = new CsvClientImpl<>(reader);
+        final Stream<Path> csvPaths;
+        final Stream<Future<Void>> csvChecks;
 
-        for (final Row row : client.readRows()) {
-            // FIXME
+        try {
+            csvPaths = Files.walk(Path.of("src/test/resources/csv/")).filter(path -> {
+                // Filter out directories; assume regular files are CSV
+                return path.toFile().isFile();
+            });
+        } catch (final IOException | SecurityException details) {
+            aContext.failNow(details);
+            return;
         }
+
+        csvChecks = csvPaths.map(csvPath -> {
+            return aVertx.fileSystem().readFile(csvPath.toString()).compose(data -> {
+                final CsvClient<Row> client =
+                        new CsvClientImpl<Row>(new StringReader(data.toString())).setSeparator(',').setUseHeader(true);
+                final Collection<Row> rows;
+                final Stream<Future<Void>> rowChecks;
+
+                try {
+                    rows = client.readRows();
+                } catch (final CsvException details) {
+                    return Future.failedFuture(details);
+                }
+
+                rowChecks = rows.parallelStream().map(row -> {
+                    // Query Hauth for the access mode of each item and compare value with Visibility field value
+                    final String itemARK = row.get("Item ARK");
+                    final String visibility = row.get("Visibility");
+                    final String requestURI = StringUtils.format(GET_ACCESS_MODE_PATH,
+                            URLEncoder.encode(itemARK, StandardCharsets.UTF_8));
+                    final HttpRequest<?> getAccessMode = myWebClient.get(myPort, Constants.INADDR_ANY, requestURI);
+
+                    return getExpectedAccessMode(visibility).compose(expectedAccessMode -> {
+                        return getAccessMode.send().compose(response -> {
+                            final AccessMode actualAccessMode = AccessMode
+                                    .valueOf(response.bodyAsJsonObject().getString(ResponseJsonKeys.ACCESS_MODE));
+
+                            if (expectedAccessMode.equals(actualAccessMode)) {
+                                return Future.succeededFuture();
+                            } else {
+                                return Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_023, expectedAccessMode,
+                                        itemARK, visibility, actualAccessMode));
+                            }
+                        });
+                    });
+                });
+
+                return CompositeFuture.all(rowChecks.collect(Collectors.toList())).mapEmpty();
+            });
+        });
+
+        CompositeFuture.all(csvChecks.collect(Collectors.toList())).onSuccess(nil -> aContext.completeNow())
+                .onFailure(aContext::failNow);
+    }
+
+    /**
+     * @param aVisibility A Visibility field value
+     * @return A Future that succeeds if there is a mapping from the provided visibility to an access mode, else fails
+     */
+    private static Future<AccessMode> getExpectedAccessMode(final String aVisibility) {
+        return switch (aVisibility) {
+            case "open" -> Future.succeededFuture(AccessMode.OPEN);
+            case "ucla" -> Future.succeededFuture(AccessMode.TIERED);
+            case "private" -> Future.succeededFuture(AccessMode.TIERED);
+            case "sinai" -> Future.succeededFuture(AccessMode.ALL_OR_NOTHING);
+            default -> Future.failedFuture(LOGGER.getMessage(MessageCodes.AUTH_023, aVisibility));
+        };
     }
 }
