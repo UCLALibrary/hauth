@@ -68,6 +68,7 @@
     <cantaloupe.version>5.0.4-1</cantaloupe.version>
     <auth.delegate.version>0.0.1-SNAPSHOT</auth.delegate.version>
     <jsoup.version>1.14.3</jsoup.version>
+    <csveed.version>0.7.3</csveed.version>
 
     <!-- Fluency logback dependencies -->
     <fluency.core.version>2.6.4</fluency.core.version>
@@ -231,7 +232,7 @@
     <dependency>
       <groupId>org.csveed</groupId>
       <artifactId>csveed</artifactId>
-      <version>0.7.3</version>
+      <version>${csveed.version}</version>
       <scope>test</scope>
     </dependency>
 
