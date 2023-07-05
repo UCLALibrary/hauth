@@ -63,7 +63,7 @@ def request_payload(file: TextIOBase, access_mode_override: AccessMode) -> List[
         for row in DictReader(file)
     ]
 
-def get_access_mode(row: List) -> AccessMode:
+def get_access_mode(row: Dict) -> AccessMode:
     """Determines the access mode of an item."""
     field_name = 'Visibility'
     field_value = row[field_name]
