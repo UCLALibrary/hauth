@@ -23,7 +23,7 @@ class AccessMode(Enum):
     TIERED = 1
     ALL_OR_NOTHING = 2
 
-"""The mapping from visibility to access mode."""
+# The mapping from visibility to access mode.
 visibility_map = {
     'open': AccessMode.OPEN,
     'ucla': AccessMode.TIERED,
