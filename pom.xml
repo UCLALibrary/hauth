@@ -575,7 +575,7 @@
                 <cmd>
                   <arg>${test.api.key}</arg>
                   <arg>http://172.17.0.1:${test.http.port}</arg>
-                  <arg>/csv/**/*.csv</arg>
+                  <arg>/csv</arg>
                 </cmd>
                 <dependsOn>
                   <container>hauth</container>
