@@ -48,7 +48,7 @@
     <freelib.utils.version>3.3.0</freelib.utils.version>
     <cidr.ip.version>1.0.1</cidr.ip.version>
     <commons.codec.version>1.15</commons.codec.version>
-    <vertx.version>4.4.2</vertx.version>
+    <vertx.version>4.4.4</vertx.version>
 
     <!-- Build plugin versions -->
     <clean.plugin.version>3.1.0</clean.plugin.version>
@@ -68,6 +68,7 @@
     <cantaloupe.version>5.0.4-1</cantaloupe.version>
     <auth.delegate.version>0.0.1-SNAPSHOT</auth.delegate.version>
     <jsoup.version>1.14.3</jsoup.version>
+    <csveed.version>0.7.3</csveed.version>
 
     <!-- Fluency logback dependencies -->
     <fluency.core.version>2.6.4</fluency.core.version>
@@ -226,6 +227,12 @@
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
       <version>${jsoup.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.csveed</groupId>
+      <artifactId>csveed</artifactId>
+      <version>${csveed.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -553,6 +560,28 @@
                 <skip>${skip.hauth.container}</skip>
               </run>
             </hauth>
+            <hauth_import_items>
+              <name>import-items</name>
+              <build>
+                <dockerFile>${project.basedir}/src/main/scripts/import-items/Dockerfile</dockerFile>
+              </build>
+              <run>
+                <containerNamePattern>hauth_import_items</containerNamePattern>
+                <volumes>
+                  <bind>
+                    <volume>${project.basedir}/src/test/resources/csv:/csv</volume>
+                  </bind>
+                </volumes>
+                <cmd>
+                  <arg>${test.api.key}</arg>
+                  <arg>http://172.17.0.1:${test.http.port}</arg>
+                  <arg>/csv</arg>
+                </cmd>
+                <dependsOn>
+                  <container>hauth</container>
+                </dependsOn>
+              </run>
+            </hauth_import_items>
           </imagesMap>
         </configuration>
         <executions>

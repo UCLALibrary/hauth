@@ -27,5 +27,7 @@
   <entry key="AUTH_019">Expected validation of expired cookie to fail, but it succeeded</entry>
   <entry key="AUTH_020">Generated cookies: {}={}, {}={} (cleartext: "{}")</entry>
   <entry key="AUTH_021">Request headers: {}</entry>
+  <entry key="AUTH_022">Expected access mode to be {} for item {} with visibility "{}", but was {}</entry>
+  <entry key="AUTH_023">Unknown visibility value "{}"</entry>
 
 </properties>
