@@ -79,7 +79,7 @@ public class MainVerticle extends AbstractVerticle {
 
     @Override
     public void start(final Promise<Void> aPromise) {
-        ConfigRetriever.create(vertx).getConfig().compose(config -> {
+        ConfigRetriever.create(vertx).setConfigurationProcessor(Config::setAppVersion).getConfig().compose(config -> {
             return createEventBusServices(config).compose(services -> {
                 // Save a reference to the services so we can unregister them later
                 myEventBusServices = services;

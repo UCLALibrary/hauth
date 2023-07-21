@@ -1,6 +1,16 @@
 
 package edu.ucla.library.iiif.auth;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+import java.util.Properties;
+
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
+
+import io.vertx.core.json.JsonObject;
+
 /**
  * Properties that are used to configure the application.
  */
@@ -132,10 +142,44 @@ public final class Config {
     public static final String SINAI_COOKIE_VALID_PREFIX = "SINAI_COOKIE_VALID_PREFIX";
 
     /**
+     * A logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(Config.class, MessageCodes.BUNDLE);
+
+    /**
      * Constant classes should have private constructors.
      */
     private Config() {
         // This is intentionally left empty
+    }
+
+    /**
+     * A configuration processor that adds the application version, if available.
+     *
+     * @param aConfig An application configuration
+     * @return The processed application configuration
+     */
+    public static JsonObject setAppVersion(final JsonObject aConfig) {
+        final String manifestPath = "/META-INF/MANIFEST.MF";
+
+        try (InputStream manifest = Config.class.getResourceAsStream(manifestPath)) {
+            final Properties properties = new Properties();
+            final Optional<String> version;
+
+            properties.load(manifest);
+            version = Optional.ofNullable(properties.getProperty("Maven-Version"));
+
+            if (version.isPresent()) {
+                return aConfig.copy().put(HAUTH_VERSION, version.get());
+            } else {
+                return aConfig;
+            }
+        } catch (final IOException details) {
+            // Either the app wasn't deployed as a JAR, or Vert.x Maven Plugin isn't creating the manifest file
+            LOGGER.warn(MessageCodes.AUTH_024, manifestPath, details.getMessage());
+
+            return aConfig;
+        }
     }
 
 }
