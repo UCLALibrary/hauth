@@ -495,7 +495,7 @@
                 <args>
                   <ALPINE_TAG>${alpine.version}</ALPINE_TAG>
                   <BUILDER_TAG>${builder.version}</BUILDER_TAG>
-                  <!--APP_VERSION>${project.version}</APP_VERSION-->
+                  <APP_VERSION>${project.version}</APP_VERSION>
                   <NATIVE_COMPILE>${native.compile}</NATIVE_COMPILE>
                   <USE_UPX>${use.upx}</USE_UPX>
                 </args>
