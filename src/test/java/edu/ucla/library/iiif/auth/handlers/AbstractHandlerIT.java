@@ -145,7 +145,7 @@ public abstract class AbstractHandlerIT {
      */
     @BeforeAll
     public void setUp(final Vertx aVertx, final VertxTestContext aContext) {
-        ConfigRetriever.create(aVertx).getConfig().compose(config -> {
+        ConfigRetriever.create(aVertx).setConfigurationProcessor(Config::setAppVersion).getConfig().compose(config -> {
             final DatabaseService db = DatabaseService.create(aVertx, config);
             @SuppressWarnings("rawtypes")
             final List<Future> dbOps = List.of(db.setAccessMode(TEST_ID_OPEN_ACCESS, 0),
