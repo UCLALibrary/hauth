@@ -532,7 +532,7 @@
                   <DB_HOST>172.17.0.1</DB_HOST>
                   <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
                   <DB_PORT>${test.db.port}</DB_PORT>
-                  <!--HAUTH_VERSION>${project.version}</HAUTH_VERSION-->
+                  <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
                   <SECRET_KEY_PASSWORD>${test.secretkey.password}</SECRET_KEY_PASSWORD>
                   <SECRET_KEY_SALT>${test.secretkey.salt}</SECRET_KEY_SALT>
                   <!-- Sinai cookie has a fake password for testing and a real hard-coded prefix: Authenticated -->
@@ -670,7 +670,7 @@
             <DB_CACHE_PORT>${test.db.cache.port}</DB_CACHE_PORT>
             <DB_PASSWORD>${test.db.password}</DB_PASSWORD>
             <DB_PORT>${test.db.port}</DB_PORT>
-            <!--HAUTH_VERSION>${project.version}</HAUTH_VERSION-->
+            <HAUTH_VERSION>${project.version}</HAUTH_VERSION>
             <HTTP_PORT>${test.http.port}</HTTP_PORT>
             <SECRET_KEY_PASSWORD>${test.secretkey.password}</SECRET_KEY_PASSWORD>
             <SECRET_KEY_SALT>${test.secretkey.salt}</SECRET_KEY_SALT>
