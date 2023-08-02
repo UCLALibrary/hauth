@@ -17,11 +17,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import info.freelibrary.util.Constants;
 import info.freelibrary.util.HTTP;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
 import edu.ucla.library.iiif.auth.AccessTokenError;
 import edu.ucla.library.iiif.auth.Config;
 import edu.ucla.library.iiif.auth.CookieJsonKeys;
+import edu.ucla.library.iiif.auth.MessageCodes;
 import edu.ucla.library.iiif.auth.ResponseJsonKeys;
 import edu.ucla.library.iiif.auth.TemplateKeys;
 import edu.ucla.library.iiif.auth.TokenJsonKeys;
@@ -39,6 +42,11 @@ import io.vertx.junit5.VertxTestContext;
  * Tests {@link AccessTokenHandler#handle}.
  */
 public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
+
+    /**
+     * The test's logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenHandlerIT.class, MessageCodes.BUNDLE);
 
     private static final String SEMICOLON = ";";
 
@@ -138,6 +146,7 @@ public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
     @ValueSource(booleans = { true, false })
     public void testGetTokenNonBrowser(final boolean aReverseProxyDeployment, final Vertx aVertx,
             final VertxTestContext aContext) {
+        LOGGER.info(myConfig.encodePrettily());
         final String getCookieRequestURI =
                 StringUtils.format(GET_COOKIE_PATH, URLEncoder.encode(TEST_ORIGIN, StandardCharsets.UTF_8));
         final HttpRequest<?> getCookie = myWebClient.get(myPort, Constants.INADDR_ANY, getCookieRequestURI);
