@@ -17,6 +17,9 @@ python3 -m venv venv_import_items
 
 # Install the script dependencies to the virtual environment
 pip install -r requirements.txt
+
+# Ensure the script is executable
+chmod +x import-items.py
 ```
 
 Also, you may want to add something like this to your shell's initialization file (e.g. `~/.zshrc`), so that you can easily reference the script from anywhere:
