@@ -19,6 +19,12 @@ python3 -m venv venv_import_items
 pip install -r requirements.txt
 ```
 
+Also, you may want to add something like this to your shell's initialization file (e.g. `~/.zshrc`), so that you can easily reference the script from anywhere:
+
+```bash
+PATH=$PATH:$HOME/path/to/UCLALibrary/hauth/src/main/scripts/import-items
+```
+
 ## Example usage
 
 Assuming that all CSV files in the current working directory contain open access items, and a Hauth instance is running at http://example.com:
