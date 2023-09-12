@@ -30,7 +30,15 @@ PATH=$PATH:$HOME/path/to/UCLALibrary/hauth/src/main/scripts/import-items
 
 ## Example usage
 
-Assuming that all CSV files in the current working directory contain open access items, and a Hauth instance is running at http://example.com:
+When every item in each CSV file has a `Visibility` value, usage will look something like this:
+
+```bash
+./import-items.py --api-key=0123456789ABCDEF http://example.com *.csv
+```
+
+where http://example.com is the base URL of the Hauth service.
+
+To import every item in each CSV file with a particular access mode (ignoring the `Visibility` column), the `--access-mode` flag is available as a sort of "override":
 
 ```bash
 ./import-items.py --api-key=0123456789ABCDEF --access-mode=OPEN http://example.com *.csv
