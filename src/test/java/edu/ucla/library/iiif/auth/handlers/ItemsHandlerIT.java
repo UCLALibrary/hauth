@@ -303,8 +303,8 @@ public final class ItemsHandlerIT extends AbstractHandlerIT {
     }
 
     /**
-     *  Tests that the given visibility is a valid access mode.
-     * 
+     * Tests that the given visibility is a valid access mode.
+     *
      * @param aVisibility A Visibility field value
      * @return A Future that succeeds if there is a mapping from the provided visibility to an access mode, else fails
      */

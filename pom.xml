@@ -48,7 +48,7 @@
     <freelib.utils.version>3.3.0</freelib.utils.version>
     <cidr.ip.version>1.0.1</cidr.ip.version>
     <commons.codec.version>1.15</commons.codec.version>
-    <vertx.version>4.4.4</vertx.version>
+    <vertx.version>4.4.6</vertx.version>
 
     <!-- Build plugin versions -->
     <clean.plugin.version>3.1.0</clean.plugin.version>
@@ -886,7 +886,7 @@
   <parent>
     <artifactId>freelib-parent</artifactId>
     <groupId>info.freelibrary</groupId>
-    <version>8.0.4</version>
+    <version>8.0.5</version>
   </parent>
 
 </project>

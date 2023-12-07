@@ -27,9 +27,9 @@ public enum AccessTokenError {
      * The request comes from an invalid origin.
      */
 
-     invalidOrigin,
+    invalidOrigin,
 
-     /**
+    /**
      * The requested operation is currently unavailable.
      */
     unavailable

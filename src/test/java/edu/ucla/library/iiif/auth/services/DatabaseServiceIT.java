@@ -196,7 +196,7 @@ public class DatabaseServiceIT extends AbstractServiceTest {
 
     /**
      * Helper methond logger.
-     * 
+     *
      * @return The logger
      */
     protected Logger getLogger() {

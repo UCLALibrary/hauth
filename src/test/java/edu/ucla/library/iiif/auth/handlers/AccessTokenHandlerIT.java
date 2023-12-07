@@ -39,6 +39,7 @@ import io.vertx.junit5.VertxTestContext;
  * Tests {@link AccessTokenHandler#handle}.
  */
 public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
+
     /**
      * A constant for a semicolon.
      */

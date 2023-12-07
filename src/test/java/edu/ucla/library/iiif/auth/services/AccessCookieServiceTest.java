@@ -241,7 +241,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
 
     /**
      * Helper methond logger.
-     * 
+     *
      * @return The logger
      */
     protected Logger getLogger() {
