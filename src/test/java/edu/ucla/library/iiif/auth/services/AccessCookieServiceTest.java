@@ -240,7 +240,7 @@ public class AccessCookieServiceTest extends AbstractServiceTest {
     }
 
     /**
-     * Helper methond logger.
+     * Helper method logger.
      *
      * @return The logger
      */
