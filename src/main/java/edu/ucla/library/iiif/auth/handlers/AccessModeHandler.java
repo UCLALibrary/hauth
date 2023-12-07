@@ -93,6 +93,19 @@ public class AccessModeHandler implements Handler<RoutingContext> {
      *      Access-Controlled Resources </a>
      */
     public enum AccessMode {
-        OPEN, TIERED, ALL_OR_NOTHING;
+        /**
+         * Alows an unrestricted access to the requested item.
+         */
+        OPEN,
+
+        /**
+         * Allows access to the requested item based on specified tiers.
+         */
+        TIERED,
+
+        /**
+         * Allows either complete access or no access.
+         */
+        ALL_OR_NOTHING;
     }
 }

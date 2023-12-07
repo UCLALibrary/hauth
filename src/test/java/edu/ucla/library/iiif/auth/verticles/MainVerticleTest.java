@@ -130,8 +130,8 @@ public class MainVerticleTest {
      *
      * @param aMainVerticle A verticle instance
      * @return The event bus services
-     * @throws IllegalAccessException
-     * @throws NoSuchFieldException
+     * @throws IllegalAccessException An exception for illegal access
+     * @throws NoSuchFieldException An exception for a field that does not exist
      */
     @SuppressWarnings("unchecked")
     private Set<MessageConsumer<?>> getEventBusServices(final MainVerticle aMainVerticle)
@@ -148,8 +148,8 @@ public class MainVerticleTest {
      *
      * @param aMainVerticle A verticle instance
      * @return The HTTP server
-     * @throws IllegalAccessException
-     * @throws NoSuchFieldException
+     * @throws IllegalAccessException An exception for illegal access
+     * @throws NoSuchFieldException An exception for a field that does not exist
      */
     private HttpServer getServer(final MainVerticle aMainVerticle) throws IllegalAccessException, NoSuchFieldException {
         final Field server = myVerticle.getClass().getDeclaredField("myServer");

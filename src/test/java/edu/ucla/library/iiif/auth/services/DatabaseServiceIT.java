@@ -194,6 +194,11 @@ public class DatabaseServiceIT extends AbstractServiceTest {
         });
     }
 
+    /**
+     * Helper method logger.
+     *
+     * @return The logger
+     */
     protected Logger getLogger() {
         return LOGGER;
     }

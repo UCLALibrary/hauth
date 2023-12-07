@@ -40,6 +40,9 @@ import io.vertx.junit5.VertxTestContext;
  */
 public final class AccessTokenHandlerIT extends AbstractAccessTokenHandlerIT {
 
+    /**
+     * A constant for a semicolon.
+     */
     private static final String SEMICOLON = ";";
 
     /**
