@@ -8,5 +8,29 @@ package edu.ucla.library.iiif.auth;
  */
 @SuppressWarnings("PMD.FieldNamingConventions") // It's easier if the name is the same as the string representation
 public enum AccessTokenError {
-    invalidRequest, missingCredentials, invalidCredentials, invalidOrigin, unavailable
+    /**
+     * The request is invalid.
+     */
+
+    invalidRequest,
+    /**
+     * Credentials are missing.
+     */
+
+    missingCredentials,
+    /**
+     * Credentials provided are invalid.
+     */
+
+    invalidCredentials,
+    /**
+     * The request comes from an invalid origin.
+     */
+
+     invalidOrigin,
+
+     /**
+     * The requested operation is currently unavailable.
+     */
+    unavailable
 }
