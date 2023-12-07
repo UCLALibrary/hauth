@@ -11,22 +11,21 @@ public enum AccessTokenError {
     /**
      * The request is invalid.
      */
-
     invalidRequest,
+
     /**
      * Credentials are missing.
      */
-
     missingCredentials,
+
     /**
      * Credentials provided are invalid.
      */
-
     invalidCredentials,
+
     /**
      * The request comes from an invalid origin.
      */
-
     invalidOrigin,
 
     /**
