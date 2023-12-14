@@ -35,7 +35,7 @@
     <graalvm.version>21.2.0</graalvm.version>
 
     <!-- Docker build properties -->
-    <alpine.version>3.17.2</alpine.version>
+    <alpine.version>3.19.0</alpine.version>
     <builder.version>0.0.3</builder.version>
 
     <!-- Whether UPX should be used to compress the application -->
