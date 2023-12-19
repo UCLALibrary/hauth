@@ -624,6 +624,7 @@
               <goal>push</goal>
             </goals>
             <configuration>
+              <filter>hauth</filter>
               <images>
                 <image>
                   <!-- Registry account, if supplied, must end in a slash (e.g. "account/") -->
@@ -726,17 +727,6 @@
                   </args>
                 </configuration>
               </execution>
-              <execution>
-                <id>snyk-monitor</id>
-                <goals>
-                  <goal>monitor</goal>
-                </goals>
-                <configuration>
-                  <args>
-                    <arg>--org=${env.UCLALIBRARY_SNYK_ORG}</arg>
-                  </args>
-                </configuration>
-              </execution>
             </executions>
           </plugin>
         </plugins>
@@ -768,44 +758,6 @@
                 </goals>
               </execution>
             </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- A profile to use to do a native compile using GraalVM's native-image -->
-    <profile>
-      <id>native-compile</id>
-      <build>
-        <plugins>
-          <!-- This packages the code so the native-image plugin can access it -->
-          <plugin>
-            <artifactId>maven-jar-plugin</artifactId>
-            <version>${jar.plugin.version}</version>
-          </plugin>
-          <!-- This creates a native binary from the packaged jar and its dependencies -->
-          <plugin>
-            <groupId>org.graalvm.nativeimage</groupId>
-            <artifactId>native-image-maven-plugin</artifactId>
-            <version>${graalvm.version}</version>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>native-image</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <imageName>${project.artifactId}</imageName>
-              <mainClass>io.vertx.core.Launcher</mainClass>
-              <buildArgs>
-                <buildArg>--static</buildArg>
-                <buildArg>--libc=musl</buildArg>
-                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
-                <buildArg>-H:+PrintClassInitialization</buildArg>
-                <buildArg>-H:TraceClassInitialization=com.sun.org.apache.xerces.internal.impl.XMLEntityScanner,io.netty.channel.socket.InternetProtocolFamily</buildArg>
-              </buildArgs>
-            </configuration>
           </plugin>
         </plugins>
       </build>
