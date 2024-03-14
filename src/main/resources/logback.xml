@@ -34,7 +34,7 @@
   </logger>
 
   <!-- Default logging level for everything else -->
-  <root level="DEBUG">
+  <root level="WARN">
     <appender-ref ref="STDOUT" />
     <if condition='property("FLUENCY_ENABLED").equals("true")'>
     <then>
