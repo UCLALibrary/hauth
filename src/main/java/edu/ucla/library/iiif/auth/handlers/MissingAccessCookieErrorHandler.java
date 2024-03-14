@@ -75,7 +75,7 @@ public class MissingAccessCookieErrorHandler implements ErrorHandler {
                 response.setStatusCode(HTTP.BAD_REQUEST).end(jsonWrapper.encodePrettily());
             }
 
-            LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), error.getMessage());
+            LOGGER.debug(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), error.getMessage());
         } else {
             aContext.next();
             LOGGER.error(MessageCodes.AUTH_010, error.toString());
