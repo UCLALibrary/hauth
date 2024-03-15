@@ -67,9 +67,11 @@ public class AccessModeHandler implements Handler<RoutingContext> {
                 if (details.failureCode() == Error.NOT_FOUND.ordinal()) {
                     statusCode = HTTP.NOT_FOUND;
                     errorMessage = LOGGER.getMessage(MessageCodes.AUTH_004, id);
+                    LOGGER.info(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), statusCode);
                 } else {
                     statusCode = HTTP.INTERNAL_SERVER_ERROR;
                     errorMessage = LOGGER.getMessage(MessageCodes.AUTH_005);
+                    LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
                 }
 
                 errorData = new JsonObject() //
@@ -77,8 +79,6 @@ public class AccessModeHandler implements Handler<RoutingContext> {
                         .put(ResponseJsonKeys.MESSAGE, errorMessage);
 
                 response.setStatusCode(statusCode).end(errorData.encodePrettily());
-
-                LOGGER.error(MessageCodes.AUTH_006, request.method(), request.absoluteURI(), details.getMessage());
             } else {
                 aContext.fail(error);
             }
